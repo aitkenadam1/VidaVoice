@@ -2788,6 +2788,406 @@
       "col": 1,
       "emoji": "🥪",
       "level": 3
+    },
+    {
+      "id": "core.touch",
+      "label": "toucher",
+      "type": "word",
+      "category": "verbs",
+      "row": 32,
+      "col": 0,
+      "emoji": "🤏",
+      "level": 2
+    },
+    {
+      "id": "core.taste",
+      "label": "goûter",
+      "type": "word",
+      "category": "verbs",
+      "row": 32,
+      "col": 1,
+      "emoji": "👅",
+      "level": 2
+    },
+    {
+      "id": "core.smell",
+      "label": "sentir",
+      "type": "word",
+      "category": "verbs",
+      "row": 32,
+      "col": 2,
+      "emoji": "👃",
+      "level": 2
+    },
+    {
+      "id": "core.hear",
+      "label": "entendre",
+      "type": "word",
+      "category": "verbs",
+      "row": 32,
+      "col": 3,
+      "emoji": "👂",
+      "level": 2
+    },
+    {
+      "id": "core.talk",
+      "label": "parler",
+      "type": "word",
+      "category": "verbs",
+      "row": 32,
+      "col": 4,
+      "emoji": "💬",
+      "level": 2
+    },
+    {
+      "id": "core.call",
+      "label": "appeler",
+      "type": "word",
+      "category": "verbs",
+      "row": 32,
+      "col": 5,
+      "emoji": "📞",
+      "level": 3
+    },
+    {
+      "id": "core.bring",
+      "label": "apporter",
+      "type": "word",
+      "category": "verbs",
+      "row": 32,
+      "col": 6,
+      "emoji": "🎒",
+      "level": 2
+    },
+    {
+      "id": "core.carry",
+      "label": "porter",
+      "type": "word",
+      "category": "verbs",
+      "row": 32,
+      "col": 7,
+      "emoji": "🧺",
+      "level": 2
+    },
+    {
+      "id": "core.leave",
+      "label": "partir",
+      "type": "word",
+      "category": "verbs",
+      "row": 33,
+      "col": 0,
+      "emoji": "🚪",
+      "level": 2
+    },
+    {
+      "id": "core.stay",
+      "label": "rester",
+      "type": "word",
+      "category": "verbs",
+      "row": 33,
+      "col": 1,
+      "emoji": "🧍",
+      "level": 2
+    },
+    {
+      "id": "core.catch",
+      "label": "attraper",
+      "type": "word",
+      "category": "verbs",
+      "row": 33,
+      "col": 2,
+      "emoji": "🧤",
+      "level": 2
+    },
+    {
+      "id": "core.throw",
+      "label": "lancer",
+      "type": "word",
+      "category": "verbs",
+      "row": 33,
+      "col": 3,
+      "emoji": "⚾",
+      "level": 2
+    },
+    {
+      "id": "core.wash",
+      "label": "laver",
+      "type": "word",
+      "category": "verbs",
+      "row": 33,
+      "col": 4,
+      "emoji": "🧼",
+      "level": 2
+    },
+    {
+      "id": "core.dress",
+      "label": "s'habiller",
+      "type": "word",
+      "category": "verbs",
+      "row": 33,
+      "col": 5,
+      "emoji": "👕",
+      "level": 2
+    },
+    {
+      "id": "core.share",
+      "label": "partager",
+      "type": "word",
+      "category": "verbs",
+      "row": 33,
+      "col": 6,
+      "emoji": "🤝",
+      "level": 2
+    },
+    {
+      "id": "core.choose",
+      "label": "choisir",
+      "type": "word",
+      "category": "verbs",
+      "row": 33,
+      "col": 7,
+      "emoji": "🎯",
+      "level": 3
+    },
+    {
+      "id": "core.hug",
+      "label": "câlin",
+      "type": "word",
+      "category": "verbs",
+      "row": 34,
+      "col": 0,
+      "emoji": "🫂",
+      "level": 2
+    },
+    {
+      "id": "core.wave",
+      "label": "saluer",
+      "type": "word",
+      "category": "verbs",
+      "row": 34,
+      "col": 1,
+      "emoji": "👋",
+      "level": 2
+    },
+    {
+      "id": "core.knock",
+      "label": "frapper",
+      "type": "word",
+      "category": "verbs",
+      "row": 34,
+      "col": 2,
+      "emoji": "👊",
+      "level": 3
+    },
+    {
+      "id": "core.visit",
+      "label": "visiter",
+      "type": "word",
+      "category": "verbs",
+      "row": 34,
+      "col": 3,
+      "emoji": "🧳",
+      "level": 2
+    },
+    {
+      "id": "core.full",
+      "label": "plein",
+      "type": "word",
+      "category": "descriptors",
+      "row": 34,
+      "col": 4,
+      "emoji": "🥛",
+      "level": 2
+    },
+    {
+      "id": "core.empty",
+      "label": "vide",
+      "type": "word",
+      "category": "descriptors",
+      "row": 34,
+      "col": 5,
+      "emoji": "📭",
+      "level": 2
+    },
+    {
+      "id": "core.round",
+      "label": "rond",
+      "type": "word",
+      "category": "descriptors",
+      "row": 34,
+      "col": 6,
+      "emoji": "⭕",
+      "level": 2
+    },
+    {
+      "id": "core.long",
+      "label": "long",
+      "type": "word",
+      "category": "descriptors",
+      "row": 34,
+      "col": 7,
+      "emoji": "↔️",
+      "level": 2
+    },
+    {
+      "id": "core.short",
+      "label": "court",
+      "type": "word",
+      "category": "descriptors",
+      "row": 35,
+      "col": 0,
+      "emoji": "↕️",
+      "level": 2
+    },
+    {
+      "id": "core.tall",
+      "label": "grand",
+      "type": "word",
+      "category": "descriptors",
+      "row": 35,
+      "col": 1,
+      "emoji": "🦒",
+      "level": 2
+    },
+    {
+      "id": "core.beautiful",
+      "label": "beau",
+      "type": "word",
+      "category": "descriptors",
+      "row": 35,
+      "col": 2,
+      "emoji": "🌸",
+      "level": 3
+    },
+    {
+      "id": "core.kind",
+      "label": "gentil",
+      "type": "word",
+      "category": "descriptors",
+      "row": 35,
+      "col": 3,
+      "emoji": "💝",
+      "level": 3
+    },
+    {
+      "id": "core.shy",
+      "label": "timide",
+      "type": "word",
+      "category": "descriptors",
+      "row": 35,
+      "col": 4,
+      "emoji": "🙈",
+      "level": 3
+    },
+    {
+      "id": "core.surprised",
+      "label": "surpris",
+      "type": "word",
+      "category": "descriptors",
+      "row": 35,
+      "col": 5,
+      "emoji": "😲",
+      "level": 3
+    },
+    {
+      "id": "core.brave",
+      "label": "courageux",
+      "type": "word",
+      "category": "descriptors",
+      "row": 35,
+      "col": 6,
+      "emoji": "🦁",
+      "level": 3
+    },
+    {
+      "id": "core.curious",
+      "label": "curieux",
+      "type": "word",
+      "category": "descriptors",
+      "row": 35,
+      "col": 7,
+      "emoji": "🔍",
+      "level": 3
+    },
+    {
+      "id": "core.homework",
+      "label": "devoirs",
+      "type": "word",
+      "category": "school",
+      "row": 36,
+      "col": 0,
+      "emoji": "📚",
+      "level": 3
+    },
+    {
+      "id": "core.pencil",
+      "label": "crayon",
+      "type": "word",
+      "category": "school",
+      "row": 36,
+      "col": 1,
+      "emoji": "✏️",
+      "level": 2
+    },
+    {
+      "id": "core.paper",
+      "label": "papier",
+      "type": "word",
+      "category": "school",
+      "row": 36,
+      "col": 2,
+      "emoji": "📄",
+      "level": 2
+    },
+    {
+      "id": "core.desk",
+      "label": "bureau",
+      "type": "word",
+      "category": "school",
+      "row": 36,
+      "col": 3,
+      "emoji": "🪑",
+      "level": 3
+    },
+    {
+      "id": "core.class",
+      "label": "classe",
+      "type": "word",
+      "category": "school",
+      "row": 36,
+      "col": 4,
+      "emoji": "🧑‍🏫",
+      "level": 3
+    },
+    {
+      "id": "core.lesson",
+      "label": "leçon",
+      "type": "word",
+      "category": "school",
+      "row": 36,
+      "col": 5,
+      "emoji": "📖",
+      "level": 3
+    },
+    {
+      "id": "core.student",
+      "label": "élève",
+      "type": "word",
+      "category": "school",
+      "row": 36,
+      "col": 6,
+      "emoji": "🧑‍🎓",
+      "level": 3
+    },
+    {
+      "id": "core.count",
+      "label": "compter",
+      "type": "word",
+      "category": "school",
+      "row": 36,
+      "col": 7,
+      "emoji": "🔢",
+      "level": 3
     }
   ],
   "locale": "fr",

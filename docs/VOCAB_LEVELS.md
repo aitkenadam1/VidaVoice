@@ -28,14 +28,14 @@ Folder contents follow the same rule: a locked folder word keeps its slot rather
 than letting the words after it slide up. Position inside a folder is a motor
 pattern too.
 
-## Current split (242-word pack)
+## Current split (282-word pack)
 
 | Level | Home grid | Folder words | Total |
 |---|---|---|---|
 | 1 — Starter | 46 | 20 | 66 (+4 folder tiles) |
-| 2 — Growing | 116 | 22 | 138 |
-| 3 — Full board | 80 | 8 | 88 |
-| | **242** | **50** | **292** |
+| 2 — Growing | 141 | 22 | 163 |
+| 3 — Full board | 95 | 8 | 103 |
+| | **282** | **50** | **332** |
 
 The level-1 core (46 home words + folder tiles) is unchanged from the original
 192-word assignment: it is the set a first message is built from — `want`,
@@ -57,6 +57,28 @@ so existing starter boards do not change shape:
   less-frequent places (`library`, `restaurant`, `farm`, `garden`, `museum`,
   `cinema`), and the less-frequent foods (`grapes`, `strawberry`, `carrot`,
   `sandwich`).
+
+### Batch 2: 40 more words (rows 32–36)
+
+The second expansion targets the gaps AAC core-word research flags next:
+verbs of the senses and daily routine, opposites beyond the first set, and
+school vocabulary. All new cells only; nothing moved; level 1 untouched again.
+
+- **Level 2 (25):** `touch`, `taste`, `smell`, `hear`, `talk`, `bring`, `carry`,
+  `leave`, `stay`, `catch`, `throw`, `wash`, `dress`, `share`, `hug`, `wave`,
+  `visit` (the high-frequency social/sensory/routine verbs), plus the
+  describing words `full`, `empty`, `round`, `long`, `short`, `tall` and the
+  school basics `pencil`, `paper`.
+- **Level 3 (15):** the less-frequent or more abstract verbs `call`, `choose`,
+  `knock`, the social-emotional descriptors `beautiful`, `kind`, `shy`,
+  `surprised`, `brave`, `curious`, and the school set `homework`, `desk`,
+  `class`, `lesson`, `student`, `count`.
+
+Like the first batch, these 40 pictograms are first-search-hit ARASAAC picks
+(MAPPING.md "Batch 2" section) and have **not** had the full visual QA the
+original 242 received — e.g. `core.desk` currently shows a front/reception
+desk and `core.lesson` a generic classroom scene. Flagged for the SLP symbol
+review pass.
 
 **Level 1** is the set a first message is built from: `want`, `need`, `like`,
 `don't`, `go`, `come`, `stop`, `help`, `more`, `again`, `finished`, `yes`, `no`,

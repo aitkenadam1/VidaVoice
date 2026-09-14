@@ -28,9 +28,9 @@ void main() {
         pack.validate();
       });
 
-      test('home grid holds 282 core words at unique fixed positions', () {
+      test('home grid holds 288 core words at unique fixed positions', () {
         final words = pack.homeItems.where((i) => !i.isFolder).toList();
-        expect(words.length, 282);
+        expect(words.length, 288); // 282 baseline + 6 food words (row 31)
         final cells = words.map((w) => '${w.row}:${w.col}').toSet();
         expect(
           cells.length,

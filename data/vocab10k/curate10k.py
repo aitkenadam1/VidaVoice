@@ -87,6 +87,111 @@ FOLDER_OVERRIDE = {
     "parade": "folder.town",
 }
 
+# ---- Review pass 2026-09-14: content filtering (B4) ----
+# Normalized en labels to drop outright: garbled generator output, duplicate
+# concepts of an existing bare label, child-inappropriate terms, and
+# encyclopedic cultivar / taxonomic depth beyond the common species.
+BLOCK_LABELS = {
+    # garbled
+    "gull dong", "gull terr",
+    # duplicate of an existing bare label (spoken device would say these aloud)
+    "telescope space", "gravity space", "sheep lamb", "pilot airline",
+    "sphinx myth", "dwarf myth",
+    # child-inappropriate bare label (slang); the bird is not core vocabulary
+    "booby",
+    # obscure breeds / wild species beyond common domestic breeds
+    "cornish rex", "devon rex", "don sphynx", "belgian malinois", "caracal",
+    # taxonomic residue
+    "killifish", "striped killifish", "banded killifish", "bluefin killifish",
+    "least killifish", "crappie", "white crappie", "black crappie",
+    # citrus cultivar encyclopedia (keep kumquat, loquat)
+    "limequat", "eustis limequat", "lakeland limequat", "tavares limequat",
+    "orangequat", "mandarinquat", "sunquat", "thomasville citrangequat",
+    "kumquat nagami", "kumquat meiwa",
+    # whale-species depth (keep whale, blue/humpback/killer whale)
+    "fin whale", "minke whale", "sperm whale", "right whale", "gray whale",
+    "bowhead whale",
+}
+
+# Domestic breed-variety long tail: drop when level == 3 (advanced). Common
+# breeds at L1/L2 (labrador, poodle, beagle, ...) stay.
+BREED_RE = re.compile(
+    r"retriever|shepherd|hound|terrier|bulldog|poodle|beagle|rottweiler|"
+    r"doberman|husky|malamute|collie|mastiff|greyhound|whippet|saluki|"
+    r"akita|shiba|corgi|dachshund|labrador|dalmatian|chihuahua|rex|"
+    r"malinois|spaniel|setter|pointer|weimaraner|siamese|persian|maine|"
+    r"bengal|sphynx|ragdoll|burmese|arabian|thoroughbred|clydesdale|"
+    r"mustang|appaloosa", re.I)
+
+# Label/translation repairs: (chunkfile, en) -> (en, es, fr).
+# Applied before dedup; the repaired en label flows into the id slug.
+RENAME = {
+    ("chunk02_animals_b.py", "neigh horse"): (
+        "neigh", "relincho", "hennissement"),
+    ("chunk16_nature_b.py", "phoenix bird"): (
+        "phoenix", "f\u00e9nix", "ph\u00e9nix"),
+}
+
+# ---- Review pass 2026-09-14: folder coherence (B5) ----
+# id -> destination folder. Applied after dedup; id prefix is unchanged
+# (same precedent as FOLDER_OVERRIDE).
+MOVES = {
+    # mythology / fantasy out of Nature -> Stories
+    "nature.dragon": "folder.stories",
+    "nature.unicorn": "folder.stories",
+    "nature.witch": "folder.stories",
+    "nature.sphinx": "folder.stories",
+    "nature.jackalope": "folder.stories",
+    "nature.sorcerer": "folder.stories",
+    "nature.genie": "folder.stories",
+    "nature.magic_wand": "folder.stories",
+    "nature.leprechaun": "folder.stories",
+    "nature.kraken": "folder.stories",
+    "nature.bigfoot": "folder.stories",
+    "nature.yeti": "folder.stories",
+    "nature.phoenix": "folder.stories",
+    "nature.griffin": "folder.stories",
+    "nature.centaur": "folder.stories",
+    "nature.minotaur": "folder.stories",
+    "nature.medusa": "folder.stories",
+    "nature.hydra": "folder.stories",
+    "nature.cerberus": "folder.stories",
+    "nature.pegasus": "folder.stories",
+    "nature.chimera": "folder.stories",
+    "nature.basilisk": "folder.stories",
+    "nature.satyr": "folder.stories",
+    "nature.nymph": "folder.stories",
+    "nature.troll": "folder.stories",
+    "nature.leprechaun_gold": "folder.stories",
+    # life events out of Nature -> Celebrations
+    "nature.wedding_day": "folder.celebrations",
+    "nature.baby_shower": "folder.celebrations",
+    "nature.bridal_shower": "folder.celebrations",
+    "nature.bachelor_party": "folder.celebrations",
+    "nature.retirement_party": "folder.celebrations",
+    # named landmarks out of Nature -> Travel
+    "nature.statue_of_liberty": "folder.travel",
+    "nature.eiffel_tower": "folder.travel",
+    "nature.pyramids": "folder.travel",
+    "nature.colosseum": "folder.travel",
+    "nature.sierra_nevada": "folder.travel",
+    "nature.olympic_mountains": "folder.travel",
+    "nature.olympic_park": "folder.travel",
+}
+
+# ---- Review pass 2026-09-14: level policy (B3) ----
+# New words default to advanced (level 3); a beginning communicator's board
+# must stay small. Baseline folders already carry level-1 words, so every
+# new record placed in one goes to level 3. New folders keep a small seed
+# of their most salient (first-in-chunk-order) level-1 words so G8
+# (every folder has level-1 vocabulary) still holds; the rest go to 3.
+# Deliberate promotion (SLP/parent) moves words down from there.
+BASELINE_FOLDERS = {
+    "folder.feelings", "folder.food", "folder.people",
+    "folder.phrases", "folder.play", "folder.school",
+}
+L1_SEED_CAP = 12
+
 # baseline
 base_en = json.load(open("baseline_en.json"))
 base_ids = set()
@@ -111,9 +216,27 @@ for f in sorted(glob.glob("chunk*.py")):
         en, es, fr, emoji, lvl = w
         if (f, en) in FIX:
             en, es, fr = FIX[(f, en)]
+        if (f, en) in RENAME:
+            en, es, fr = RENAME[(f, en)]
         recs.append({"en": en, "es": es, "fr": fr, "emoji": emoji, "level": lvl,
                      "chunk": f, "folder": m.FOLDER_ID, "prefix": m.ID_PREFIX,
                      "had_suffix": bool(SUF.search(en))})
+
+# review-pass filtering (B4): drop before dedup so blocked records can never
+# shadow a legitimate concept; record them as rejected for the audit trail.
+rejected = []
+kept = []
+for r in recs:
+    nl = norm(r["en"])
+    if nl in BLOCK_LABELS:
+        rejected.append({"en": r["en"], "reason": "review-blocklist",
+                         "chunk": r["chunk"]})
+    elif r["level"] == 3 and BREED_RE.search(r["en"]):
+        rejected.append({"en": r["en"], "reason": "review-breed-depth",
+                         "chunk": r["chunk"]})
+    else:
+        kept.append(r)
+recs = kept
 
 # strip suffixes
 for r in recs:
@@ -124,7 +247,7 @@ groups = collections.defaultdict(list)
 for r in recs:
     groups[norm(r["en"])].append(r)
 
-curated, rejected = [], []
+curated = []
 for label, rs in groups.items():
     # canonical pick: no suffix first, then lower level, then earlier chunk,
     # then folder override preference
@@ -152,6 +275,36 @@ for label, rs in groups.items():
             reason = "intra-chunk-duplicate"
         rejected.append({"en": l["en"], "reason": reason, "kept_in": win["folder"],
                          "chunk": l["chunk"]})
+
+# ---- review pass (B5): folder coherence moves ----
+moved = 0
+for c in curated:
+    if c["id"] in MOVES:
+        c["folder"] = MOVES[c["id"]]
+        moved += 1
+print(f"MOVED={moved}")
+missing_moves = set(MOVES) - {c["id"] for c in curated}
+if missing_moves:
+    raise SystemExit(f"MOVES ids not found in curated: {sorted(missing_moves)}")
+
+# ---- review pass (B3): level policy ----
+# curated order == chunk WORDS order (salience proxy): the first L1_SEED_CAP
+# level-1 records per new folder stay; everything else new at level 1 -> 3.
+l1_seen = collections.Counter()
+restamped = 0
+for c in curated:
+    if c["level"] != 1:
+        continue
+    if c["folder"] in BASELINE_FOLDERS:
+        c["level"] = 3
+        restamped += 1
+    elif l1_seen[c["folder"]] >= L1_SEED_CAP:
+        c["level"] = 3
+        restamped += 1
+    else:
+        l1_seen[c["folder"]] += 1
+print(f"RESTAMPED_L1_TO_L3={restamped}")
+print("L1_SEEDS:", dict(l1_seen))
 
 # id uniqueness within curated (slug collisions across prefixes shouldn't happen, verify)
 idc = collections.Counter(c["id"] for c in curated)

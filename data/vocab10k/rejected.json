@@ -1,5 +1,520 @@
 [
  {
+  "en": "booby",
+  "reason": "review-blocklist",
+  "chunk": "chunk01_animals_a.py"
+ },
+ {
+  "en": "sheep lamb",
+  "reason": "review-blocklist",
+  "chunk": "chunk02_animals_b.py"
+ },
+ {
+  "en": "akita",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "arabian horse",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "basset hound",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "fin whale",
+  "reason": "review-blocklist",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "minke whale",
+  "reason": "review-blocklist",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "sperm whale",
+  "reason": "review-blocklist",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "right whale",
+  "reason": "review-blocklist",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "gray whale",
+  "reason": "review-blocklist",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "bowhead whale",
+  "reason": "review-blocklist",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "malamute",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "shiba inu",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "whippet",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "saluki",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "afghan hound",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "bloodhound",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "mastiff",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "bullmastiff",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "neapolitan mastiff",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "tibetan mastiff",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "anatolian shepherd",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "ragdoll",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "sphynx",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "burmese cat",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "devon rex",
+  "reason": "review-blocklist",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "cornish rex",
+  "reason": "review-blocklist",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "don sphynx",
+  "reason": "review-blocklist",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "caracal",
+  "reason": "review-blocklist",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "arabian leopard",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "persian leopard",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "arabian wolf",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "labrador wolf",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "treeing walker coonhound",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "redbone coonhound",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "bluetick coonhound",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "english coonhound",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "plotthound",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "american foxhound",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "english foxhound",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "otterhound",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "french hound",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "german shorthaired pointer",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "german wirehaired pointer",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "english setter",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "gordon setter",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "irish red and white setter",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "pointer",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "english pointer",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "german longhaired pointer",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "irish water spaniel",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "american water spaniel",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "chesapeake bay retriever",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "curly-coated retriever",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "flat-coated retriever",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "nova scotia duck tolling retriever",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "white shepherd",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "dutch shepherd",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "belgian malinois",
+  "reason": "review-blocklist",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "pyrenean shepherd",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "transmontano mastiff",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "pyrenean mastiff",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "spanish mastiff",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "neapolitan mastiff puppy",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "miniature bull terrier",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "staffordshire bull terrier",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "american staffordshire terrier",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "olde english bulldogge",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "victorian bulldogge",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "continental bulldog",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "gull dong",
+  "reason": "review-blocklist",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "gull terr",
+  "reason": "review-blocklist",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "rampur greyhound",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "tibetan terrier",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "norwegian elkhound",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "swedish elkhound",
+  "reason": "review-breed-depth",
+  "chunk": "chunk03_animals_c.py"
+ },
+ {
+  "en": "siamese fighting fish",
+  "reason": "review-breed-depth",
+  "chunk": "chunk04_animals_d.py"
+ },
+ {
+  "en": "siamese algae eater",
+  "reason": "review-breed-depth",
+  "chunk": "chunk04_animals_d.py"
+ },
+ {
+  "en": "killifish",
+  "reason": "review-blocklist",
+  "chunk": "chunk04_animals_d.py"
+ },
+ {
+  "en": "striped killifish",
+  "reason": "review-blocklist",
+  "chunk": "chunk04_animals_d.py"
+ },
+ {
+  "en": "banded killifish",
+  "reason": "review-blocklist",
+  "chunk": "chunk04_animals_d.py"
+ },
+ {
+  "en": "bluefin killifish",
+  "reason": "review-blocklist",
+  "chunk": "chunk04_animals_d.py"
+ },
+ {
+  "en": "least killifish",
+  "reason": "review-blocklist",
+  "chunk": "chunk04_animals_d.py"
+ },
+ {
+  "en": "crappie",
+  "reason": "review-blocklist",
+  "chunk": "chunk04_animals_d.py"
+ },
+ {
+  "en": "white crappie",
+  "reason": "review-blocklist",
+  "chunk": "chunk04_animals_d.py"
+ },
+ {
+  "en": "black crappie",
+  "reason": "review-blocklist",
+  "chunk": "chunk04_animals_d.py"
+ },
+ {
+  "en": "kumquat nagami",
+  "reason": "review-blocklist",
+  "chunk": "chunk05_food_a.py"
+ },
+ {
+  "en": "kumquat meiwa",
+  "reason": "review-blocklist",
+  "chunk": "chunk05_food_a.py"
+ },
+ {
+  "en": "limequat",
+  "reason": "review-blocklist",
+  "chunk": "chunk05_food_a.py"
+ },
+ {
+  "en": "orangequat",
+  "reason": "review-blocklist",
+  "chunk": "chunk05_food_a.py"
+ },
+ {
+  "en": "mandarinquat",
+  "reason": "review-blocklist",
+  "chunk": "chunk05_food_a.py"
+ },
+ {
+  "en": "sunquat",
+  "reason": "review-blocklist",
+  "chunk": "chunk05_food_a.py"
+ },
+ {
+  "en": "Eustis limequat",
+  "reason": "review-blocklist",
+  "chunk": "chunk05_food_a.py"
+ },
+ {
+  "en": "Lakeland limequat",
+  "reason": "review-blocklist",
+  "chunk": "chunk05_food_a.py"
+ },
+ {
+  "en": "Tavares limequat",
+  "reason": "review-blocklist",
+  "chunk": "chunk05_food_a.py"
+ },
+ {
+  "en": "Thomasville citrangequat",
+  "reason": "review-blocklist",
+  "chunk": "chunk05_food_a.py"
+ },
+ {
+  "en": "sphinx myth",
+  "reason": "review-blocklist",
+  "chunk": "chunk16_nature_b.py"
+ },
+ {
+  "en": "dwarf myth",
+  "reason": "review-blocklist",
+  "chunk": "chunk16_nature_b.py"
+ },
+ {
+  "en": "pilot airline",
+  "reason": "review-blocklist",
+  "chunk": "chunk17_jobs.py"
+ },
+ {
+  "en": "tile setter",
+  "reason": "review-breed-depth",
+  "chunk": "chunk17_jobs.py"
+ },
+ {
+  "en": "head pointer",
+  "reason": "review-breed-depth",
+  "chunk": "chunk33_technology.py"
+ },
+ {
+  "en": "telescope space",
+  "reason": "review-blocklist",
+  "chunk": "chunk35_science.py"
+ },
+ {
+  "en": "gravity space",
+  "reason": "review-blocklist",
+  "chunk": "chunk35_science.py"
+ },
+ {
   "en": "elephant",
   "reason": "cross-folder-duplicate",
   "kept_in": "folder.animals",
@@ -9445,19 +9960,19 @@
  {
   "en": "see you tomorrow",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk22_communication.py"
  },
  {
   "en": "take care",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk22_communication.py"
  },
  {
   "en": "take care",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk52_adverbs.py"
  },
  {
@@ -9481,7 +9996,7 @@
  {
   "en": "welcome back",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk22_communication.py"
  },
  {
@@ -9709,13 +10224,13 @@
  {
   "en": "no problem",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk22_communication.py"
  },
  {
   "en": "no problem",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk52_adverbs.py"
  },
  {
@@ -9760,7 +10275,7 @@
  {
   "en": "forgive me",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk22_communication.py"
  },
  {
@@ -9772,13 +10287,13 @@
  {
   "en": "don't worry",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk22_communication.py"
  },
  {
   "en": "Don't worry",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
@@ -9842,31 +10357,31 @@
  {
   "en": "probably",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk22_communication.py"
  },
  {
   "en": "probably",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk52_adverbs.py"
  },
  {
   "en": "definitely",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk22_communication.py"
  },
  {
   "en": "definitely",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk52_adverbs.py"
  },
  {
   "en": "absolutely",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk22_communication.py"
  },
  {
@@ -9884,25 +10399,25 @@
  {
   "en": "no way",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk39_everyday.py"
  },
  {
   "en": "no way",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk22_communication.py"
  },
  {
   "en": "No way",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk26_phrases_b.py"
  },
  {
   "en": "no way",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk52_adverbs.py"
  },
  {
@@ -9926,25 +10441,25 @@
  {
   "en": "i agree",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk22_communication.py"
  },
  {
   "en": "I agree",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
   "en": "i disagree",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk22_communication.py"
  },
  {
   "en": "I disagree",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
@@ -10014,13 +10529,13 @@
  {
   "en": "leave me alone",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk22_communication.py"
  },
  {
   "en": "Leave me alone",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
@@ -10152,7 +10667,7 @@
  {
   "en": "you did great",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk22_communication.py"
  },
  {
@@ -10164,13 +10679,13 @@
  {
   "en": "don't give up",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk22_communication.py"
  },
  {
   "en": "Don't give up",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
@@ -10746,13 +11261,13 @@
  {
   "en": "where does it hurt",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk22_communication.py"
  },
  {
   "en": "Where does it hurt",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
@@ -10770,13 +11285,13 @@
  {
   "en": "get well soon",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk22_communication.py"
  },
  {
   "en": "Get well soon",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
@@ -10848,37 +11363,37 @@
  {
   "en": "happy halloween",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk22_communication.py"
  },
  {
   "en": "Happy Halloween",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
   "en": "happy easter",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk22_communication.py"
  },
  {
   "en": "Happy Easter",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
   "en": "happy thanksgiving",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk22_communication.py"
  },
  {
   "en": "Happy Thanksgiving",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
@@ -10908,13 +11423,13 @@
  {
   "en": "i believe in you",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk22_communication.py"
  },
  {
   "en": "I believe in you",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
@@ -10967,19 +11482,19 @@
  {
   "en": "will you be my friend",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk22_communication.py"
  },
  {
   "en": "will you be my friend",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk27_questions.py"
  },
  {
   "en": "let's be friends",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk22_communication.py"
  },
  {
@@ -11039,7 +11554,7 @@
  {
   "en": "count to ten",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk22_communication.py"
  },
  {
@@ -11477,61 +11992,61 @@
  {
   "en": "I want milk",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk38_phrases_c.py"
  },
  {
   "en": "I want juice",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk38_phrases_c.py"
  },
  {
   "en": "I want a",
   "reason": "artificial-suffix-dupe",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk38_phrases_c.py"
  },
  {
   "en": "I don't like this",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk38_phrases_c.py"
  },
  {
   "en": "I don't like this",
   "reason": "artificial-suffix-dupe",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk46_phrases_d.py"
  },
  {
   "en": "I like this",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk38_phrases_c.py"
  },
  {
   "en": "I feel sick",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk38_phrases_c.py"
  },
  {
   "en": "I threw up",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
   "en": "I need a bandage",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk46_phrases_d.py"
  },
  {
   "en": "I need ice",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk46_phrases_d.py"
  },
  {
@@ -11549,85 +12064,85 @@
  {
   "en": "Don't leave me",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk38_phrases_c.py"
  },
  {
   "en": "Stay with me",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk38_phrases_c.py"
  },
  {
   "en": "Stay with me",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk38_phrases_c.py"
  },
  {
   "en": "I want to go",
   "reason": "artificial-suffix-dupe",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk38_phrases_c.py"
  },
  {
   "en": "I want to go outside",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk38_phrases_c.py"
  },
  {
   "en": "I want to play",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk38_phrases_c.py"
  },
  {
   "en": "Give it back",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk46_phrases_d.py"
  },
  {
   "en": "can i have a turn",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk27_questions.py"
  },
  {
   "en": "Too loud",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk38_phrases_c.py"
  },
  {
   "en": "Too bright",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
   "en": "I need a break",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk38_phrases_c.py"
  },
  {
   "en": "I need space",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
   "en": "This is boring",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
   "en": "This is fun",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk38_phrases_c.py"
  },
  {
@@ -11647,91 +12162,91 @@
  {
   "en": "Can you repeat that",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
   "en": "Speak slower please",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
   "en": "what did you say",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk27_questions.py"
  },
  {
   "en": "Hurry up",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
   "en": "Slow down",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
   "en": "slow down",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk36_time.py"
  },
  {
   "en": "Come with me",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
   "en": "Follow me",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
   "en": "Wait for me",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
   "en": "Don't go",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
   "en": "I want to stay",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
   "en": "I want to leave",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
   "en": "can i come",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk27_questions.py"
  },
  {
   "en": "You go first",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk26_phrases_b.py"
  },
  {
   "en": "Keep trying",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
@@ -11749,7 +12264,7 @@
  {
   "en": "Happy Valentine's Day",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk25_phrases_a.py"
  },
  {
@@ -11799,19 +12314,19 @@
  {
   "en": "how many",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk27_questions.py"
  },
  {
   "en": "how many",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk39_everyday.py"
  },
  {
   "en": "how many",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk53_helpers2.py"
  },
  {
@@ -11903,13 +12418,13 @@
  {
   "en": "what day",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk27_questions.py"
  },
  {
   "en": "are you sure",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk27_questions.py"
  },
  {
@@ -11927,37 +12442,37 @@
  {
   "en": "Are you serious",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk26_phrases_b.py"
  },
  {
   "en": "guess what",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk27_questions.py"
  },
  {
   "en": "how was school",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk27_questions.py"
  },
  {
   "en": "how was your day",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk27_questions.py"
  },
  {
   "en": "what did you learn",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk27_questions.py"
  },
  {
   "en": "I need help with homework",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk26_phrases_b.py"
  },
  {
@@ -11975,13 +12490,13 @@
  {
   "en": "lunch",
   "reason": "artificial-suffix-dupe",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk36_time.py"
  },
  {
   "en": "Line up please",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk26_phrases_b.py"
  },
  {
@@ -12011,79 +12526,79 @@
  {
   "en": "I win",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk38_phrases_c.py"
  },
  {
   "en": "You win",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk26_phrases_b.py"
  },
  {
   "en": "Let's play again",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk26_phrases_b.py"
  },
  {
   "en": "i spy",
   "reason": "artificial-suffix-dupe",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk31_travel.py"
  },
  {
   "en": "Turn it up",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk26_phrases_b.py"
  },
  {
   "en": "Turn it down",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk26_phrases_b.py"
  },
  {
   "en": "Are we there yet",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk46_phrases_d.py"
  },
  {
   "en": "are we there yet",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk31_travel.py"
  },
  {
   "en": "How much longer",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk26_phrases_b.py"
  },
  {
   "en": "how much longer",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk27_questions.py"
  },
  {
   "en": "Turn on the AC",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk26_phrases_b.py"
  },
  {
   "en": "I missed you",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk26_phrases_b.py"
  },
  {
   "en": "I need to sit down",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk26_phrases_b.py"
  },
  {
@@ -13945,7 +14460,7 @@
  {
   "en": "it's going to be okay",
   "reason": "cross-folder-duplicate",
-  "kept_in": "folder.phrases",
+  "kept_in": "folder.more_phrases",
   "chunk": "chunk30_safety.py"
  },
  {

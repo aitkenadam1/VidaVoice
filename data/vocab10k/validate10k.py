@@ -188,7 +188,11 @@ def main():
     gate("G8 every folder has level-1 words", not empty,
          f"{len(en['folders'])} folders" + (f", empty: {empty}" if empty else ""))
 
-    # G9: symbol manifest consistency
+    # G9: symbol manifest consistency + vocabulary pictogram coverage.
+    # The manifest check alone is vacuous for the expansion (it only ever
+    # covered the baseline symbols), so always report the true fraction of
+    # pack ids with a pictogram on disk, plus the worst emoji collisions
+    # among words still on the emoji fallback.
     man_path = SYMBOLS / "manifest.json"
     if man_path.exists():
         man = json.loads(man_path.read_text(encoding="utf-8"))
@@ -199,6 +203,30 @@ def main():
              f"{len(ids)} in manifest" + (f", missing: {len(missing)}" if missing else ""))
     else:
         gate("G9 symbol PNGs present", False, "manifest.json missing")
+
+    # G10 (informational, never fails): pictogram coverage of the vocabulary.
+    from collections import Counter as _Counter
+    png_ids = set()
+    for p in SYMBOLS.glob("*.png"):
+        # file is <id with _ for .>.png; prefix has no underscore, so only
+        # the first _ maps back to .
+        png_ids.add(p.stem.replace("_", ".", 1))
+    vocab_ids = all_ids["en"]
+    covered = vocab_ids & png_ids
+    cov = len(covered) / len(vocab_ids) if vocab_ids else 0
+    print(f"[INFO] G10 pictogram coverage: {len(covered)}/{len(vocab_ids)} "
+          f"({cov:.1%}) of pack ids have a PNG on disk")
+    ec = _Counter()
+    for f in en["folders"].values():
+        for w in f["words"]:
+            if w["id"] not in png_ids:
+                ec[w.get("emoji", "")] += 1
+    for i in en["homeItems"]:
+        if i["id"] not in png_ids and i["type"] != "folder":
+            ec[i.get("emoji", "")] += 1
+    worst = ec.most_common(5)
+    print("[INFO] G10 worst emoji fallbacks (words without PNG): " +
+          ", ".join(f"{e} x{n}" for e, n in worst))
 
     print()
     if failures:

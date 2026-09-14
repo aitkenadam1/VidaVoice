@@ -1,5 +1,5 @@
-FOLDER_ID = "folder.phrases"
-FOLDER_LABEL = {"en": "Quick Phrases", "es": "Frases Rápidas", "fr": "Phrases Rapides"}
+FOLDER_ID = "folder.more_phrases"
+FOLDER_LABEL = {"en": "More phrases", "es": "Más frases", "fr": "Plus de phrases"}
 FOLDER_EMOJI = "💬"
 ID_PREFIX = "phrase"
 # (en, es, fr, emoji, level) — atomic utterances

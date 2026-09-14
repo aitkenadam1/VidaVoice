@@ -1,5 +1,5 @@
-FOLDER_ID = "folder.phrases"
-FOLDER_LABEL = {"en": "Phrases", "es": "Frases", "fr": "Phrases"}
+FOLDER_ID = "folder.more_phrases"
+FOLDER_LABEL = {"en": "More phrases", "es": "Más frases", "fr": "Plus de phrases"}
 FOLDER_EMOJI = "💬"
 ID_PREFIX = "phrase"
 ITEM_TYPE = "phrase"

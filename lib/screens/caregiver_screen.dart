@@ -15,8 +15,12 @@ import '../widgets/word_finder_section.dart';
 /// therapy sessions, not to study it. So every section is a collapsible card
 /// (only Vocabulary level starts open), each collapsed card shows a one-line
 /// summary, and the caregiver can reorder sections and pin the ones they use
-/// most to a "Pinned" strip at the top. Order, pins, and collapsed state
-/// persist per device in SharedPreferences.
+/// most to the top. Pinning only controls position — a pinned card can still
+/// be collapsed. Order, pins, and collapsed state persist per device in
+/// SharedPreferences; sections added in future updates arrive with their
+/// default collapsed/pinned state even for caregivers who already customized
+/// the hub, and unreadable prefs fall back to defaults instead of breaking
+/// the screen.
 class CaregiverScreen extends StatefulWidget {
   const CaregiverScreen({super.key});
 
@@ -133,49 +137,82 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
   }
 
   Future<void> _loadPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    final ids = _sections.map((s) => s.id).toList();
-    final savedOrder = prefs.getStringList(_orderKey) ?? [];
-    // Saved order first, then any new sections appended at the end.
-    _order = [
-      for (final id in savedOrder) if (ids.contains(id)) id,
-      for (final id in ids) if (!savedOrder.contains(id)) id,
-    ];
-    final savedPinned = prefs.getStringList(_pinnedKey);
-    final savedCollapsed = prefs.getStringList(_collapsedKey);
-    if (savedPinned == null && savedCollapsed == null) {
-      // First run: pin and open the vocabulary level, collapse the rest.
-      for (final s in _sections) {
-        if (s.defaultPinned) _pinned.add(s.id);
-        if (s.defaultCollapsed) _collapsed.add(s.id);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final ids = _sections.map((s) => s.id).toList();
+      final savedOrder = prefs.getStringList(_orderKey);
+      final savedPinned = prefs.getStringList(_pinnedKey);
+      final savedCollapsed = prefs.getStringList(_collapsedKey);
+      if (savedOrder == null &&
+          savedPinned == null &&
+          savedCollapsed == null) {
+        _applyFirstRunDefaults();
+      } else {
+        final order = savedOrder ?? [];
+        // Saved order first, then any new sections appended at the end.
+        _order = [
+          for (final id in order) if (ids.contains(id)) id,
+          for (final id in ids) if (!order.contains(id)) id,
+        ];
+        _pinned = {
+          for (final id in savedPinned ?? []) if (ids.contains(id)) id,
+        };
+        _collapsed = {
+          for (final id in savedCollapsed ?? []) if (ids.contains(id)) id,
+        };
+        // Upgrade path: sections the saved prefs have never seen (absent
+        // from the saved order) arrive with their default collapsed/pinned
+        // state, so a future section that defaults to collapsed doesn't land
+        // fully expanded for caregivers who already customized their hub.
+        for (final s in _sections) {
+          if (!order.contains(s.id)) {
+            if (s.defaultCollapsed) _collapsed.add(s.id);
+            if (s.defaultPinned) _pinToTop(s.id);
+          }
+        }
       }
-    } else {
-      _pinned = {for (final id in savedPinned ?? []) if (ids.contains(id)) id};
-      _collapsed = {
-        for (final id in savedCollapsed ?? []) if (ids.contains(id)) id,
-      };
+    } catch (_) {
+      // Corrupt or unreadable prefs (e.g. a wrong-typed value under one of
+      // our keys): fall back to first-run defaults rather than leaving the
+      // hub on an infinite spinner.
+      _applyFirstRunDefaults();
     }
     if (mounted) setState(() => _ready = true);
   }
 
+  /// First-run layout: vocabulary level pinned to the top and open, every
+  /// other section collapsed. Also the fallback when prefs are unreadable.
+  void _applyFirstRunDefaults() {
+    _order = _sections.map((s) => s.id).toList();
+    _pinned = {};
+    _collapsed = {};
+    for (final s in _sections) {
+      if (s.defaultCollapsed) _collapsed.add(s.id);
+      if (s.defaultPinned) _pinToTop(s.id);
+    }
+  }
+
+  /// Pins [id] and moves it in [_order] to sit right after the other pinned
+  /// sections, so the hub list and the customize list always agree on order.
+  void _pinToTop(String id) {
+    _pinned.add(id);
+    _order.remove(id);
+    final boundary = _order.where((other) => _pinned.contains(other)).length;
+    _order.insert(boundary, id);
+  }
+
   Future<void> _savePrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_orderKey, _order);
-    await prefs.setStringList(_pinnedKey, _pinned.toList());
-    await prefs.setStringList(_collapsedKey, _collapsed.toList());
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(_orderKey, _order);
+      await prefs.setStringList(_pinnedKey, _pinned.toList());
+      await prefs.setStringList(_collapsedKey, _collapsed.toList());
+    } catch (_) {
+      // Best effort: layout prefs must never crash the hub.
+    }
   }
 
   _Section _byId(String id) => _sections.firstWhere((s) => s.id == id);
-
-  List<String> get _pinnedOrder => [
-    for (final id in _order)
-      if (_pinned.contains(id)) id,
-  ];
-
-  List<String> get _restOrder => [
-    for (final id in _order)
-      if (!_pinned.contains(id)) id,
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -203,41 +240,20 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
 
   // ---------------------------------------------------------------- hub ---
 
+  /// The hub renders [_order] straight through: pinned sections live at the
+  /// top (pinning moves them there), so this list and the customize list can
+  /// never disagree about order.
   Widget _hubList(BuildContext context, SessionState session) {
     void refresh() {
       if (mounted) setState(() {});
     }
 
-    final children = <Widget>[];
-    final pinned = _pinnedOrder;
-    if (pinned.isNotEmpty) {
-      children.add(_groupLabel('Pinned'));
-      for (final id in pinned) {
-        children.add(_sectionCard(context, _byId(id), session, refresh));
-      }
-      children.add(_groupLabel('All sections'));
-    }
-    for (final id in _restOrder) {
-      children.add(_sectionCard(context, _byId(id), session, refresh));
-    }
     return ListView(
       padding: const EdgeInsets.all(16),
-      children: children,
-    );
-  }
-
-  Widget _groupLabel(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8, top: 4),
-      child: Text(
-        text.toUpperCase(),
-        style: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: Colors.grey,
-          letterSpacing: 1.2,
-        ),
-      ),
+      children: [
+        for (final id in _order)
+          _sectionCard(context, _byId(id), session, refresh),
+      ],
     );
   }
 
@@ -247,9 +263,10 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
     SessionState session,
     VoidCallback refresh,
   ) {
-    // Pinned sections are always open — that is the point of pinning them.
+    // Pinning only controls position (pinned sections sit at the top);
+    // collapse is independent, so a pinned card can still be folded away.
     final isPinned = _pinned.contains(s.id);
-    final collapsed = _collapsed.contains(s.id) && !isPinned;
+    final collapsed = _collapsed.contains(s.id);
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Column(
@@ -267,21 +284,28 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
                     overflow: TextOverflow.ellipsis,
                   )
                 : null,
-            trailing: isPinned
-                ? null
-                : Icon(collapsed ? Icons.expand_more : Icons.expand_less),
-            onTap: isPinned
-                ? null
-                : () {
-                    setState(() {
-                      if (collapsed) {
-                        _collapsed.remove(s.id);
-                      } else {
-                        _collapsed.add(s.id);
-                      }
-                    });
-                    _savePrefs();
-                  },
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isPinned)
+                  Icon(
+                    Icons.push_pin,
+                    size: 18,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                Icon(collapsed ? Icons.expand_more : Icons.expand_less),
+              ],
+            ),
+            onTap: () {
+              setState(() {
+                if (collapsed) {
+                  _collapsed.remove(s.id);
+                } else {
+                  _collapsed.add(s.id);
+                }
+              });
+              _savePrefs();
+            },
           ),
           if (!collapsed)
             Padding(
@@ -299,20 +323,36 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
     return Column(
       children: [
         const Padding(
-          padding: EdgeInsets.all(16),
+          padding: EdgeInsets.fromLTRB(16, 16, 16, 0),
           child: Text(
             'Drag sections into the order you want. Pin the ones you use '
-            'most — pinned sections stay at the top, always open.',
+            'most — pinned sections stay at the top of the hub. This list '
+            'shows exactly the order the hub uses.',
             style: TextStyle(fontSize: 13),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              icon: const Icon(Icons.restart_alt, size: 18),
+              label: const Text('Reset layout'),
+              onPressed: () {
+                setState(_applyFirstRunDefaults);
+                _savePrefs();
+              },
+            ),
           ),
         ),
         Expanded(
           child: ReorderableListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: _order.length,
-            onReorder: (oldIndex, newIndex) {
+            // onReorderItem (not the deprecated onReorder) already adjusts
+            // newIndex for the removed item — no manual correction needed.
+            onReorderItem: (oldIndex, newIndex) {
               setState(() {
-                if (newIndex > oldIndex) newIndex -= 1;
                 final id = _order.removeAt(oldIndex);
                 _order.insert(newIndex, id);
               });
@@ -342,8 +382,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
                             if (isPinned) {
                               _pinned.remove(s.id);
                             } else {
-                              _pinned.add(s.id);
-                              _collapsed.remove(s.id);
+                              _pinToTop(s.id);
                             }
                           });
                           _savePrefs();
@@ -535,7 +574,12 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
         id: 'plan',
         title: 'First week plan',
         icon: Icons.calendar_month_outlined,
-        summary: (session) => 'A daily plan for week one',
+        summary: (session) {
+          final profileId = session.profiles.active?.id;
+          if (profileId == null) return 'A daily plan for week one';
+          final done = session.plan.completedCount(profileId);
+          return 'First-week plan: $done of 7 days done';
+        },
         content: (context, session, refresh) {
           final active = session.profiles.active;
           if (active == null) return const SizedBox.shrink();
@@ -550,7 +594,10 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
         id: 'activity',
         title: 'Activity summary',
         icon: Icons.insights_outlined,
-        summary: (session) => 'How the board is being used',
+        summary: (session) {
+          final taps = session.usage.tapsToday();
+          return taps == 0 ? 'No taps today yet' : '$taps taps today';
+        },
         content: (context, session, refresh) => const ActivitySummarySection(),
       ),
       _Section(

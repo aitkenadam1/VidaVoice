@@ -237,6 +237,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    // The hub starts with sections collapsed; expand Activity summary first.
+    await tester.tap(find.text('Activity summary'));
+    await tester.pumpAndSettle();
+
     expect(find.text('Activity summary'), findsOneWidget);
     expect(find.text('Top this week'), findsOneWidget);
     // Taps today = 3, words today = 2, streak = 1 day.

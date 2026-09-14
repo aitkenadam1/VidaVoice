@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vidavoice/main.dart';
@@ -12,11 +12,11 @@ import 'package:vidavoice/state/session_state.dart';
 /// TTS double: never touches the platform channel.
 class _FakeTts extends TtsService {
   @override
-  Future<void> init({
+  Future<bool> init({
     required String language,
     double rate = 0.5,
     double pitch = 1.0,
-  }) async {}
+  }) async => true;
 
   @override
   Future<void> setLanguage(String language) async {}
@@ -29,6 +29,18 @@ class _FakeTts extends TtsService {
 
   @override
   Future<void> speak(String text) async {}
+}
+
+/// TTS double for a device with no voice engine: init reports unavailable,
+/// and speak silently no-ops (the base implementation already guards on
+/// readiness, which stays false).
+class _NoVoiceTts extends TtsService {
+  @override
+  Future<bool> init({
+    required String language,
+    double rate = 0.5,
+    double pitch = 1.0,
+  }) async => false;
 }
 
 /// First UI coverage for the app, built on the [SessionState] construction
@@ -136,5 +148,45 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     expect(find.text(starter.label), findsOneWidget);
+  });
+
+  testWidgets('no TTS engine: board boots with a dismissible banner', (
+    tester,
+  ) async {
+    useWideSurface(tester);
+    SharedPreferences.setMockInitialValues({
+      'vidavoice.onboardingComplete': true,
+    });
+    final session = SessionState(tts: _NoVoiceTts());
+    session.pack = loadPackFromFile();
+    session.status = BootStatus.ready;
+    session.onboardingComplete = true;
+    // boot() would set this from the init() result; the seam bypasses boot().
+    session.ttsAvailable = false;
+    await session.setUnlockedLevel(LanguagePack.maxSupportedLevel);
+
+    await tester.pumpWidget(VidaVoiceApp(session: session));
+    await tester.pump();
+
+    // The board is fully there despite no voice...
+    expect(find.text('want'), findsOneWidget);
+    // ...with the localized banner explaining why nothing speaks.
+    expect(
+      find.text(session.pack.ttsUnavailableBanner),
+      findsOneWidget,
+    );
+
+    // Dismissing removes the banner but keeps the board.
+    await tester.tap(find.byIcon(Icons.close));
+    await tester.pump();
+    expect(find.text(session.pack.ttsUnavailableBanner), findsNothing);
+    expect(find.text('want'), findsOneWidget);
+
+    // Tapping words still builds the sentence; speak silently no-ops.
+    await tester.tap(find.text('want'));
+    await tester.pump();
+    expect(session.sentenceIds, contains('core.want'));
+    session.speakSentence(); // must not throw
+    await tester.pump();
   });
 }

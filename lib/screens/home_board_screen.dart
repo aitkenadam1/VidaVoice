@@ -5,6 +5,7 @@ import '../app_config.dart';
 import '../models/word.dart';
 import '../state/session_state.dart';
 import '../widgets/message_bar.dart';
+import '../widgets/tts_banner.dart';
 import '../widgets/word_button.dart';
 import 'caregiver_screen.dart';
 import 'category_screen.dart';
@@ -46,6 +47,7 @@ class HomeBoardScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
+          const TtsBanner(),
           Expanded(
             child: GridView.count(
               crossAxisCount: pack.gridColumns,

@@ -1,7 +1,7 @@
 {
   "locale": "es",
   "displayName": "Español",
-  "ttsLocale": "es-ES",
+  "ttsLocale": "es-ES", "ttsUnavailableBanner": "Voz no disponible — instala un motor de texto a voz para escuchar las palabras.",
   "version": 1,
   "gridColumns": 8,
   "items": [

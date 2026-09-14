@@ -53,9 +53,11 @@ mode first if you want to prove it.
    data), reopen, and this time tap **Skip for now** — you should land
    straight on the word board.
 2. **Tap 10 words.** Tap any 10 words on the home board. Each one should
-   speak out loud immediately. (If you hear nothing: the tablet needs a
-   text-to-speech engine — install "Google Text-to-Speech" from the
-   Play Store / Amazon Appstore and try again.)
+   speak out loud immediately. (If a banner at the top says the voice isn't
+   available: the tablet has no text-to-speech engine — install
+   "Google Text-to-Speech" from the Play Store / Amazon Appstore, then
+   force-close and reopen VidaVoice. The board still works without a voice;
+   only the speaking is missing.)
 3. **Build a sentence.** Tap "I" → "want" → "juice". The words appear in
    the bar at the bottom. Press **Speak** — it should say the whole
    sentence. Press the backspace icon to undo one word, then **Clear**.

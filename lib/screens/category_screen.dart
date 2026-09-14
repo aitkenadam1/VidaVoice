@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/word.dart';
 import '../state/session_state.dart';
 import '../widgets/message_bar.dart';
+import '../widgets/tts_banner.dart';
 import '../widgets/word_button.dart';
 
 /// Inside a category folder: tap a word to speak it and add it to the
@@ -34,6 +35,7 @@ class CategoryScreen extends StatelessWidget {
       appBar: AppBar(title: Text('${folder.emoji} ${folder.label}')),
       body: Column(
         children: [
+          const TtsBanner(),
           Expanded(
             child: GridView.count(
               crossAxisCount: 4,

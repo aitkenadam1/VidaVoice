@@ -111,6 +111,11 @@ class LanguagePack {
   static const int minSupportedLevel = 1;
   static const int maxSupportedLevel = 3;
 
+  /// Fallback banner text when a pack predates the field. Packs are not
+  /// required to declare it — validate() does not check UI strings.
+  static const String defaultTtsUnavailableBanner =
+      'Voice not available — install a text-to-speech engine to hear words.';
+
   const LanguagePack({
     required this.locale,
     required this.displayName,
@@ -119,6 +124,7 @@ class LanguagePack {
     required this.gridColumns,
     required this.homeItems,
     required this.folders,
+    this.ttsUnavailableBanner = defaultTtsUnavailableBanner,
   });
 
   final String locale;
@@ -128,6 +134,10 @@ class LanguagePack {
   final int gridColumns;
   final List<BoardItem> homeItems;
   final Map<String, FolderPack> folders;
+
+  /// Localized "no voice engine" banner, shown when TTS is unavailable.
+  /// Falls back to the English default for packs that don't declare it.
+  final String ttsUnavailableBanner;
 
   /// Grid rows implied by the fixed positions declared in [homeItems].
   int get gridRows {
@@ -196,6 +206,9 @@ class LanguagePack {
       ttsLocale: (json['ttsLocale'] as String?) ?? (json['locale'] as String),
       version: (json['version'] as num).toInt(),
       gridColumns: (json['gridColumns'] as num).toInt(),
+      ttsUnavailableBanner:
+          (json['ttsUnavailableBanner'] as String?) ??
+          LanguagePack.defaultTtsUnavailableBanner,
       homeItems: itemsJson
           .map((e) => BoardItem.fromJson(Map<String, dynamic>.from(e as Map)))
           .toList(),

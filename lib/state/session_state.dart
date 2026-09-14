@@ -32,6 +32,18 @@ class SessionState extends ChangeNotifier {
   String bootError = '';
   String currentLocale = AppConfig.defaultLocale;
 
+  /// False when the device has no TTS engine or voice data. The board still
+  /// boots — only the voice is missing, and the UI says so with a banner.
+  bool ttsAvailable = true;
+
+  /// The "no voice" banner is dismissible per session.
+  bool ttsBannerDismissed = false;
+
+  void dismissTtsBanner() {
+    ttsBannerDismissed = true;
+    notifyListeners();
+  }
+
   late LanguagePack pack;
 
   final List<String> _sentenceIds = [];
@@ -76,15 +88,23 @@ class SessionState extends ChangeNotifier {
       await symbols.load();
       await profiles.load();
       await usage.load();
-      await tts.init(
-        language: pack.ttsLocale,
-        rate:
-            _prefs!.getDouble('vidavoice.speechRate') ??
-            AppConfig.defaultSpeechRate,
-        pitch:
-            _prefs!.getDouble('vidavoice.speechPitch') ??
-            AppConfig.defaultSpeechPitch,
-      );
+      // TTS is best-effort and NEVER fails boot: a device with no voice
+      // engine (bare Fire tablet, missing voice data) still gets the full
+      // board, plus a banner explaining the missing voice.
+      ttsBannerDismissed = false;
+      try {
+        ttsAvailable = await tts.init(
+          language: pack.ttsLocale,
+          rate:
+              _prefs!.getDouble('vidavoice.speechRate') ??
+              AppConfig.defaultSpeechRate,
+          pitch:
+              _prefs!.getDouble('vidavoice.speechPitch') ??
+              AppConfig.defaultSpeechPitch,
+        );
+      } catch (_) {
+        ttsAvailable = false;
+      }
       status = BootStatus.ready;
     } catch (e) {
       status = BootStatus.error;

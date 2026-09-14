@@ -2791,6 +2791,6 @@
     }
   ],
   "locale": "fr",
-  "ttsLocale": "fr-FR",
+  "ttsLocale": "fr-FR", "ttsUnavailableBanner": "Voix indisponible — installez un moteur de synthèse vocale pour entendre les mots.",
   "version": 2
 }

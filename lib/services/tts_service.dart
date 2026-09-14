@@ -13,19 +13,38 @@ class TtsService {
   double rate = AppConfig.defaultSpeechRate;
   double pitch = AppConfig.defaultSpeechPitch;
 
-  Future<void> init({
+  /// True once a working TTS engine has been confirmed. Stays false when the
+  /// device has no TTS engine or voice data (common on bare Fire tablets) —
+  /// the app must still boot and the board must still work; only the voice
+  /// is missing.
+  bool get isAvailable => _ready;
+
+  /// Best-effort init. Returns true when a working TTS engine was found.
+  ///
+  /// Never throws: callers treat a false return as "no voice", not as a
+  /// boot failure.
+  Future<bool> init({
     required String language,
     double rate = AppConfig.defaultSpeechRate,
     double pitch = AppConfig.defaultSpeechPitch,
   }) async {
     this.rate = rate;
     this.pitch = pitch;
-    await _engine.setSharedInstance(true);
-    await _engine.setLanguage(language);
-    await _engine.setSpeechRate(rate);
-    await _engine.setPitch(pitch);
-    await _engine.awaitSpeakCompletion(true);
-    _ready = true;
+    try {
+      await _engine.setSharedInstance(true);
+      await _engine.setLanguage(language);
+      await _engine.setSpeechRate(rate);
+      await _engine.setPitch(pitch);
+      await _engine.awaitSpeakCompletion(true);
+      // Probe: throws when no TTS engine is installed, and returns an empty
+      // list when the engine has no usable voices. Either way there is
+      // nothing to speak with.
+      final voices = await _engine.getVoices;
+      _ready = voices is List && voices.isNotEmpty;
+    } catch (_) {
+      _ready = false;
+    }
+    return _ready;
   }
 
   Future<void> setLanguage(String language) async {

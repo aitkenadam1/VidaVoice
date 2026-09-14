@@ -2791,6 +2791,6 @@
     }
   ],
   "locale": "en",
-  "ttsLocale": "en-US",
+  "ttsLocale": "en-US", "ttsUnavailableBanner": "Voice not available — install a text-to-speech engine to hear words.",
   "version": 2
 }

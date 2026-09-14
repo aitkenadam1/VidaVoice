@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/word.dart';
 import '../state/session_state.dart';
 import '../widgets/first_week_plan_section.dart';
+import '../widgets/word_finder_section.dart';
 
 /// Caregiver hub: communicator profiles, modeling tips (the core
 /// differentiator — teaching partners HOW to model), setup replay,
@@ -148,6 +149,17 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
           const SizedBox(height: 16),
           _sectionTitle(context, 'Most used words'),
           _mostUsedWordsCard(session),
+          const SizedBox(height: 16),
+          _sectionTitle(context, 'Find a word'),
+          const Padding(
+            padding: EdgeInsets.only(bottom: 8, left: 4),
+            child: Text(
+              'Search every word in the current language. Tapping a result '
+              'speaks it so you can hear it — nothing on the board changes.',
+              style: TextStyle(fontSize: 13),
+            ),
+          ),
+          const WordFinderSection(),
           const SizedBox(height: 16),
           _sectionTitle(context, 'Vocabulary level'),
           const Padding(

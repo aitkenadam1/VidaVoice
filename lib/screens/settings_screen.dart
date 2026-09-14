@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../app_config.dart';
+import '../services/tts_service.dart';
 import '../state/session_state.dart';
 
 /// Settings: language, voice (rate + pitch), and button size.
@@ -130,6 +131,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           const SizedBox(height: 16),
+          _sectionTitle(context, 'Voice choice'),
+          _VoiceChoiceSection(key: ValueKey(session.currentLocale)),
+          const SizedBox(height: 16),
           _sectionTitle(context, 'Buttons'),
           Card(
             child: Padding(
@@ -187,13 +191,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Column(
               children: [
                 ListTile(
-                  leading: Icon(Icons.mic_outlined),
-                  title: Text('Voice choice'),
-                  subtitle: Text(
-                    'Pick from the device\u2019s installed voices per language.',
-                  ),
-                ),
-                ListTile(
                   leading: Icon(Icons.grid_on_outlined),
                   title: Text('Vocabulary levels'),
                   subtitle: Text(
@@ -213,22 +210,132 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  /// Voice preview sentence in the currently selected language.
-  String _voicePreviewFor(String locale) {
-    return switch (locale) {
-      'es' => '¡Hola! Esta es mi voz.',
-      'fr' => 'Bonjour ! C\u2019est ma voix.',
-      _ => 'Hello! This is my voice.',
-    };
-  }
-
   Widget _sectionTitle(BuildContext context, String title) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: EdgeInsets.only(bottom: 8),
       child: Text(
         title,
-        style: Theme.of(context).textTheme.titleMedium
-            ?.copyWith(fontWeight: FontWeight.bold),
+        style: Theme.of(
+          context,
+        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+}
+
+/// Voice preview sentence in the currently selected language.
+String _voicePreviewFor(String locale) {
+  return switch (locale) {
+    'es' => '¡Hola! Esta es mi voz.',
+    'fr' => 'Bonjour ! C\u2019est ma voix.',
+    _ => 'Hello! This is my voice.',
+  };
+}
+
+/// Voice picker: lists the engine's voices for the current language and
+/// persists the choice per language. Keyed by locale in the parent so a
+/// language switch reloads the list.
+class _VoiceChoiceSection extends StatefulWidget {
+  const _VoiceChoiceSection({super.key});
+
+  @override
+  State<_VoiceChoiceSection> createState() => _VoiceChoiceSectionState();
+}
+
+class _VoiceChoiceSectionState extends State<_VoiceChoiceSection> {
+  List<TtsVoice>? _voices;
+  bool _applying = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final session = context.read<SessionState>();
+    final voices = await session.loadVoices();
+    if (mounted) setState(() => _voices = voices);
+  }
+
+  Future<void> _select(TtsVoice? voice) async {
+    if (_applying) return;
+    setState(() => _applying = true);
+    final session = context.read<SessionState>();
+    if (voice == null) {
+      await session.clearVoice();
+    } else {
+      await session.setVoice(voice);
+      // Preview the newly selected voice immediately.
+      await session.speakText(_voicePreviewFor(session.currentLocale));
+    }
+    if (mounted) setState(() => _applying = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final session = context.watch<SessionState>();
+    final voices = _voices;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (voices == null)
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else if (voices.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: Text(
+                  'No voices found for this language on this device.',
+                  style: TextStyle(fontSize: 13),
+                ),
+              )
+            else
+              RadioGroup<TtsVoice?>(
+                groupValue: session.currentVoice,
+                onChanged: (v) => _select(v),
+                child: Column(
+                  children: [
+                    RadioListTile<TtsVoice?>(
+                      title: const Text('System default'),
+                      subtitle: const Text(
+                        'Let the device pick the voice.',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                      value: null,
+                      enabled: !_applying,
+                    ),
+                    const Divider(height: 1),
+                    for (final voice in voices)
+                      RadioListTile<TtsVoice?>(
+                        title: Text(
+                          voice.name,
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                        subtitle: Text(
+                          voice.locale,
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        value: voice,
+                        enabled: !_applying,
+                      ),
+                  ],
+                ),
+              ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 4, 16, 8),
+              child: Text(
+                'The choice is saved separately for each language.',
+                style: TextStyle(fontSize: 12),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

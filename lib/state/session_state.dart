@@ -111,6 +111,9 @@ class SessionState extends ChangeNotifier {
       } catch (_) {
         ttsAvailable = false;
       }
+      // Restore the caregiver's voice choice for this language, if the
+      // engine still has that voice installed.
+      await _applySavedVoice();
       status = BootStatus.ready;
     } catch (e) {
       status = BootStatus.error;
@@ -127,6 +130,61 @@ class SessionState extends ChangeNotifier {
   Future<void> setSpeechPitch(double pitch) async {
     await tts.setPitch(pitch);
     await _prefs?.setDouble('vidavoice.speechPitch', pitch);
+  }
+
+  /// Engine voices for the current language, for the voice picker. Empty
+  /// when TTS is unavailable. Falls back to the full engine list when no
+  /// voice reports a matching locale (some engines report bare tags).
+  Future<List<TtsVoice>> loadVoices() async {
+    if (!ttsAvailable) return const [];
+    final all = await tts.getVoices();
+    final prefix = currentLocale.toLowerCase();
+    final matching = all
+        .where((v) => v.locale.toLowerCase().startsWith(prefix))
+        .toList();
+    return matching.isNotEmpty ? matching : all;
+  }
+
+  TtsVoice? get currentVoice => tts.currentVoice;
+
+  String _voiceNameKey(String locale) => 'vidavoice.voice.$locale.name';
+  String _voiceLocaleKey(String locale) => 'vidavoice.voice.$locale.locale';
+
+  /// Persist and apply a voice choice for the current language.
+  Future<void> setVoice(TtsVoice voice) async {
+    await tts.setVoice(voice);
+    await _prefs?.setString(_voiceNameKey(currentLocale), voice.name);
+    await _prefs?.setString(_voiceLocaleKey(currentLocale), voice.locale);
+    notifyListeners();
+  }
+
+  /// Back to the engine default voice for the current language.
+  Future<void> clearVoice() async {
+    await tts.clearVoice();
+    await _prefs?.remove(_voiceNameKey(currentLocale));
+    await _prefs?.remove(_voiceLocaleKey(currentLocale));
+    notifyListeners();
+  }
+
+  /// Re-applies the saved voice for [currentLocale], if the engine still
+  /// has it. Returns true when a saved voice was applied. Best-effort: a
+  /// missing or rejected voice keeps the default.
+  Future<bool> _applySavedVoice() async {
+    if (!ttsAvailable) return false;
+    try {
+      final name = _prefs?.getString(_voiceNameKey(currentLocale));
+      final locale = _prefs?.getString(_voiceLocaleKey(currentLocale));
+      if (name == null || locale == null) return false;
+      final voices = await tts.getVoices();
+      final match = voices.where(
+        (v) => v.name == name && v.locale == locale,
+      );
+      if (match.isNotEmpty) {
+        await tts.setVoice(match.first);
+        return true;
+      }
+    } catch (_) {}
+    return false;
   }
 
   static int _clampLevel(int level) => level.clamp(
@@ -161,6 +219,10 @@ class SessionState extends ChangeNotifier {
     _sentenceIds.clear();
     pack = await LanguagePackService.loadPack(locale);
     await tts.setLanguage(pack.ttsLocale);
+    // A voice choice is per-language: apply the saved one for the new
+    // language, or drop back to the engine default (the old language's
+    // voice must not leak across).
+    if (!await _applySavedVoice()) await tts.clearVoice();
     await _prefs?.setString('vidavoice.locale', locale);
     notifyListeners();
   }

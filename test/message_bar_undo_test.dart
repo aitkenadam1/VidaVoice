@@ -29,6 +29,15 @@ class _FakeTts extends TtsService {
 
   @override
   Future<void> speak(String text) async {}
+  @override
+  Future<List<TtsVoice>> getVoices() async => const [];
+
+  @override
+  Future<void> setVoice(TtsVoice voice) async {}
+
+  @override
+  Future<void> clearVoice() async {}
+
 }
 
 /// Widget coverage for the message-bar undo affordance:

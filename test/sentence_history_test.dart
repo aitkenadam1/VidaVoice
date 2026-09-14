@@ -35,6 +35,15 @@ class _FakeTts extends TtsService {
     speakCalls++;
     lastSpoken = text;
   }
+  @override
+  Future<List<TtsVoice>> getVoices() async => const [];
+
+  @override
+  Future<void> setVoice(TtsVoice voice) async {}
+
+  @override
+  Future<void> clearVoice() async {}
+
 }
 
 void main() {

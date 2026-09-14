@@ -1,4 +1,4 @@
-# VidaVoice — v0.02 overnight build
+# VidaVoice — v0.03
 
 Affordable, multilingual AAC for nonverbal children and adults.
 A VidaCare Foundation project. Full product blueprint:
@@ -44,6 +44,23 @@ A VidaCare Foundation project. Full product blueprint:
 - **App icon**: V-waveform wired via `flutter_launcher_icons` (generated into
   android/ios) and shown in-app.
 
+## New in v0.03
+
+- **Vocabulary levels + progressive reveal.** Every word declares a `level`
+  (1–3) in the pack, beside `row`/`col`. The caregiver picks the level; words
+  above it leave their cell **empty** rather than being filtered out, so no
+  visible word ever moves. Enforced by test, including EN↔ES level parity.
+  Split and rationale: `docs/VOCAB_LEVELS.md` (needs SLP sign-off).
+- **Caregiver first-week plan.** The seven modeling tips became a guided week —
+  one habit a day, each with a concrete "try it today" task. Progress is stored
+  per profile, so a shared classroom tablet tracks each communicator separately.
+- **Symbol QA pass.** All 242 pictograms reviewed as images, not keywords:
+  18 show the wrong word, 11 are duplicates shared by two words. See
+  `docs/SYMBOL_QA.md`. **Not yet fixed** — the re-fetch needs ARASAAC access.
+- **Spanish review list.** `docs/ES_SLP_REVIEW.md`. `es.json` is unchanged.
+- **Reproducible symbol pipeline.** `tools/fetch_symbols.py`. `MAPPING.md` now
+  covers all 246 vocabulary entries (it recorded 100) with a `reviewed` column.
+
 ## How to run
 
 Prerequisites: Flutter SDK (stable) on PATH, Android SDK for APK builds.
@@ -75,12 +92,14 @@ flutter build apk --debug
 lib/
   main.dart                  # entry: Provider wiring, boot → status/onboarding/home
   app_config.dart            # SINGLE SOURCE OF TRUTH: name, locales, voice defaults
-  models/word.dart           # BoardItem / FolderPack / LanguagePack + validate()
+  models/word.dart           # BoardItem / FolderPack / LanguagePack + validate() + level
+  models/modeling_plan.dart  # the caregiver's 7-day first-week plan (content + progress)
   services/
     tts_service.dart         # flutter_tts wrapper (speak/rate/pitch/language)
     language_pack_service.dart  # loads + validates assets/lang/<locale>.json
     symbol_service.dart      # ARASAAC manifest → hasSymbol/assetPath
     profile_service.dart     # local communicator profiles (SharedPreferences)
+    modeling_plan_service.dart  # per-profile first-week progress (SharedPreferences)
   state/session_state.dart   # ChangeNotifier: pack, sentence, locale, prefs, onboarding
   widgets/
     word_button.dart         # tappable board cell (symbol + label, scaled)
@@ -92,16 +111,24 @@ lib/
     home_board_screen.dart   # fixed-position core grid + folders
     category_screen.dart     # inside a folder (2nd tap)
     settings_screen.dart     # language, voice rate/pitch, button size
-    caregiver_screen.dart    # profiles, modeling tips, setup replay, roadmap
+    caregiver_screen.dart    # profiles, vocabulary level, first-week plan, setup replay
 assets/
-  lang/en.json               # THE vocabulary: 192 core words + 4 folders (v2)
+  lang/en.json               # THE vocabulary: 192 core words + 4 folders (v2), each with a level
   lang/es.json               # Spanish mirror: same ids + positions (DRAFT — SLP review needed)
   symbols/*.png              # ARASAAC pictograms per word id
   symbols/manifest.json      # which word ids have a symbol
   symbols/MAPPING.md         # arasaac id per word (review aid)
   images/app_icon.png        # V-waveform logo (1024×1024)
 test/
-  language_pack_test.dart    # pins 192 words, unique cells, 2-tap budget, EN↔ES parity
+  language_pack_test.dart    # 192 words, unique cells, 2-tap budget, levels, EN↔ES parity
+  modeling_plan_test.dart    # 7-day plan content + progress/day-advance logic
+tools/
+  fetch_symbols.py           # ARASAAC review/fetch/remap — the symbol pipeline
+docs/
+  BUILD_PLAN.md              # plan to MVP + the refactors proposed before extending
+  SYMBOL_QA.md               # every pictogram reviewed; what to replace and why
+  ES_SLP_REVIEW.md           # Spanish review list for a native-speaker SLP
+  VOCAB_LEVELS.md            # the level split, and what an SLP should challenge
 ```
 
 ## Adding a language
@@ -117,14 +144,23 @@ shipping it to families.
 
 ## What's stubbed / not yet built
 
-- All 242 words have an ARASAAC pictogram (first-search-hit choices — SLP
-  review of `MAPPING.md` still needed); emoji fallback exists in code but is
-  currently unused.
-- `es.json` is a draft translation — native-speaker SLP review required.
-- Profiles are local-only (SharedPreferences); no backend/sync yet.
-- No vocabulary levels / progressive reveal, no custom photos/recordings.
+- **18 pictograms show the wrong word and 11 are duplicated across two words**
+  (`docs/SYMBOL_QA.md`). Documented, not fixed — needs ARASAAC access plus SLP
+  sign-off. `core.try` currently shows a courtroom trial and `core.pull` shows
+  flushing a toilet; these should not reach a pilot family.
+- The four folder tiles have no pictogram and fall back to emoji.
+- `es.json` is a draft translation — see `docs/ES_SLP_REVIEW.md`.
+- The vocabulary level split is an engineering proposal, not a clinical one
+  (`docs/VOCAB_LEVELS.md`).
+- Profiles are local-only; no backend/sync. **Profile switching does not switch
+  vocabulary level, button size, language or voice** — those are still
+  device-global. See `docs/BUILD_PLAN.md` refactor 3.
+- Storage is still SharedPreferences, not SQLite/Drift.
+- **The app interface is English-only** even when the board is Spanish.
+- No custom photos/recordings, no usage analytics.
 - No switch scanning, dwell, high-contrast mode, or adult typing mode.
-- No usage analytics.
+- **No widget or integration tests** — all 37 tests are data-level, because
+  `SessionState` has no injection seam. This is the top item in the build plan.
 
 ## App icon
 
@@ -138,69 +174,54 @@ To regenerate after any future logo change:
 dart run flutter_launcher_icons
 ```
 
-## Verification (run 2026-09-14, this machine)
+## Verification (run 2026-09-14)
 
-Toolchain: Flutter 3.47.4 (Dart 3.13.3) · Amazon Corretto JDK 17.0.20.1 ·
-Android SDK: platform android-34 (ext12), build-tools 34.0.0,
-platform-tools r37.0.1 · Gradle 9.3.1.
+Toolchain: Flutter 3.47.4 (Dart 3.13.3) · OpenJDK 21.0.10 · no Android SDK
+(see below).
 
 ```text
 $ flutter analyze
-Analyzing vidavoice...
-No issues found! (ran in 14.5s)
+Analyzing VidaVoice...
+No issues found! (ran in 5.7s)
 
 $ flutter test
-00:00 +11: All tests passed!
+00:00 +37: All tests passed!
 
 $ flutter build bundle --debug
 Build succeeded — build/flutter_assets (61M): kernel_blob.bin,
   assets/lang/en.json + es.json, 242 symbol PNGs, app icon.
 ```
 
-`flutter build apk --debug` did **not** complete in this sandbox — and this is
-an environment block, not an app defect:
+### `flutter build apk --debug` has not been run
+
+It is blocked in this environment, and for a **different reason** than in the
+v0.02 overnight sandbox. That sandbox denied loopback TCP to Java, so Gradle
+could never reach its own daemon. **That blocker is gone** — Java loopback works
+here (verified with a minimal `ServerSocket`/`Socket` round trip).
+
+The blocker now is egress policy: the Android SDK is not installed and cannot be
+downloaded, because `dl.google.com` is denied.
 
 ```text
+$ curl -sS -o cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+curl: (56) CONNECT tunnel failed, response 403
+
 $ flutter build apk --debug
-Running Gradle task 'assembleDebug'...
-FAILURE: Build failed with an exception.
-* What went wrong:
-Could not dispatch a message to the daemon.
-Caused by: org.gradle.internal.remote.internal.MessageIOException:
-  Could not write '/127.0.0.1:37371'.
-Caused by: java.io.IOException: Broken pipe
-Gradle task assembleDebug failed with exit code 1
+[!] No Android SDK found. Try setting the ANDROID_HOME environment variable.
 ```
 
-Root cause (proven with minimal Java repro programs): this sandbox denies
-**all** loopback TCP to Java processes. Any Java `Socket`/`SocketChannel`
-connect to 127.0.0.1 is answered by the sandbox with:
+`api.arasaac.org` is denied the same way, which is why the symbol QA findings
+are documented but not applied:
 
 ```text
-muse: Other TCP connections is turned off for this assistant. To allow it,
-ask the user to open Muse settings -> Permissions -> Direct network protocols
-and switch other_tcp from Deny to Ask.
+$ curl -sS https://api.arasaac.org/api/pictograms/en/search/want
+curl: (56) CONNECT tunnel failed, response 403
 ```
 
-The Gradle daemon architecture requires Java→Java TCP on 127.0.0.1, so no
-Gradle invocation can reach its daemon here (the daemon starts and listens
-fine, then every client dispatch dies with broken pipe). Non-Java loopback
-(curl, Python) works — only Java processes are restricted.
+(`arasaac.org` and `static.arasaac.org` are denied too.)
 
-**To finish the APK**: on any machine where Java loopback TCP is allowed
-(Adam's Windows laptop, CI), run the exact command below. Everything is
-pre-staged: `flutter pub get` resolved, launcher icons generated, Gradle 9.3.1
-wrapper dist pre-seeded, Android SDK components installed, licenses accepted.
+Neither is an app defect. On any machine with an Android SDK, `flutter build apk
+--debug` should work — nothing in this release touches the Android build
+configuration. Treat the APK as **unverified until someone runs it**, not as
+known-good.
 
-```bash
-cd ~/workspace/vidacare-aac/vidavoice
-flutter build apk --debug
-# → build/app/outputs/flutter-apk/app-debug.apk
-```
-
-(Note for this sandbox's network: Java's HttpURLConnection also cannot parse
-this environment's egress-proxy CONNECT responses, so a local proxy shim at
-`~/workspace/vidacare-aac/proxy_shim.py` (127.0.0.1:8888, chained to the
-egress proxy) was used with `~/.gradle/gradle.properties` pointing Gradle at
-it. Keep the shim running during the first build so AGP/Kotlin dependencies
-can download; it is only needed on this sandbox.)

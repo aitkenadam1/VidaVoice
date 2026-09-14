@@ -9,6 +9,8 @@ import '../services/profile_service.dart';
 import '../services/symbol_service.dart';
 import '../services/tts_service.dart';
 import '../services/usage_service.dart';
+import '../services/history_service.dart';
+import '../services/first_week_plan_service.dart';
 
 enum BootStatus { loading, ready, error }
 
@@ -27,6 +29,8 @@ class SessionState extends ChangeNotifier {
   final SymbolService symbols = SymbolService();
   final ProfileService profiles = ProfileService();
   final UsageService usage = UsageService();
+  final HistoryService history = HistoryService();
+  final FirstWeekPlanService plan = FirstWeekPlanService();
 
   BootStatus status = BootStatus.loading;
   String bootError = '';
@@ -88,6 +92,8 @@ class SessionState extends ChangeNotifier {
       await symbols.load();
       await profiles.load();
       await usage.load();
+      await history.load(profiles.active?.id ?? '');
+      await plan.load(profiles.active?.id ?? '');
       // TTS is best-effort and NEVER fails boot: a device with no voice
       // engine (bare Fire tablet, missing voice data) still gets the full
       // board, plus a banner explaining the missing voice.
@@ -159,6 +165,21 @@ class SessionState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Reload per-profile data (sentence history, first-week plan) for the
+  /// currently active profile. Call after the active profile changes.
+  Future<void> reloadProfileData() async {
+    await history.load(profiles.active?.id ?? '');
+    await plan.load(profiles.active?.id ?? '');
+  }
+
+  /// Switch the active communicator profile and reload per-profile data
+  /// (sentence history, first-week plan) for them.
+  Future<void> switchProfile(String id) async {
+    await profiles.setActive(id);
+    await reloadProfileData();
+    notifyListeners();
+  }
+
   Future<void> completeOnboarding(String name) async {
     final trimmed = name.trim();
     if (trimmed.isNotEmpty) {
@@ -188,7 +209,34 @@ class SessionState extends ChangeNotifier {
 
   void speakSentence() {
     final text = sentence.map((w) => w.label).join(' ');
-    if (text.isNotEmpty) tts.speak(text);
+    if (text.isEmpty) return;
+    tts.speak(text);
+    // Fire-and-forget: history must never block or delay speech.
+    unawaited(
+      history.record(
+        profiles.active?.id ?? '',
+        List.of(_sentenceIds),
+        text,
+        currentLocale,
+      ),
+    );
+  }
+
+  /// Reload a history entry into the sentence bar and speak it again.
+  /// Ids that no longer exist in the current pack are skipped; the pack's
+  /// cells and positions are untouched.
+  void replayHistory(HistoryEntry entry) {
+    _sentenceIds.clear();
+    for (final id in entry.ids) {
+      try {
+        pack.wordById(id);
+        _sentenceIds.add(id);
+      } on Object {
+        // Word removed from a newer pack — skip it.
+      }
+    }
+    notifyListeners();
+    speakSentence();
   }
 
   void clearSentence() {

@@ -106,7 +106,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
                         else
                           TextButton(
                             onPressed: () async {
-                              await profiles.setActive(p.id);
+                              await session.switchProfile(p.id);
                               if (mounted) setState(() {});
                             },
                             child: const Text('Switch'),
@@ -117,6 +117,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
                             icon: const Icon(Icons.delete_outline),
                             onPressed: () async {
                               await profiles.removeProfile(p.id);
+                              await session.reloadProfileData();
                               if (mounted) setState(() {});
                             },
                           ),

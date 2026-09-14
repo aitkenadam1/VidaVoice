@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../state/session_state.dart';
+import 'history_sheet.dart';
 
 /// Pinned bottom bar: the accumulated sentence plus Speak / Clear / Undo.
 /// Visible on the home board and inside category folders.
@@ -40,6 +41,15 @@ class MessageBar extends StatelessWidget {
                         color: theme.hintColor,
                       ),
                     ),
+            ),
+            IconButton(
+              tooltip: 'Recent sentences',
+              icon: const Icon(Icons.history_outlined),
+              onPressed: () => showModalBottomSheet(
+                context: context,
+                showDragHandle: false,
+                builder: (_) => const HistorySheet(),
+              ),
             ),
             IconButton(
               tooltip: 'Undo last word',

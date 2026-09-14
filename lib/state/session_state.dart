@@ -8,6 +8,7 @@ import '../services/language_pack_service.dart';
 import '../services/profile_service.dart';
 import '../services/symbol_service.dart';
 import '../services/tts_service.dart';
+import '../services/kokoro_tts_service.dart';
 import '../services/usage_service.dart';
 import '../services/history_service.dart';
 import '../services/first_week_plan_service.dart';
@@ -135,6 +136,8 @@ class SessionState extends ChangeNotifier {
   /// Engine voices for the current language, for the voice picker. Empty
   /// when TTS is unavailable. Falls back to the full engine list when no
   /// voice reports a matching locale (some engines report bare tags).
+  /// Kokoro on-device neural voices are listed first when the model pack
+  /// is downloaded.
   Future<List<TtsVoice>> loadVoices() async {
     if (!ttsAvailable) return const [];
     final all = await tts.getVoices();
@@ -142,19 +145,50 @@ class SessionState extends ChangeNotifier {
     final matching = all
         .where((v) => v.locale.toLowerCase().startsWith(prefix))
         .toList();
-    return matching.isNotEmpty ? matching : all;
+    final system = matching.isNotEmpty ? matching : all;
+    final kokoro = await _kokoroVoicesForLocale();
+    return [...kokoro, ...system];
+  }
+
+  /// The on-device neural TTS backend (for the Settings download UI).
+  KokoroTtsService get kokoro => tts.kokoro;
+
+  /// Kokoro voices for [currentLocale] as picker entries. Empty when the
+  /// platform can't run Kokoro (web) or the model pack isn't downloaded.
+  Future<List<TtsVoice>> _kokoroVoicesForLocale() async {
+    if (!KokoroTtsService.isSupported) return const [];
+    if (!await tts.kokoro.isModelReady()) return const [];
+    return kokoroVoices
+        .where((v) => v.locale == currentLocale)
+        .map(
+          (v) => TtsVoice(
+            name: 'Kokoro ${v.displayName}',
+            locale: kokoroLocaleTag(v.locale),
+            kokoroVoiceId: v.id,
+          ),
+        )
+        .toList();
   }
 
   TtsVoice? get currentVoice => tts.currentVoice;
 
   String _voiceNameKey(String locale) => 'vidavoice.voice.$locale.name';
   String _voiceLocaleKey(String locale) => 'vidavoice.voice.$locale.locale';
+  String _voiceKokoroKey(String locale) => 'vidavoice.voice.$locale.kokoro';
 
   /// Persist and apply a voice choice for the current language.
   Future<void> setVoice(TtsVoice voice) async {
     await tts.setVoice(voice);
     await _prefs?.setString(_voiceNameKey(currentLocale), voice.name);
     await _prefs?.setString(_voiceLocaleKey(currentLocale), voice.locale);
+    final kokoroId = voice.kokoroVoiceId;
+    if (kokoroId != null) {
+      await _prefs?.setString(_voiceKokoroKey(currentLocale), kokoroId);
+      // Warm the engine now so the first real utterance isn't slow.
+      unawaited(tts.kokoro.warmup());
+    } else {
+      await _prefs?.remove(_voiceKokoroKey(currentLocale));
+    }
     notifyListeners();
   }
 
@@ -163,6 +197,7 @@ class SessionState extends ChangeNotifier {
     await tts.clearVoice();
     await _prefs?.remove(_voiceNameKey(currentLocale));
     await _prefs?.remove(_voiceLocaleKey(currentLocale));
+    await _prefs?.remove(_voiceKokoroKey(currentLocale));
     notifyListeners();
   }
 
@@ -175,6 +210,25 @@ class SessionState extends ChangeNotifier {
       final name = _prefs?.getString(_voiceNameKey(currentLocale));
       final locale = _prefs?.getString(_voiceLocaleKey(currentLocale));
       if (name == null || locale == null) return false;
+      // Kokoro voices aren't in the engine list — restore from the table.
+      final kokoroId = _prefs?.getString(_voiceKokoroKey(currentLocale));
+      if (kokoroId != null && kokoroId.isNotEmpty) {
+        final kv = kokoroVoiceById(kokoroId);
+        if (kv != null &&
+            kv.locale == currentLocale &&
+            await tts.kokoro.isModelReady()) {
+          await tts.setVoice(
+            TtsVoice(
+              name: 'Kokoro ${kv.displayName}',
+              locale: kokoroLocaleTag(kv.locale),
+              kokoroVoiceId: kv.id,
+            ),
+          );
+          unawaited(tts.kokoro.warmup());
+          return true;
+        }
+        return false;
+      }
       final voices = await tts.getVoices();
       final match = voices.where(
         (v) => v.name == name && v.locale == locale,

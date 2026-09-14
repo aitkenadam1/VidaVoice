@@ -41,6 +41,12 @@ dependencies:
   file_picker: ^13.0.0
   share_plus: ^13.3.0
   path_provider: ^2.1.5
+  # On-device neural TTS (Kokoro via sherpa-onnx): model download, WAV
+  # playback for synthesized audio, streaming tar.bz2 extraction.
+  sherpa_onnx: ^1.13.8
+  audioplayers: ^6.8.1
+  http: ^1.6.0
+  archive: ^4.3.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

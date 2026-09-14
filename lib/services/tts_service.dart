@@ -2,36 +2,61 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_tts/flutter_tts.dart';
 
 import '../app_config.dart';
+import 'kokoro_tts_service.dart';
 
 /// A speakable voice exposed by the TTS engine.
+///
+/// System voices come from flutter_tts ([kokoroVoiceId] is null). Kokoro
+/// voices are on-device neural voices ([kokoroVoiceId] is the voice id,
+/// e.g. 'af_bella'); they only appear when the Kokoro model pack is
+/// downloaded.
 class TtsVoice {
-  const TtsVoice({required this.name, required this.locale});
+  const TtsVoice({required this.name, required this.locale, this.kokoroVoiceId});
 
   /// Engine voice name, e.g. "Microsoft David - English (United States)".
+  /// Kokoro voices are named "Kokoro <Name>", e.g. "Kokoro Bella".
   final String name;
 
   /// BCP-47-ish locale tag as reported by the engine, e.g. "en-US".
   final String locale;
 
+  /// Non-null for Kokoro on-device voices.
+  final String? kokoroVoiceId;
+
+  /// True for Kokoro on-device neural voices.
+  bool get isKokoro => kokoroVoiceId != null;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is TtsVoice && name == other.name && locale == other.locale;
+      other is TtsVoice &&
+          name == other.name &&
+          locale == other.locale &&
+          kokoroVoiceId == other.kokoroVoiceId;
 
   @override
-  int get hashCode => Object.hash(name, locale);
+  int get hashCode => Object.hash(name, locale, kokoroVoiceId);
 
   @override
   String toString() => '$name ($locale)';
 }
 
-/// Thin wrapper around flutter_tts with app-level defaults.
+/// Thin wrapper around flutter_tts with app-level defaults, plus routing
+/// to the Kokoro on-device neural backend when a Kokoro voice is selected.
 class TtsService {
   /// Lazily created: constructing a [TtsService] (or a test fake of one)
   /// must not touch the platform channel before the binding exists.
+  /// [kokoro] is likewise side-effect free at construction.
+  TtsService({KokoroTtsService? kokoro}) : _kokoro = kokoro ?? KokoroTtsService();
+
   FlutterTts? _tts;
   FlutterTts get _engine => _tts ??= FlutterTts();
   bool _ready = false;
+
+  final KokoroTtsService _kokoro;
+
+  /// The on-device neural TTS backend (model download, worker, playback).
+  KokoroTtsService get kokoro => _kokoro;
 
   double rate = AppConfig.defaultSpeechRate;
   double pitch = AppConfig.defaultSpeechPitch;
@@ -120,8 +145,35 @@ class TtsService {
   }
 
   Future<void> speak(String text) async {
-    if (_ready && text.trim().isNotEmpty) {
+    if (text.trim().isEmpty) return;
+    final voice = currentVoice;
+    if (voice != null && voice.isKokoro) {
+      final kv = kokoroVoiceById(voice.kokoroVoiceId!);
+      if (kv != null) {
+        final ok = await _kokoro.speak(
+          text,
+          voice: kv,
+          speed: KokoroTtsService.rateToSpeed(rate),
+        );
+        if (ok) return;
+      }
+      // Kokoro unavailable (model missing, engine failed): fall through to
+      // the system voice rather than going silent.
+    }
+    if (_ready) {
       await _engine.speak(text);
+    }
+  }
+
+  /// Stop any in-flight speech on both backends. Never throws.
+  Future<void> stop() async {
+    try {
+      await _kokoro.stop();
+    } catch (_) {}
+    if (_ready) {
+      try {
+        await _engine.stop();
+      } catch (_) {}
     }
   }
 

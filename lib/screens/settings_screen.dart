@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../app_config.dart';
+import '../services/kokoro_tts_service.dart';
 import '../services/tts_service.dart';
 import '../state/session_state.dart';
 
@@ -21,6 +23,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late double _rate;
   late double _pitch;
   bool _loaded = false;
+  // Bumped when the Kokoro model becomes ready so the voice picker reloads
+  // (the picker only loads its list in initState).
+  int _voiceListVersion = 0;
 
   @override
   void didChangeDependencies() {
@@ -132,7 +137,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 16),
           _sectionTitle(context, 'Voice choice'),
-          _VoiceChoiceSection(key: ValueKey(session.currentLocale)),
+          _VoiceChoiceSection(
+            key: ValueKey('${session.currentLocale}-v$_voiceListVersion'),
+          ),
+          const SizedBox(height: 16),
+          _sectionTitle(context, 'Neural voices (optional)'),
+          _KokoroSection(
+            key: ValueKey('kokoro-${session.currentLocale}'),
+            onVoicesChanged: () => setState(() => _voiceListVersion++),
+          ),
           const SizedBox(height: 16),
           _sectionTitle(context, 'Buttons'),
           Card(
@@ -318,7 +331,9 @@ class _VoiceChoiceSectionState extends State<_VoiceChoiceSection> {
                           style: const TextStyle(fontSize: 14),
                         ),
                         subtitle: Text(
-                          voice.locale,
+                          voice.isKokoro
+                              ? 'Kokoro · on-device neural voice'
+                              : voice.locale,
                           style: const TextStyle(fontSize: 12),
                         ),
                         value: voice,
@@ -334,6 +349,163 @@ class _VoiceChoiceSectionState extends State<_VoiceChoiceSection> {
                 style: TextStyle(fontSize: 12),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Kokoro on-device neural voices: one-time ~126 MB download, then fully
+/// offline. Not shown on web (Kokoro runs natively only).
+class _KokoroSection extends StatefulWidget {
+  const _KokoroSection({super.key, required this.onVoicesChanged});
+
+  /// Called after the model becomes ready so the voice picker reloads.
+  final VoidCallback onVoicesChanged;
+
+  @override
+  State<_KokoroSection> createState() => _KokoroSectionState();
+}
+
+class _KokoroSectionState extends State<_KokoroSection> {
+  bool? _ready;
+  double _progress = 0;
+  bool _downloading = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _check();
+  }
+
+  Future<void> _check() async {
+    if (!KokoroTtsService.isSupported) {
+      if (mounted) setState(() => _ready = null);
+      return;
+    }
+    final ready = await context.read<SessionState>().kokoro.isModelReady();
+    if (mounted) setState(() => _ready = ready);
+  }
+
+  Future<void> _download() async {
+    if (_downloading) return;
+    setState(() {
+      _downloading = true;
+      _progress = 0;
+      _error = null;
+    });
+    try {
+      final session = context.read<SessionState>();
+      await session.kokoro.downloadModel(
+        onProgress: (p) {
+          if (mounted) setState(() => _progress = p);
+        },
+      );
+      if (mounted) {
+        setState(() {
+          _ready = true;
+          _downloading = false;
+        });
+      }
+      widget.onVoicesChanged();
+      // Pre-load the engine so the first utterance isn't slow.
+      unawaited(session.kokoro.warmup());
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _downloading = false;
+          _error = 'Download failed. Check your connection and try again.';
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!KokoroTtsService.isSupported) return const SizedBox.shrink();
+    final ready = _ready;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              children: [
+                Icon(Icons.psychology_outlined),
+                SizedBox(width: 8),
+                Text(
+                  'Kokoro neural voices',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Free, human-sounding voices for English, Spanish, and French. '
+              'One download of about 126 MB, then everything works offline — '
+              'no account, no subscription, nothing leaves the device.',
+              style: TextStyle(fontSize: 12),
+            ),
+            const SizedBox(height: 12),
+            if (ready == null)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(8),
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            else if (_downloading) ...[
+              if (_progress < 1) ...[
+                LinearProgressIndicator(value: _progress),
+                const SizedBox(height: 8),
+                Text(
+                  'Downloading… ${(_progress * 100).toStringAsFixed(0)}% '
+                  '(${(_progress * 126).toStringAsFixed(0)} of ~126 MB)',
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ] else ...[
+                const LinearProgressIndicator(),
+                const SizedBox(height: 8),
+                const Text(
+                  'Extracting voices… this takes a minute on older tablets.',
+                  style: TextStyle(fontSize: 12),
+                ),
+              ],
+              const SizedBox(height: 4),
+              const Text(
+                'Keep the app open until it finishes.',
+                style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+              ),
+            ] else if (ready) ...[
+              const Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.green, size: 18),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Downloaded. Kokoro voices now appear in Voice choice above.',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ] else ...[
+              if (_error != null) ...[
+                Text(
+                  _error!,
+                  style: const TextStyle(fontSize: 12, color: Colors.red),
+                ),
+                const SizedBox(height: 8),
+              ],
+              FilledButton.icon(
+                onPressed: _download,
+                icon: const Icon(Icons.download),
+                label: const Text('Download voices (~126 MB)'),
+              ),
+            ],
           ],
         ),
       ),

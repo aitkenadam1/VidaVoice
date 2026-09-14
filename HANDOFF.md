@@ -11,8 +11,8 @@ the MVP milestone defined in the blueprint.
 
 REPO / BRANCH STATE:
 - Project lives at ~/workspace/vidacare-aac/vidavoice/ (Flutter, stable channel).
-- This is a local project, not yet in git. Suggested: `git init`, first commit
-  the v0.02 tree as-is, then work feature-by-feature on branches.
+- Git repo initialized; v0.02 committed as 18f91eb ("VidaVoice v0.02..."),
+  working tree clean. Work feature-by-feature on branches from here.
 - App name is FINAL: VidaVoice. Display name is centralized in
   lib/app_config.dart — do not hardcode the name anywhere else.
 - Logo is FINAL: the V-waveform concept
@@ -54,21 +54,29 @@ BACKGROUND (what v0.02 does):
   25 rows, scrollable. Tap word → speaks immediately + appends to message bar.
 - Message bar (pinned, board + folders): Speak replays sentence, Undo, Clear.
 - Folders open on tile tap; words inside speak + append (2-tap max, enforced).
-- Symbols: ARASAAC pictogram per word id where the API returned a hit; emoji
-  fallback otherwise. CC BY-NC-SA attribution in Settings + Caregiver.
+- Symbols: ARASAAC pictogram for ALL 242 word ids (first-search-hit choices;
+  6 re-fetched with alternate terms). No emoji gaps remain, but every match
+  needs SLP review — see assets/symbols/MAPPING.md (arasaac id per word).
+  CC BY-NC-SA attribution in Settings + Caregiver.
 - Settings: EN/ES switcher (clears message bar; positions identical), speech
   rate + pitch sliders with live preview, button size S/M/L (visual only —
   grid layout locked for motor planning).
 - Caregiver: profiles (add/switch/remove, local), 7 modeling tips, replay
   setup tour, planned-next checklist.
-- v0.02 verification: flutter analyze clean, flutter test passes, debug APK
-  builds. See README.md "Verification" section for the exact output.
+- v0.02 verification: `flutter analyze` clean (No issues found),
+  `flutter test` 11/11 green, `flutter build bundle --debug` OK (242 symbols
+  bundled). `flutter build apk --debug` was BLOCKED in the overnight sandbox
+  only: the sandbox denies all loopback TCP to Java processes, so the Gradle
+  daemon can never receive a dispatch ("Could not dispatch a message to the
+  daemon ... Broken pipe"). Not an app defect. On any normal machine just run
+  `flutter build apk --debug` — everything is pre-staged. Full details +
+  toolchain versions in README.md "Verification".
 
 BACKGROUND (blueprint's next milestones after v0.02):
 - Phase 0 remainder: local-first SQLite (Drift) replacing SharedPreferences for
   profiles/settings; vocabulary levels + progressive reveal (hide/show by level,
-  positions never shift); fill ARASAAC gaps + SLP review of MAPPING.md;
-  install size target <150MB.
+  positions never shift); SLP review of MAPPING.md (all 242 first-search-hit
+  pictograms); install size target <150MB.
 - Phase 1 (MVP): native-SLP review of es.json, then French pack; caregiver
   onboarding wizard EXTENSION (guided first-week modeling plan); custom
   photos/recordings; backend sync v1; usage insights (most-used words);
@@ -91,8 +99,9 @@ EXACT ORDERED ASKS:
    yet — propose first).
 2. Symbol QA pass: review assets/symbols/MAPPING.md against the EN labels;
    list every pictogram you'd replace and why, and re-fetch better matches via
-   the ARASAAC API (api.arasaac.org). Fill the gaps that fell back to emoji
-   where a reasonable pictogram exists. Ids and positions must not change.
+   the ARASAAC API (api.arasaac.org). All 242 words currently have a pictogram
+   (no emoji gaps), but all are first-search-hit choices — the QA pass is what
+   makes them trustworthy. Ids and positions must not change.
 3. Spanish SLP review prep: go through assets/lang/es.json and flag every word
    choice you're unsure about (especially: core.dont→"no", core.make→"crear"
    vs core.do→"hacer", pronouns like core.his→"de él", articles core.a/core.the)

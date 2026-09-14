@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../models/word.dart';
 import '../state/session_state.dart';
 
 /// Caregiver hub: communicator profiles, modeling tips (the core
@@ -49,6 +50,26 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
       'Keep it within reach, all day',
       'The voice should be available everywhere — not just at the therapy '
           'table. Communication doesn\u2019t keep office hours.',
+    ),
+  ];
+
+  /// What each vocabulary level adds, in caregiver language. Index 0 = level 1.
+  static const _levelInfo = [
+    (
+      'Level 1 — Starter',
+      'The words that get a first message across: want, more, stop, help, go, '
+          'yes, no, and the four folders. Everything else is left blank on '
+          'purpose, so there is less to scan.',
+    ),
+    (
+      'Level 2 — Growing',
+      'Adds describing and asking words — when, how, why, hot, cold, fast, '
+          'and more verbs. Move here once they are combining two words.',
+    ),
+    (
+      'Level 3 — Full board',
+      'Every word in the pack, including time words, opposites and the small '
+          'connecting words (and, but, because).',
     ),
   ];
 
@@ -110,6 +131,41 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
                   ),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          _sectionTitle(context, 'Vocabulary level'),
+          const Padding(
+            padding: EdgeInsets.only(bottom: 8, left: 4),
+            child: Text(
+              'Words above the chosen level are left as blank cells. Every '
+              'word you can already see keeps exactly the same position when '
+              'you unlock more — the board grows into the gaps, it never '
+              'rearranges. That is what protects the motor pattern.',
+              style: TextStyle(fontSize: 13),
+            ),
+          ),
+          Card(
+            child: RadioGroup<int>(
+              groupValue: session.unlockedLevel,
+              onChanged: (v) {
+                if (v != null) session.setUnlockedLevel(v);
+              },
+              child: Column(
+                children: [
+                  for (
+                    var level = LanguagePack.minSupportedLevel;
+                    level <= LanguagePack.maxSupportedLevel;
+                    level++
+                  )
+                    RadioListTile<int>(
+                      value: level,
+                      title: Text(_levelInfo[level - 1].$1),
+                      subtitle: Text(_levelInfo[level - 1].$2),
+                      isThreeLine: true,
+                    ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 16),

@@ -19,6 +19,9 @@ class HomeBoardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final pack = context.select<SessionState, LanguagePack>((s) => s.pack);
     final scale = context.select<SessionState, double>((s) => s.buttonScale);
+    final unlockedLevel = context.select<SessionState, int>(
+      (s) => s.unlockedLevel,
+    );
     final session = context.read<SessionState>();
 
     return Scaffold(
@@ -51,7 +54,7 @@ class HomeBoardScreen extends StatelessWidget {
               children: [
                 for (var r = 0; r < pack.gridRows; r++)
                   for (var c = 0; c < pack.gridColumns; c++)
-                    _cell(context, session, pack, r, c, scale),
+                    _cell(context, session, pack, r, c, scale, unlockedLevel),
               ],
             ),
           ),
@@ -68,8 +71,11 @@ class HomeBoardScreen extends StatelessWidget {
     int row,
     int col,
     double scale,
+    int unlockedLevel,
   ) {
-    final item = pack.itemAt(row, col);
+    // A cell above the unlocked level renders empty, keeping its slot in the
+    // grid. Every visible word therefore stays exactly where it was.
+    final item = pack.itemAt(row, col, unlockedLevel: unlockedLevel);
     if (item == null) return const SizedBox.shrink();
     return WordButton(
       item: item,

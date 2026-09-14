@@ -18,6 +18,9 @@ class CategoryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final pack = context.select<SessionState, LanguagePack>((s) => s.pack);
     final scale = context.select<SessionState, double>((s) => s.buttonScale);
+    final unlockedLevel = context.select<SessionState, int>(
+      (s) => s.unlockedLevel,
+    );
     final session = context.read<SessionState>();
     final folder = pack.folders[folderId];
     if (folder == null) {
@@ -37,13 +40,19 @@ class CategoryScreen extends StatelessWidget {
               padding: const EdgeInsets.all(8),
               childAspectRatio: 0.92,
               children: [
+                // Locked words keep their slot instead of being filtered out:
+                // folder order is a motor pattern too, so the words that ARE
+                // shown must not slide up when a level is locked.
                 for (final word in folder.words)
-                  WordButton(
-                    item: word,
-                    scale: scale,
-                    hasSymbol: session.symbols.hasSymbol(word.id),
-                    onTap: () => session.tapWord(word),
-                  ),
+                  if (!word.visibleAt(unlockedLevel))
+                    const SizedBox.shrink()
+                  else
+                    WordButton(
+                      item: word,
+                      scale: scale,
+                      hasSymbol: session.symbols.hasSymbol(word.id),
+                      onTap: () => session.tapWord(word),
+                    ),
               ],
             ),
           ),

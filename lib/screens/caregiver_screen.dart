@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/word.dart';
 import '../state/session_state.dart';
@@ -8,9 +9,14 @@ import '../widgets/backup_section.dart';
 import '../widgets/first_week_plan_section.dart';
 import '../widgets/word_finder_section.dart';
 
-/// Caregiver hub: communicator profiles, modeling tips (the core
-/// differentiator — teaching partners HOW to model), setup replay,
-/// and the honest roadmap of what's still planned.
+/// Caregiver hub: a customizable, collapsible set of sections.
+///
+/// Busy by default is the enemy here — caregivers open this screen between
+/// therapy sessions, not to study it. So every section is a collapsible card
+/// (only Vocabulary level starts open), each collapsed card shows a one-line
+/// summary, and the caregiver can reorder sections and pin the ones they use
+/// most to a "Pinned" strip at the top. Order, pins, and collapsed state
+/// persist per device in SharedPreferences.
 class CaregiverScreen extends StatefulWidget {
   const CaregiverScreen({super.key});
 
@@ -18,7 +24,37 @@ class CaregiverScreen extends StatefulWidget {
   State<CaregiverScreen> createState() => _CaregiverScreenState();
 }
 
+/// One hub section: identity, collapsed summary, and expanded content.
+class _Section {
+  const _Section({
+    required this.id,
+    required this.title,
+    required this.icon,
+    required this.summary,
+    required this.content,
+    this.defaultPinned = false,
+    this.defaultCollapsed = true,
+  });
+
+  final String id;
+  final String title;
+  final IconData icon;
+  final String Function(SessionState session) summary;
+  final Widget Function(
+    BuildContext context,
+    SessionState session,
+    VoidCallback refresh,
+  )
+  content;
+  final bool defaultPinned;
+  final bool defaultCollapsed;
+}
+
 class _CaregiverScreenState extends State<CaregiverScreen> {
+  static const _orderKey = 'vidavoice.caregiver.order';
+  static const _pinnedKey = 'vidavoice.caregiver.pinned';
+  static const _collapsedKey = 'vidavoice.caregiver.collapsed';
+
   /// What each vocabulary level adds, in caregiver language. Index 0 = level 1.
   static const _levelInfo = [
     (
@@ -82,103 +118,308 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
     'Backup & sync across devices',
   ];
 
+  late final List<_Section> _sections;
+  List<String> _order = [];
+  Set<String> _pinned = {};
+  Set<String> _collapsed = {};
+  bool _customizing = false;
+  bool _ready = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _sections = _buildSections();
+    _loadPrefs();
+  }
+
+  Future<void> _loadPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final ids = _sections.map((s) => s.id).toList();
+    final savedOrder = prefs.getStringList(_orderKey) ?? [];
+    // Saved order first, then any new sections appended at the end.
+    _order = [
+      for (final id in savedOrder) if (ids.contains(id)) id,
+      for (final id in ids) if (!savedOrder.contains(id)) id,
+    ];
+    final savedPinned = prefs.getStringList(_pinnedKey);
+    final savedCollapsed = prefs.getStringList(_collapsedKey);
+    if (savedPinned == null && savedCollapsed == null) {
+      // First run: pin and open the vocabulary level, collapse the rest.
+      for (final s in _sections) {
+        if (s.defaultPinned) _pinned.add(s.id);
+        if (s.defaultCollapsed) _collapsed.add(s.id);
+      }
+    } else {
+      _pinned = {for (final id in savedPinned ?? []) if (ids.contains(id)) id};
+      _collapsed = {
+        for (final id in savedCollapsed ?? []) if (ids.contains(id)) id,
+      };
+    }
+    if (mounted) setState(() => _ready = true);
+  }
+
+  Future<void> _savePrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_orderKey, _order);
+    await prefs.setStringList(_pinnedKey, _pinned.toList());
+    await prefs.setStringList(_collapsedKey, _collapsed.toList());
+  }
+
+  _Section _byId(String id) => _sections.firstWhere((s) => s.id == id);
+
+  List<String> get _pinnedOrder => [
+    for (final id in _order)
+      if (_pinned.contains(id)) id,
+  ];
+
+  List<String> get _restOrder => [
+    for (final id in _order)
+      if (!_pinned.contains(id)) id,
+  ];
+
   @override
   Widget build(BuildContext context) {
     final session = context.watch<SessionState>();
-    final profiles = session.profiles;
     return Scaffold(
-      appBar: AppBar(title: const Text('Caregiver')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      appBar: AppBar(
+        title: Text(_customizing ? 'Customize hub' : 'Caregiver'),
+        actions: [
+          IconButton(
+            tooltip: _customizing ? 'Done' : 'Customize',
+            icon: Icon(_customizing ? Icons.check : Icons.tune),
+            onPressed: _ready
+                ? () => setState(() => _customizing = !_customizing)
+                : null,
+          ),
+        ],
+      ),
+      body: !_ready
+          ? const Center(child: CircularProgressIndicator())
+          : _customizing
+          ? _customizeList()
+          : _hubList(context, session),
+    );
+  }
+
+  // ---------------------------------------------------------------- hub ---
+
+  Widget _hubList(BuildContext context, SessionState session) {
+    void refresh() {
+      if (mounted) setState(() {});
+    }
+
+    final children = <Widget>[];
+    final pinned = _pinnedOrder;
+    if (pinned.isNotEmpty) {
+      children.add(_groupLabel('Pinned'));
+      for (final id in pinned) {
+        children.add(_sectionCard(context, _byId(id), session, refresh));
+      }
+      children.add(_groupLabel('All sections'));
+    }
+    for (final id in _restOrder) {
+      children.add(_sectionCard(context, _byId(id), session, refresh));
+    }
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: children,
+    );
+  }
+
+  Widget _groupLabel(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8, top: 4),
+      child: Text(
+        text.toUpperCase(),
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+          color: Colors.grey,
+          letterSpacing: 1.2,
+        ),
+      ),
+    );
+  }
+
+  Widget _sectionCard(
+    BuildContext context,
+    _Section s,
+    SessionState session,
+    VoidCallback refresh,
+  ) {
+    // Pinned sections are always open — that is the point of pinning them.
+    final isPinned = _pinned.contains(s.id);
+    final collapsed = _collapsed.contains(s.id) && !isPinned;
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Column(
         children: [
-          _sectionTitle(context, 'Communicator profiles'),
-          Card(
-            child: Column(
+          ListTile(
+            leading: Icon(s.icon),
+            title: Text(
+              s.title,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: collapsed
+                ? Text(
+                    s.summary(session),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  )
+                : null,
+            trailing: isPinned
+                ? null
+                : Icon(collapsed ? Icons.expand_more : Icons.expand_less),
+            onTap: isPinned
+                ? null
+                : () {
+                    setState(() {
+                      if (collapsed) {
+                        _collapsed.remove(s.id);
+                      } else {
+                        _collapsed.add(s.id);
+                      }
+                    });
+                    _savePrefs();
+                  },
+          ),
+          if (!collapsed)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(4, 0, 4, 12),
+              child: s.content(context, session, refresh),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ----------------------------------------------------------- customize ---
+
+  Widget _customizeList() {
+    return Column(
+      children: [
+        const Padding(
+          padding: EdgeInsets.all(16),
+          child: Text(
+            'Drag sections into the order you want. Pin the ones you use '
+            'most — pinned sections stay at the top, always open.',
+            style: TextStyle(fontSize: 13),
+          ),
+        ),
+        Expanded(
+          child: ReorderableListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: _order.length,
+            onReorder: (oldIndex, newIndex) {
+              setState(() {
+                if (newIndex > oldIndex) newIndex -= 1;
+                final id = _order.removeAt(oldIndex);
+                _order.insert(newIndex, id);
+              });
+              _savePrefs();
+            },
+            itemBuilder: (context, index) {
+              final s = _byId(_order[index]);
+              final isPinned = _pinned.contains(s.id);
+              return Card(
+                key: ValueKey(s.id),
+                child: ListTile(
+                  leading: Icon(s.icon),
+                  title: Text(s.title),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        tooltip: isPinned ? 'Unpin' : 'Pin to top',
+                        icon: Icon(
+                          Icons.push_pin,
+                          color: isPinned
+                              ? Theme.of(context).colorScheme.primary
+                              : Colors.grey,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            if (isPinned) {
+                              _pinned.remove(s.id);
+                            } else {
+                              _pinned.add(s.id);
+                              _collapsed.remove(s.id);
+                            }
+                          });
+                          _savePrefs();
+                        },
+                      ),
+                      ReorderableDragStartListener(
+                        index: index,
+                        child: const Padding(
+                          padding: EdgeInsets.all(8),
+                          child: Icon(Icons.drag_handle),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ------------------------------------------------------------ sections ---
+
+  List<_Section> _buildSections() {
+    return [
+      _Section(
+        id: 'level',
+        title: 'Vocabulary level',
+        icon: Icons.tune,
+        defaultPinned: true,
+        defaultCollapsed: false,
+        summary: (session) => _levelInfo[session.unlockedLevel - 1].$1,
+        content: (context, session, refresh) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                for (final p in profiles.profiles)
-                  ListTile(
-                    leading: const Icon(Icons.person_outline),
-                    title: Text(p.name),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (p.id == profiles.active?.id)
-                          const Icon(Icons.check, color: Colors.green)
-                        else
-                          TextButton(
-                            onPressed: () async {
-                              await session.switchProfile(p.id);
-                              if (mounted) setState(() {});
-                            },
-                            child: const Text('Switch'),
-                          ),
-                        if (profiles.profiles.length > 1)
-                          IconButton(
-                            tooltip: 'Remove profile',
-                            icon: const Icon(Icons.delete_outline),
-                            onPressed: () async {
-                              await profiles.removeProfile(p.id);
-                              await session.reloadProfileData();
-                              if (mounted) setState(() {});
-                            },
-                          ),
-                      ],
+                const Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 12),
+                    child: Text(
+                      'Locked words stay blank in place. Unlocking fills the '
+                      'gaps — nothing moves.',
+                      style: TextStyle(fontSize: 13),
                     ),
                   ),
-                Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: OutlinedButton.icon(
-                    icon: const Icon(Icons.add),
-                    label: const Text('Add profile'),
-                    onPressed: () => _addProfileDialog(context, session),
+                ),
+                IconButton(
+                  tooltip: 'Why levels work this way',
+                  icon: const Icon(Icons.info_outline),
+                  onPressed: () => showDialog(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Why levels work this way'),
+                      content: const Text(
+                        'Every word has a fixed position on the board — that '
+                        'is what builds the motor pattern. Words above the '
+                        'chosen level are left as blank cells. When you '
+                        'unlock more, every word you can already see keeps '
+                        'exactly the same position: the board grows into the '
+                        'gaps, it never rearranges.',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          child: const Text('Got it'),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 16),
-          Builder(
-            builder: (context) {
-              final active = profiles.active;
-              if (active == null) return const SizedBox.shrink();
-              return FirstWeekPlanSection(
-                key: ValueKey(active.id),
-                profileId: active.id,
-                profileName: active.name,
-              );
-            },
-          ),
-          const SizedBox(height: 16),
-          _sectionTitle(context, 'Activity summary'),
-          const ActivitySummarySection(),
-          const SizedBox(height: 16),
-          _sectionTitle(context, 'Most used words'),
-          _mostUsedWordsCard(session),
-          const SizedBox(height: 16),
-          _sectionTitle(context, 'Find a word'),
-          const Padding(
-            padding: EdgeInsets.only(bottom: 8, left: 4),
-            child: Text(
-              'Search every word in the current language. Tapping a result '
-              'speaks it so you can hear it — nothing on the board changes.',
-              style: TextStyle(fontSize: 13),
-            ),
-          ),
-          const WordFinderSection(),
-          const SizedBox(height: 16),
-          _sectionTitle(context, 'Vocabulary level'),
-          const Padding(
-            padding: EdgeInsets.only(bottom: 8, left: 4),
-            child: Text(
-              'Words above the chosen level are left as blank cells. Every '
-              'word you can already see keeps exactly the same position when '
-              'you unlock more — the board grows into the gaps, it never '
-              'rearranges. That is what protects the motor pattern.',
-              style: TextStyle(fontSize: 13),
-            ),
-          ),
-          Card(
-            child: RadioGroup<int>(
+            RadioGroup<int>(
               groupValue: session.unlockedLevel,
               onChanged: (v) {
                 if (v != null) session.setUnlockedLevel(v);
@@ -199,30 +440,172 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
                 ],
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          _sectionTitle(context, 'Profile backup'),
-          BackupSection(
-            onImported: () async {
-              await session.reloadProfileData();
-              await session.usage.load();
-              if (mounted) setState(() {});
-            },
-          ),
-          const SizedBox(height: 16),
-          _sectionTitle(context, 'Modeling tips'),
-          const Padding(
-            padding: EdgeInsets.only(bottom: 8, left: 4),
-            child: Text(
-              'The single biggest factor in AAC success is how communication '
-              'partners use the device. These are the habits that work:',
-              style: TextStyle(fontSize: 13),
+          ],
+        ),
+      ),
+      _Section(
+        id: 'finder',
+        title: 'Find a word',
+        icon: Icons.search,
+        summary: (session) {
+          final pack = session.pack;
+          var n = pack.homeItems.where((i) => !i.isFolder).length;
+          for (final f in pack.folders.values) {
+            n += f.words.length;
+          }
+          return 'Search all $n words';
+        },
+        content: (context, session, refresh) => const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(12, 0, 12, 8),
+              child: Text(
+                'Tapping a result speaks it so you can hear it — nothing on '
+                'the board changes.',
+                style: TextStyle(fontSize: 13),
+              ),
             ),
-          ),
-          for (final (title, body) in _tips)
-            Card(
-              margin: const EdgeInsets.symmetric(vertical: 4),
-              child: ExpansionTile(
+            WordFinderSection(),
+          ],
+        ),
+      ),
+      _Section(
+        id: 'profiles',
+        title: 'Communicator profiles',
+        icon: Icons.person_outline,
+        summary: (session) {
+          final profiles = session.profiles;
+          final active = profiles.active;
+          if (active == null) return 'No profile yet';
+          final n = profiles.profiles.length;
+          return n > 1 ? '${active.name} · $n profiles' : active.name;
+        },
+        content: (context, session, refresh) {
+          final profiles = session.profiles;
+          return Column(
+            children: [
+              for (final p in profiles.profiles)
+                ListTile(
+                  leading: const Icon(Icons.person_outline),
+                  title: Text(p.name),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (p.id == profiles.active?.id)
+                        const Icon(Icons.check, color: Colors.green)
+                      else
+                        TextButton(
+                          onPressed: () async {
+                            await session.switchProfile(p.id);
+                            refresh();
+                          },
+                          child: const Text('Switch'),
+                        ),
+                      if (profiles.profiles.length > 1)
+                        IconButton(
+                          tooltip: 'Remove profile',
+                          icon: const Icon(Icons.delete_outline),
+                          onPressed: () async {
+                            await profiles.removeProfile(p.id);
+                            await session.reloadProfileData();
+                            refresh();
+                          },
+                        ),
+                    ],
+                  ),
+                ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add profile'),
+                    onPressed: () =>
+                        _addProfileDialog(context, session, refresh),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+      _Section(
+        id: 'plan',
+        title: 'First week plan',
+        icon: Icons.calendar_month_outlined,
+        summary: (session) => 'A daily plan for week one',
+        content: (context, session, refresh) {
+          final active = session.profiles.active;
+          if (active == null) return const SizedBox.shrink();
+          return FirstWeekPlanSection(
+            key: ValueKey(active.id),
+            profileId: active.id,
+            profileName: active.name,
+          );
+        },
+      ),
+      _Section(
+        id: 'activity',
+        title: 'Activity summary',
+        icon: Icons.insights_outlined,
+        summary: (session) => 'How the board is being used',
+        content: (context, session, refresh) => const ActivitySummarySection(),
+      ),
+      _Section(
+        id: 'usage',
+        title: 'Most used words',
+        icon: Icons.leaderboard_outlined,
+        summary: (session) {
+          final top = session.usage.top(1);
+          if (top.isEmpty) return 'No taps yet';
+          String label;
+          try {
+            label = session.pack.wordById(top.first.key).label;
+          } catch (_) {
+            label = top.first.key;
+          }
+          return 'Top: $label ×${top.first.value}';
+        },
+        content: (context, session, refresh) {
+          final top = session.usage.top(10);
+          if (top.isEmpty) {
+            return const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                'No taps recorded yet. Words tapped on the board will show up '
+                'here, most-used first.',
+                style: TextStyle(fontSize: 13),
+              ),
+            );
+          }
+          return Column(
+            children: [
+              for (var i = 0; i < top.length; i++)
+                _usageRow(session, i + 1, top[i].key, top[i].value),
+            ],
+          );
+        },
+      ),
+      _Section(
+        id: 'tips',
+        title: 'Modeling tips',
+        icon: Icons.lightbulb_outline,
+        summary: (session) => '${_tips.length} habits that make AAC work',
+        content: (context, session, refresh) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(12, 0, 12, 4),
+              child: Text(
+                'How you use the device matters more than any setting. These '
+                'are the habits that work:',
+                style: TextStyle(fontSize: 13),
+              ),
+            ),
+            for (final (title, body) in _tips)
+              ExpansionTile(
                 leading: const Icon(Icons.lightbulb_outline),
                 title: Text(
                   title,
@@ -235,11 +618,30 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
                   ),
                 ],
               ),
-            ),
-          const SizedBox(height: 16),
-          _sectionTitle(context, 'Setup'),
-          Card(
-            child: ListTile(
+          ],
+        ),
+      ),
+      _Section(
+        id: 'data',
+        title: 'Backup & sync',
+        icon: Icons.backup_outlined,
+        summary: (session) => 'Save & restore profiles',
+        content: (context, session, refresh) => BackupSection(
+          onImported: () async {
+            await session.reloadProfileData();
+            await session.usage.load();
+            refresh();
+          },
+        ),
+      ),
+      _Section(
+        id: 'more',
+        title: 'Setup & what\u2019s next',
+        icon: Icons.more_horiz,
+        summary: (session) => 'Tour, roadmap, credits',
+        content: (context, session, refresh) => Column(
+          children: [
+            ListTile(
               leading: const Icon(Icons.replay_outlined),
               title: const Text('Replay setup tour'),
               subtitle: const Text(
@@ -250,57 +652,28 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
                 Navigator.of(context).pop();
               },
             ),
-          ),
-          const SizedBox(height: 16),
-          _sectionTitle(context, 'Planned next'),
-          Card(
-            child: Column(
-              children: [
-                for (final item in _planned)
-                  ListTile(
-                    leading: Icon(Icons.schedule_outlined),
-                    title: Text(item),
-                  ),
-              ],
+            const Divider(),
+            for (final item in _planned)
+              ListTile(
+                dense: true,
+                leading: const Icon(Icons.schedule_outlined),
+                title: Text(item),
+              ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 12, 16, 4),
+              child: Text(
+                'Word symbols: ARASAAC (CC BY-NC-SA), https://arasaac.org',
+                style: TextStyle(fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 4),
-            child: Text(
-              'Word symbols: ARASAAC (CC BY-NC-SA), https://arasaac.org',
-              style: TextStyle(fontSize: 12),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
-    );
+    ];
   }
 
-  Widget _mostUsedWordsCard(SessionState session) {
-    final top = session.usage.top(10);
-    if (top.isEmpty) {
-      return const Card(
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Text(
-            'No taps recorded yet. Words tapped on the board will show up '
-            'here, most-used first.',
-            style: TextStyle(fontSize: 13),
-          ),
-        ),
-      );
-    }
-    return Card(
-      child: Column(
-        children: [
-          for (var i = 0; i < top.length; i++)
-            _usageRow(session, i + 1, top[i].key, top[i].value),
-        ],
-      ),
-    );
-  }
+  // -------------------------------------------------------------- pieces ---
 
   Widget _usageRow(SessionState session, int rank, String id, int count) {
     String label;
@@ -323,20 +696,10 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
     );
   }
 
-  Widget _sectionTitle(BuildContext context, String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.titleMedium
-            ?.copyWith(fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-
   Future<void> _addProfileDialog(
     BuildContext context,
     SessionState session,
+    VoidCallback refresh,
   ) async {
     final controller = TextEditingController();
     final name = await showDialog<String>(
@@ -367,7 +730,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
     );
     if (name != null && name.trim().isNotEmpty) {
       await session.profiles.addProfile(name.trim());
-      if (mounted) setState(() {});
+      refresh();
     }
   }
 }

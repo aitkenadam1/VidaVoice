@@ -21429,6 +21429,18 @@
           "level": 3
         },
         {
+          "emoji": "💑",
+          "id": "nature.anniversary",
+          "label": "anniversaire",
+          "level": 2
+        },
+        {
+          "emoji": "🌳",
+          "id": "nature.arbor_day",
+          "label": "jour de l'arbre",
+          "level": 3
+        },
+        {
           "emoji": "👶",
           "id": "nature.baby_shower",
           "label": "fête prénatale",
@@ -21441,15 +21453,237 @@
           "level": 3
         },
         {
+          "emoji": "🎂",
+          "id": "nature.birthday",
+          "label": "anniversaire",
+          "level": 3
+        },
+        {
           "emoji": "👰",
           "id": "nature.bridal_shower",
           "label": "enterrement de vie de jeune fille",
           "level": 3
         },
         {
+          "emoji": "🐉",
+          "id": "nature.chinese_new_year",
+          "label": "nouvel an chinois",
+          "level": 3
+        },
+        {
+          "emoji": "🎄",
+          "id": "nature.christmas",
+          "label": "noël",
+          "level": 3
+        },
+        {
+          "emoji": "🇲🇽",
+          "id": "nature.cinco_de_mayo",
+          "label": "cinco de mayo",
+          "level": 3
+        },
+        {
+          "emoji": "🏫",
+          "id": "nature.class_reunion",
+          "label": "retrouvailles",
+          "level": 3
+        },
+        {
+          "emoji": "🗺️",
+          "id": "nature.columbus_day",
+          "label": "jour de colomb",
+          "level": 3
+        },
+        {
+          "emoji": "💀",
+          "id": "nature.day_of_the_dead",
+          "label": "jour des morts",
+          "level": 2
+        },
+        {
+          "emoji": "🪔",
+          "id": "nature.diwali",
+          "label": "diwali",
+          "level": 3
+        },
+        {
+          "emoji": "🌍",
+          "id": "nature.earth_day",
+          "label": "jour de la terre",
+          "level": 3
+        },
+        {
+          "emoji": "🐣",
+          "id": "nature.easter",
+          "label": "pâques",
+          "level": 2
+        },
+        {
+          "emoji": "🌙",
+          "id": "nature.eid",
+          "label": "aïd",
+          "level": 3
+        },
+        {
+          "emoji": "👨‍👩‍👧",
+          "id": "nature.family_reunion",
+          "label": "réunion familiale",
+          "level": 2
+        },
+        {
+          "emoji": "👔",
+          "id": "nature.fathers_day",
+          "label": "fête des pères",
+          "level": 3
+        },
+        {
+          "emoji": "🏫",
+          "id": "nature.first_day_of_school",
+          "label": "rentrée scolaire",
+          "level": 3
+        },
+        {
+          "emoji": "🎆",
+          "id": "nature.fourth_of_july",
+          "label": "4 juillet",
+          "level": 2
+        },
+        {
+          "emoji": "🎓",
+          "id": "nature.graduation_day",
+          "label": "remise des diplômes",
+          "level": 2
+        },
+        {
+          "emoji": "👴",
+          "id": "nature.grandparents_day",
+          "label": "fête des grands-parents",
+          "level": 3
+        },
+        {
+          "emoji": "🎃",
+          "id": "nature.halloween",
+          "label": "halloween",
+          "level": 3
+        },
+        {
+          "emoji": "🕎",
+          "id": "nature.hanukkah",
+          "label": "hanoukka",
+          "level": 3
+        },
+        {
+          "emoji": "🏠",
+          "id": "nature.housewarming",
+          "label": "pendaison de crémaillère",
+          "level": 3
+        },
+        {
+          "emoji": "🕯️",
+          "id": "nature.kwanzaa",
+          "label": "kwanzaa",
+          "level": 3
+        },
+        {
+          "emoji": "🔧",
+          "id": "nature.labor_day",
+          "label": "fête du travail",
+          "level": 3
+        },
+        {
+          "emoji": "🎉",
+          "id": "nature.last_day_of_school",
+          "label": "dernier jour d'école",
+          "level": 2
+        },
+        {
+          "emoji": "🎭",
+          "id": "nature.mardi_gras",
+          "label": "mardi gras",
+          "level": 3
+        },
+        {
+          "emoji": "🇺🇸",
+          "id": "nature.memorial_day",
+          "label": "memorial day",
+          "level": 3
+        },
+        {
+          "emoji": "✊",
+          "id": "nature.mlk_day",
+          "label": "jour de MLK",
+          "level": 3
+        },
+        {
+          "emoji": "💐",
+          "id": "nature.mothers_day",
+          "label": "fête des mères",
+          "level": 3
+        },
+        {
+          "emoji": "🎆",
+          "id": "nature.new_year",
+          "label": "nouvel an",
+          "level": 3
+        },
+        {
+          "emoji": "👩‍⚕️",
+          "id": "nature.nurse_appreciation",
+          "label": "journée des infirmiers",
+          "level": 3
+        },
+        {
+          "emoji": "🇺🇸",
+          "id": "nature.presidents_day",
+          "label": "jour des présidents",
+          "level": 3
+        },
+        {
+          "emoji": "🌙",
+          "id": "nature.ramadan",
+          "label": "ramadan",
+          "level": 3
+        },
+        {
           "emoji": "🎉",
           "id": "nature.retirement_party",
           "label": "pot de départ",
+          "level": 3
+        },
+        {
+          "emoji": "👨‍👩‍👧",
+          "id": "nature.reunion",
+          "label": "réunion de famille",
+          "level": 3
+        },
+        {
+          "emoji": "🍀",
+          "id": "nature.st_patricks_day",
+          "label": "saint-patrick",
+          "level": 3
+        },
+        {
+          "emoji": "🍎",
+          "id": "nature.teacher_appreciation",
+          "label": "journée des enseignants",
+          "level": 3
+        },
+        {
+          "emoji": "🦃",
+          "id": "nature.thanksgiving",
+          "label": "action de grâce",
+          "level": 3
+        },
+        {
+          "emoji": "💘",
+          "id": "nature.valentines_day",
+          "label": "saint-valentin",
+          "level": 2
+        },
+        {
+          "emoji": "🎖️",
+          "id": "nature.veterans_day",
+          "label": "jour des vétérans",
           "level": 3
         },
         {
@@ -44595,18 +44829,6 @@
       "label": "Nature",
       "words": [
         {
-          "emoji": "🌲",
-          "id": "nature.acadia",
-          "label": "acadie",
-          "level": 3
-        },
-        {
-          "emoji": "☀️",
-          "id": "nature.afternoon",
-          "label": "après-midi",
-          "level": 3
-        },
-        {
           "emoji": "🌍",
           "id": "nature.aftershock",
           "label": "réplique",
@@ -44616,12 +44838,6 @@
           "emoji": "💨",
           "id": "nature.air_quality",
           "label": "qualité de l'air",
-          "level": 3
-        },
-        {
-          "emoji": "⛰️",
-          "id": "nature.alaska_range",
-          "label": "chaîne d'alaska",
           "level": 3
         },
         {
@@ -44637,54 +44853,6 @@
           "level": 3
         },
         {
-          "emoji": "🏝️",
-          "id": "nature.american_samoa",
-          "label": "samoa américaines",
-          "level": 3
-        },
-        {
-          "emoji": "💑",
-          "id": "nature.anniversary",
-          "label": "anniversaire",
-          "level": 2
-        },
-        {
-          "emoji": "⛰️",
-          "id": "nature.appalachian_mountains",
-          "label": "appalaches",
-          "level": 3
-        },
-        {
-          "emoji": "📅",
-          "id": "nature.april",
-          "label": "avril",
-          "level": 3
-        },
-        {
-          "emoji": "♒",
-          "id": "nature.aquarius",
-          "label": "verseau",
-          "level": 3
-        },
-        {
-          "emoji": "🌳",
-          "id": "nature.arbor_day",
-          "label": "jour de l'arbre",
-          "level": 3
-        },
-        {
-          "emoji": "🏞️",
-          "id": "nature.arches",
-          "label": "arches",
-          "level": 3
-        },
-        {
-          "emoji": "♈",
-          "id": "nature.aries",
-          "label": "bélier",
-          "level": 3
-        },
-        {
           "emoji": "🌋",
           "id": "nature.ash",
           "label": "cendre",
@@ -44697,12 +44865,6 @@
           "level": 3
         },
         {
-          "emoji": "📅",
-          "id": "nature.august",
-          "label": "août",
-          "level": 3
-        },
-        {
           "emoji": "🌌",
           "id": "nature.aurora",
           "label": "aurore boréale",
@@ -44712,12 +44874,6 @@
           "emoji": "❄️",
           "id": "nature.avalanche",
           "label": "avalanche",
-          "level": 3
-        },
-        {
-          "emoji": "👻",
-          "id": "nature.banshee",
-          "label": "banshee",
           "level": 3
         },
         {
@@ -44739,18 +44895,6 @@
           "level": 3
         },
         {
-          "emoji": "🕰️",
-          "id": "nature.big_ben",
-          "label": "big ben",
-          "level": 3
-        },
-        {
-          "emoji": "🏜️",
-          "id": "nature.big_bend",
-          "label": "big bend",
-          "level": 3
-        },
-        {
           "emoji": "⭐",
           "id": "nature.big_dipper",
           "label": "grande ourse",
@@ -44760,18 +44904,6 @@
           "emoji": "🌳",
           "id": "nature.birch_tree",
           "label": "bouleau",
-          "level": 3
-        },
-        {
-          "emoji": "🎂",
-          "id": "nature.birthday",
-          "label": "anniversaire",
-          "level": 3
-        },
-        {
-          "emoji": "🌊",
-          "id": "nature.biscayne",
-          "label": "biscayne",
           "level": 3
         },
         {
@@ -44847,12 +44979,6 @@
           "level": 2
         },
         {
-          "emoji": "🏞️",
-          "id": "nature.bryce_canyon",
-          "label": "bryce canyon",
-          "level": 3
-        },
-        {
           "emoji": "🌷",
           "id": "nature.bud",
           "label": "bourgeon",
@@ -44865,40 +44991,10 @@
           "level": 2
         },
         {
-          "emoji": "♋",
-          "id": "nature.cancer",
-          "label": "cancer",
-          "level": 3
-        },
-        {
           "emoji": "🏞️",
           "id": "nature.canyon",
           "label": "canyon",
           "level": 2
-        },
-        {
-          "emoji": "🏛️",
-          "id": "nature.capitol",
-          "label": "capitole",
-          "level": 3
-        },
-        {
-          "emoji": "♑",
-          "id": "nature.capricorn",
-          "label": "capricorne",
-          "level": 3
-        },
-        {
-          "emoji": "🦇",
-          "id": "nature.carlsbad_caverns",
-          "label": "grottes de carlsbad",
-          "level": 3
-        },
-        {
-          "emoji": "⛰️",
-          "id": "nature.cascade_mountains",
-          "label": "chaîne des cascades",
-          "level": 3
         },
         {
           "emoji": "🦇",
@@ -44913,63 +45009,15 @@
           "level": 3
         },
         {
-          "emoji": "🏝️",
-          "id": "nature.channel_islands",
-          "label": "îles anglo-normandes",
-          "level": 3
-        },
-        {
-          "emoji": "🏝️",
-          "id": "nature.channel_islands_park",
-          "label": "îles du canal",
-          "level": 3
-        },
-        {
           "emoji": "🌸",
           "id": "nature.cherry_blossom",
           "label": "fleur de cerisier",
           "level": 3
         },
         {
-          "emoji": "🐉",
-          "id": "nature.chinese_new_year",
-          "label": "nouvel an chinois",
-          "level": 3
-        },
-        {
-          "emoji": "⛰️",
-          "id": "nature.christ_the_redeemer",
-          "label": "christ rédempteur",
-          "level": 3
-        },
-        {
-          "emoji": "🎄",
-          "id": "nature.christmas",
-          "label": "noël",
-          "level": 3
-        },
-        {
           "emoji": "🌼",
           "id": "nature.chrysanthemum",
           "label": "chrysanthème",
-          "level": 3
-        },
-        {
-          "emoji": "🐐",
-          "id": "nature.chupacabra",
-          "label": "chupacabra",
-          "level": 3
-        },
-        {
-          "emoji": "🇲🇽",
-          "id": "nature.cinco_de_mayo",
-          "label": "cinco de mayo",
-          "level": 3
-        },
-        {
-          "emoji": "🏫",
-          "id": "nature.class_reunion",
-          "label": "retrouvailles",
           "level": 3
         },
         {
@@ -45009,18 +45057,6 @@
           "level": 3
         },
         {
-          "emoji": "🗺️",
-          "id": "nature.columbus_day",
-          "label": "jour de colomb",
-          "level": 3
-        },
-        {
-          "emoji": "🌳",
-          "id": "nature.congaree",
-          "label": "congaree",
-          "level": 3
-        },
-        {
           "emoji": "⭐",
           "id": "nature.constellation",
           "label": "constellation",
@@ -45039,12 +45075,6 @@
           "level": 3
         },
         {
-          "emoji": "🏞️",
-          "id": "nature.crater_lake",
-          "label": "crater lake",
-          "level": 3
-        },
-        {
           "emoji": "💧",
           "id": "nature.creek",
           "label": "ruisseau",
@@ -45057,21 +45087,9 @@
           "level": 3
         },
         {
-          "emoji": "🔮",
-          "id": "nature.crystal_ball",
-          "label": "boule de cristal",
-          "level": 3
-        },
-        {
           "emoji": "🌊",
           "id": "nature.current",
           "label": "courant",
-          "level": 3
-        },
-        {
-          "emoji": "🏞️",
-          "id": "nature.cuyahoga_valley",
-          "label": "vallée de cuyahoga",
           "level": 3
         },
         {
@@ -45081,57 +45099,9 @@
           "level": 3
         },
         {
-          "emoji": "👁️",
-          "id": "nature.cyclops",
-          "label": "cyclope",
-          "level": 3
-        },
-        {
           "emoji": "🌼",
           "id": "nature.dandelion",
           "label": "pissenlit",
-          "level": 3
-        },
-        {
-          "emoji": "🌅",
-          "id": "nature.dawn",
-          "label": "aube",
-          "level": 3
-        },
-        {
-          "emoji": "💀",
-          "id": "nature.day_of_the_dead",
-          "label": "jour des morts",
-          "level": 2
-        },
-        {
-          "emoji": "⏰",
-          "id": "nature.daylight_saving",
-          "label": "heure d'été",
-          "level": 3
-        },
-        {
-          "emoji": "☀️",
-          "id": "nature.daytime",
-          "label": "jour",
-          "level": 3
-        },
-        {
-          "emoji": "🏜️",
-          "id": "nature.death_valley",
-          "label": "vallée de la mort",
-          "level": 3
-        },
-        {
-          "emoji": "🏜️",
-          "id": "nature.death_valley_park",
-          "label": "vallée de la mort",
-          "level": 3
-        },
-        {
-          "emoji": "📅",
-          "id": "nature.december",
-          "label": "décembre",
           "level": 3
         },
         {
@@ -45144,18 +45114,6 @@
           "emoji": "🏞️",
           "id": "nature.delta",
           "label": "delta",
-          "level": 3
-        },
-        {
-          "emoji": "⛰️",
-          "id": "nature.denali",
-          "label": "denali",
-          "level": 3
-        },
-        {
-          "emoji": "⛰️",
-          "id": "nature.denali_park",
-          "label": "parc denali",
           "level": 3
         },
         {
@@ -45174,12 +45132,6 @@
           "emoji": "🟤",
           "id": "nature.dirt",
           "label": "terre",
-          "level": 3
-        },
-        {
-          "emoji": "🪔",
-          "id": "nature.diwali",
-          "label": "diwali",
           "level": 3
         },
         {
@@ -45213,33 +45165,15 @@
           "level": 2
         },
         {
-          "emoji": "🏝️",
-          "id": "nature.dry_tortugas",
-          "label": "dry tortugas",
-          "level": 3
-        },
-        {
           "emoji": "🏜️",
           "id": "nature.dry_weather",
           "label": "sec",
           "level": 2
         },
         {
-          "emoji": "🌳",
-          "id": "nature.dryad",
-          "label": "dryade",
-          "level": 3
-        },
-        {
           "emoji": "🏜️",
           "id": "nature.dune",
           "label": "dune",
-          "level": 3
-        },
-        {
-          "emoji": "🌆",
-          "id": "nature.dusk",
-          "label": "crépuscule",
           "level": 3
         },
         {
@@ -45256,20 +45190,8 @@
         },
         {
           "emoji": "🌍",
-          "id": "nature.earth_day",
-          "label": "jour de la terre",
-          "level": 3
-        },
-        {
-          "emoji": "🌍",
           "id": "nature.earthquake",
           "label": "tremblement de terre",
-          "level": 2
-        },
-        {
-          "emoji": "🐣",
-          "id": "nature.easter",
-          "label": "pâques",
           "level": 2
         },
         {
@@ -45279,39 +45201,9 @@
           "level": 2
         },
         {
-          "emoji": "🌙",
-          "id": "nature.eid",
-          "label": "aïd",
-          "level": 3
-        },
-        {
-          "emoji": "🧙",
-          "id": "nature.enchantress",
-          "label": "enchanteresse",
-          "level": 3
-        },
-        {
-          "emoji": "🌍",
-          "id": "nature.equinox",
-          "label": "équinoxe",
-          "level": 3
-        },
-        {
           "emoji": "🏞️",
           "id": "nature.estuary",
           "label": "estuaire",
-          "level": 3
-        },
-        {
-          "emoji": "🌆",
-          "id": "nature.evening",
-          "label": "soir",
-          "level": 3
-        },
-        {
-          "emoji": "🐊",
-          "id": "nature.everglades",
-          "label": "everglades",
           "level": 3
         },
         {
@@ -45327,24 +45219,6 @@
           "level": 3
         },
         {
-          "emoji": "👨‍👩‍👧",
-          "id": "nature.family_reunion",
-          "label": "réunion familiale",
-          "level": 2
-        },
-        {
-          "emoji": "👔",
-          "id": "nature.fathers_day",
-          "label": "fête des pères",
-          "level": 3
-        },
-        {
-          "emoji": "📅",
-          "id": "nature.february",
-          "label": "février",
-          "level": 3
-        },
-        {
           "emoji": "🌿",
           "id": "nature.fern",
           "label": "fougère",
@@ -45354,12 +45228,6 @@
           "emoji": "🌾",
           "id": "nature.field",
           "label": "champ",
-          "level": 3
-        },
-        {
-          "emoji": "🏫",
-          "id": "nature.first_day_of_school",
-          "label": "rentrée scolaire",
           "level": 3
         },
         {
@@ -45406,32 +45274,14 @@
         },
         {
           "emoji": "🍀",
-          "id": "nature.four_leaf_clover",
-          "label": "trèfle à quatre feuilles",
-          "level": 3
-        },
-        {
-          "emoji": "🍀",
           "id": "nature.four_leaf_clover_found",
           "label": "trèfle porte-bonheur",
-          "level": 2
-        },
-        {
-          "emoji": "🎆",
-          "id": "nature.fourth_of_july",
-          "label": "4 juillet",
           "level": 2
         },
         {
           "emoji": "🧊",
           "id": "nature.freezing_rain",
           "label": "pluie verglaçante",
-          "level": 3
-        },
-        {
-          "emoji": "📅",
-          "id": "nature.friday",
-          "label": "vendredi",
           "level": 3
         },
         {
@@ -45465,21 +45315,9 @@
           "level": 3
         },
         {
-          "emoji": "🌉",
-          "id": "nature.gateway_arch",
-          "label": "arche de saint-louis",
-          "level": 3
-        },
-        {
           "emoji": "💎",
           "id": "nature.gem",
           "label": "gemme",
-          "level": 3
-        },
-        {
-          "emoji": "♊",
-          "id": "nature.gemini",
-          "label": "gémeaux",
           "level": 3
         },
         {
@@ -45495,57 +45333,9 @@
           "level": 3
         },
         {
-          "emoji": "🧊",
-          "id": "nature.glacier_park",
-          "label": "parc des glaciers",
-          "level": 3
-        },
-        {
-          "emoji": "🧙",
-          "id": "nature.gnome",
-          "label": "gnome",
-          "level": 3
-        },
-        {
-          "emoji": "👺",
-          "id": "nature.goblin",
-          "label": "gobelin",
-          "level": 3
-        },
-        {
           "emoji": "🪙",
           "id": "nature.gold_nugget",
           "label": "pépite d'or",
-          "level": 3
-        },
-        {
-          "emoji": "🌉",
-          "id": "nature.golden_gate_bridge",
-          "label": "pont du golden gate",
-          "level": 3
-        },
-        {
-          "emoji": "🐍",
-          "id": "nature.gorgon",
-          "label": "gorgone",
-          "level": 3
-        },
-        {
-          "emoji": "🎓",
-          "id": "nature.graduation_day",
-          "label": "remise des diplômes",
-          "level": 2
-        },
-        {
-          "emoji": "🏞️",
-          "id": "nature.grand_canyon",
-          "label": "grand canyon",
-          "level": 2
-        },
-        {
-          "emoji": "👴",
-          "id": "nature.grandparents_day",
-          "label": "fête des grands-parents",
           "level": 3
         },
         {
@@ -45561,39 +45351,9 @@
           "level": 3
         },
         {
-          "emoji": "🏜️",
-          "id": "nature.great_basin",
-          "label": "grand bassin",
-          "level": 3
-        },
-        {
-          "emoji": "🏞️",
-          "id": "nature.great_lakes",
-          "label": "grands lacs",
-          "level": 3
-        },
-        {
-          "emoji": "⛰️",
-          "id": "nature.great_smoky_mountains",
-          "label": "great smoky mountains",
-          "level": 3
-        },
-        {
-          "emoji": "🧱",
-          "id": "nature.great_wall",
-          "label": "grande muraille",
-          "level": 3
-        },
-        {
           "emoji": "🌳",
           "id": "nature.grove",
           "label": "bosquet",
-          "level": 3
-        },
-        {
-          "emoji": "⛰️",
-          "id": "nature.guadalupe_mountains",
-          "label": "monts guadalupe",
           "level": 3
         },
         {
@@ -45615,21 +45375,9 @@
           "level": 2
         },
         {
-          "emoji": "🌋",
-          "id": "nature.haleakala",
-          "label": "haleakala",
-          "level": 3
-        },
-        {
           "emoji": "🌓",
           "id": "nature.half_moon",
           "label": "demi-lune",
-          "level": 3
-        },
-        {
-          "emoji": "🎃",
-          "id": "nature.halloween",
-          "label": "halloween",
           "level": 3
         },
         {
@@ -45639,21 +45387,9 @@
           "level": 3
         },
         {
-          "emoji": "🕎",
-          "id": "nature.hanukkah",
-          "label": "hanoukka",
-          "level": 3
-        },
-        {
           "emoji": "🌕",
           "id": "nature.harvest_moon",
           "label": "lune des moissons",
-          "level": 3
-        },
-        {
-          "emoji": "🌋",
-          "id": "nature.hawaii_volcanoes",
-          "label": "volcans d'hawaï",
           "level": 3
         },
         {
@@ -45705,33 +45441,9 @@
           "level": 3
         },
         {
-          "emoji": "🌊",
-          "id": "nature.hoover_dam",
-          "label": "barrage hoover",
-          "level": 3
-        },
-        {
-          "emoji": "♈",
-          "id": "nature.horoscope",
-          "label": "horoscope",
-          "level": 3
-        },
-        {
           "emoji": "♨️",
           "id": "nature.hot_spring",
           "label": "source chaude",
-          "level": 3
-        },
-        {
-          "emoji": "♨️",
-          "id": "nature.hot_springs_park",
-          "label": "hot springs",
-          "level": 3
-        },
-        {
-          "emoji": "🏠",
-          "id": "nature.housewarming",
-          "label": "pendaison de crémaillère",
           "level": 3
         },
         {
@@ -45777,12 +45489,6 @@
           "level": 3
         },
         {
-          "emoji": "🏖️",
-          "id": "nature.indiana_dunes",
-          "label": "dunes de l'indiana",
-          "level": 3
-        },
-        {
           "emoji": "🏝️",
           "id": "nature.island",
           "label": "île",
@@ -45795,33 +45501,9 @@
           "level": 3
         },
         {
-          "emoji": "📅",
-          "id": "nature.january",
-          "label": "janvier",
-          "level": 3
-        },
-        {
           "emoji": "🌸",
           "id": "nature.jasmine",
           "label": "jasmin",
-          "level": 3
-        },
-        {
-          "emoji": "🌵",
-          "id": "nature.joshua_tree",
-          "label": "joshua tree",
-          "level": 3
-        },
-        {
-          "emoji": "📅",
-          "id": "nature.july",
-          "label": "juillet",
-          "level": 3
-        },
-        {
-          "emoji": "📅",
-          "id": "nature.june",
-          "label": "juin",
           "level": 3
         },
         {
@@ -45843,30 +45525,6 @@
           "level": 3
         },
         {
-          "emoji": "🐴",
-          "id": "nature.kelpie",
-          "label": "kelpie",
-          "level": 3
-        },
-        {
-          "emoji": "🏞️",
-          "id": "nature.kings_canyon",
-          "label": "kings canyon",
-          "level": 3
-        },
-        {
-          "emoji": "🕯️",
-          "id": "nature.kwanzaa",
-          "label": "kwanzaa",
-          "level": 3
-        },
-        {
-          "emoji": "🔧",
-          "id": "nature.labor_day",
-          "label": "fête du travail",
-          "level": 3
-        },
-        {
           "emoji": "🏝️",
           "id": "nature.lagoon",
           "label": "lagune",
@@ -45879,34 +45537,10 @@
           "level": 3
         },
         {
-          "emoji": "🏞️",
-          "id": "nature.lake_michigan",
-          "label": "lac michigan",
-          "level": 3
-        },
-        {
-          "emoji": "🏞️",
-          "id": "nature.lake_superior",
-          "label": "lac supérieur",
-          "level": 3
-        },
-        {
           "emoji": "⛰️",
           "id": "nature.landslide",
           "label": "glissement de terrain",
           "level": 3
-        },
-        {
-          "emoji": "🌋",
-          "id": "nature.lassen_volcanic",
-          "label": "lassen volcanique",
-          "level": 3
-        },
-        {
-          "emoji": "🎉",
-          "id": "nature.last_day_of_school",
-          "label": "dernier jour d'école",
-          "level": 2
         },
         {
           "emoji": "🌋",
@@ -45924,18 +45558,6 @@
           "emoji": "🍃",
           "id": "nature.leaf",
           "label": "feuille",
-          "level": 3
-        },
-        {
-          "emoji": "♌",
-          "id": "nature.leo",
-          "label": "lion",
-          "level": 3
-        },
-        {
-          "emoji": "♎",
-          "id": "nature.libra",
-          "label": "balance",
           "level": 3
         },
         {
@@ -45957,33 +45579,9 @@
           "level": 3
         },
         {
-          "emoji": "🗿",
-          "id": "nature.lincoln_memorial",
-          "label": "mémorial lincoln",
-          "level": 3
-        },
-        {
-          "emoji": "🦕",
-          "id": "nature.loch_ness",
-          "label": "nessie",
-          "level": 3
-        },
-        {
-          "emoji": "☀️",
-          "id": "nature.longest_day",
-          "label": "jour le plus long",
-          "level": 3
-        },
-        {
           "emoji": "🌊",
           "id": "nature.low_tide",
           "label": "marée basse",
-          "level": 3
-        },
-        {
-          "emoji": "🐴",
-          "id": "nature.lucky_horseshoe",
-          "label": "fer à cheval porte-bonheur",
           "level": 3
         },
         {
@@ -45993,39 +45591,9 @@
           "level": 2
         },
         {
-          "emoji": "⛰️",
-          "id": "nature.machu_picchu",
-          "label": "machu picchu",
-          "level": 3
-        },
-        {
-          "emoji": "🪔",
-          "id": "nature.magic_lamp",
-          "label": "lampe magique",
-          "level": 3
-        },
-        {
-          "emoji": "🦇",
-          "id": "nature.mammoth_cave",
-          "label": "grotte de mammoth",
-          "level": 3
-        },
-        {
           "emoji": "🍁",
           "id": "nature.maple_tree",
           "label": "érable",
-          "level": 3
-        },
-        {
-          "emoji": "📅",
-          "id": "nature.march",
-          "label": "mars",
-          "level": 3
-        },
-        {
-          "emoji": "🎭",
-          "id": "nature.mardi_gras",
-          "label": "mardi gras",
           "level": 3
         },
         {
@@ -46047,33 +45615,15 @@
           "level": 3
         },
         {
-          "emoji": "📅",
-          "id": "nature.may",
-          "label": "mai",
-          "level": 3
-        },
-        {
           "emoji": "🌸",
           "id": "nature.meadow",
           "label": "prairie",
           "level": 3
         },
         {
-          "emoji": "🇺🇸",
-          "id": "nature.memorial_day",
-          "label": "memorial day",
-          "level": 3
-        },
-        {
           "emoji": "🪐",
           "id": "nature.mercury",
           "label": "mercure",
-          "level": 3
-        },
-        {
-          "emoji": "🧜",
-          "id": "nature.merman",
-          "label": "triton",
           "level": 3
         },
         {
@@ -46089,22 +45639,10 @@
           "level": 2
         },
         {
-          "emoji": "🌙",
-          "id": "nature.midnight",
-          "label": "minuit",
-          "level": 2
-        },
-        {
           "emoji": "🌌",
           "id": "nature.milky_way",
           "label": "voie lactée",
           "level": 2
-        },
-        {
-          "emoji": "🏞️",
-          "id": "nature.mississippi_river",
-          "label": "mississippi",
-          "level": 3
         },
         {
           "emoji": "🌫️",
@@ -46113,39 +45651,15 @@
           "level": 2
         },
         {
-          "emoji": "✊",
-          "id": "nature.mlk_day",
-          "label": "jour de MLK",
-          "level": 3
-        },
-        {
-          "emoji": "🏜️",
-          "id": "nature.mojave_desert",
-          "label": "désert de mojave",
-          "level": 3
-        },
-        {
           "emoji": "🦠",
           "id": "nature.mold",
           "label": "moisissure",
           "level": 3
         },
         {
-          "emoji": "📅",
-          "id": "nature.monday",
-          "label": "lundi",
-          "level": 3
-        },
-        {
           "emoji": "🌧️",
           "id": "nature.monsoon",
           "label": "mousson",
-          "level": 3
-        },
-        {
-          "emoji": "📅",
-          "id": "nature.month",
-          "label": "mois",
           "level": 3
         },
         {
@@ -46158,12 +45672,6 @@
           "emoji": "🌙",
           "id": "nature.moon_phases",
           "label": "phases de la lune",
-          "level": 3
-        },
-        {
-          "emoji": "🌅",
-          "id": "nature.morning",
-          "label": "matin",
           "level": 3
         },
         {
@@ -46182,36 +45690,6 @@
           "emoji": "☁️",
           "id": "nature.mostly_cloudy",
           "label": "très nuageux",
-          "level": 3
-        },
-        {
-          "emoji": "💐",
-          "id": "nature.mothers_day",
-          "label": "fête des mères",
-          "level": 3
-        },
-        {
-          "emoji": "⛰️",
-          "id": "nature.mount_rainier",
-          "label": "mont rainier",
-          "level": 3
-        },
-        {
-          "emoji": "⛰️",
-          "id": "nature.mount_rainier_park",
-          "label": "parc du mont rainier",
-          "level": 3
-        },
-        {
-          "emoji": "🗿",
-          "id": "nature.mount_rushmore",
-          "label": "mont rushmore",
-          "level": 3
-        },
-        {
-          "emoji": "🌋",
-          "id": "nature.mount_st_helens",
-          "label": "mont saint helens",
           "level": 3
         },
         {
@@ -46263,48 +45741,6 @@
           "level": 3
         },
         {
-          "emoji": "🏞️",
-          "id": "nature.new_river_gorge",
-          "label": "new river gorge",
-          "level": 3
-        },
-        {
-          "emoji": "🎆",
-          "id": "nature.new_year",
-          "label": "nouvel an",
-          "level": 3
-        },
-        {
-          "emoji": "💦",
-          "id": "nature.niagara_falls",
-          "label": "chutes du niagara",
-          "level": 3
-        },
-        {
-          "emoji": "🌙",
-          "id": "nature.night",
-          "label": "nuit",
-          "level": 3
-        },
-        {
-          "emoji": "🌙",
-          "id": "nature.nighttime",
-          "label": "nuit",
-          "level": 3
-        },
-        {
-          "emoji": "☀️",
-          "id": "nature.noon",
-          "label": "midi",
-          "level": 2
-        },
-        {
-          "emoji": "⛰️",
-          "id": "nature.north_cascades",
-          "label": "cascades du nord",
-          "level": 3
-        },
-        {
           "emoji": "⭐",
           "id": "nature.north_star",
           "label": "étoile polaire",
@@ -46315,18 +45751,6 @@
           "id": "nature.northern_lights",
           "label": "aurores boréales",
           "level": 2
-        },
-        {
-          "emoji": "📅",
-          "id": "nature.november",
-          "label": "novembre",
-          "level": 3
-        },
-        {
-          "emoji": "👩‍⚕️",
-          "id": "nature.nurse_appreciation",
-          "label": "journée des infirmiers",
-          "level": 3
         },
         {
           "emoji": "🌳",
@@ -46347,33 +45771,9 @@
           "level": 3
         },
         {
-          "emoji": "📅",
-          "id": "nature.october",
-          "label": "octobre",
-          "level": 3
-        },
-        {
-          "emoji": "👹",
-          "id": "nature.ogre",
-          "label": "ogre",
-          "level": 3
-        },
-        {
-          "emoji": "👹",
-          "id": "nature.orc",
-          "label": "orque",
-          "level": 3
-        },
-        {
           "emoji": "🌺",
           "id": "nature.orchid",
           "label": "orchidée",
-          "level": 3
-        },
-        {
-          "emoji": "🌵",
-          "id": "nature.organ_pipe_cactus",
-          "label": "orgue",
           "level": 3
         },
         {
@@ -46386,12 +45786,6 @@
           "emoji": "❄️",
           "id": "nature.packed_snow",
           "label": "neige tassée",
-          "level": 3
-        },
-        {
-          "emoji": "🤚",
-          "id": "nature.palm_reading",
-          "label": "chiromancie",
           "level": 3
         },
         {
@@ -46431,34 +45825,10 @@
           "level": 3
         },
         {
-          "emoji": "🪵",
-          "id": "nature.petrified_forest",
-          "label": "forêt pétrifiée",
-          "level": 3
-        },
-        {
           "emoji": "🌲",
           "id": "nature.pine_tree",
           "label": "pin",
           "level": 2
-        },
-        {
-          "emoji": "⛰️",
-          "id": "nature.pinnacles",
-          "label": "pinnacles",
-          "level": 3
-        },
-        {
-          "emoji": "⛰️",
-          "id": "nature.pinnacles_park",
-          "label": "pinnacles",
-          "level": 3
-        },
-        {
-          "emoji": "♓",
-          "id": "nature.pisces",
-          "label": "poissons",
-          "level": 3
         },
         {
           "emoji": "🌿",
@@ -46509,12 +45879,6 @@
           "level": 3
         },
         {
-          "emoji": "🪙",
-          "id": "nature.pot_of_gold",
-          "label": "pot d'or",
-          "level": 3
-        },
-        {
           "emoji": "❄️",
           "id": "nature.powder_snow",
           "label": "poudreuse",
@@ -46524,18 +45888,6 @@
           "emoji": "🌾",
           "id": "nature.prairie",
           "label": "prairie",
-          "level": 3
-        },
-        {
-          "emoji": "🇺🇸",
-          "id": "nature.presidents_day",
-          "label": "jour des présidents",
-          "level": 3
-        },
-        {
-          "emoji": "🏝️",
-          "id": "nature.puuhonua",
-          "label": "pu'uhonua",
           "level": 3
         },
         {
@@ -46563,12 +45915,6 @@
           "level": 3
         },
         {
-          "emoji": "🌙",
-          "id": "nature.ramadan",
-          "label": "ramadan",
-          "level": 3
-        },
-        {
           "emoji": "🚣",
           "id": "nature.rapids",
           "label": "rapides",
@@ -46578,18 +45924,6 @@
           "emoji": "🌲",
           "id": "nature.redwood",
           "label": "séquoia",
-          "level": 3
-        },
-        {
-          "emoji": "🌲",
-          "id": "nature.redwood_forest",
-          "label": "forêt de séquoias",
-          "level": 3
-        },
-        {
-          "emoji": "👨‍👩‍👧",
-          "id": "nature.reunion",
-          "label": "réunion de famille",
           "level": 3
         },
         {
@@ -46611,12 +45945,6 @@
           "level": 3
         },
         {
-          "emoji": "⛰️",
-          "id": "nature.rocky_mountains",
-          "label": "montagnes rocheuses",
-          "level": 3
-        },
-        {
           "emoji": "🌳",
           "id": "nature.roots",
           "label": "racines",
@@ -46626,18 +45954,6 @@
           "emoji": "🌹",
           "id": "nature.rose",
           "label": "rose",
-          "level": 3
-        },
-        {
-          "emoji": "🛣️",
-          "id": "nature.route_66",
-          "label": "route 66",
-          "level": 3
-        },
-        {
-          "emoji": "♐",
-          "id": "nature.sagittarius",
-          "label": "sagittaire",
           "level": 3
         },
         {
@@ -46671,21 +45987,9 @@
           "level": 3
         },
         {
-          "emoji": "📅",
-          "id": "nature.saturday",
-          "label": "samedi",
-          "level": 3
-        },
-        {
           "emoji": "🦁",
           "id": "nature.savanna",
           "label": "savane",
-          "level": 3
-        },
-        {
-          "emoji": "♏",
-          "id": "nature.scorpio",
-          "label": "scorpion",
           "level": 3
         },
         {
@@ -46693,12 +45997,6 @@
           "id": "nature.sea",
           "label": "mer",
           "level": 3
-        },
-        {
-          "emoji": "🍂",
-          "id": "nature.season",
-          "label": "saison",
-          "level": 2
         },
         {
           "emoji": "🌊",
@@ -46713,45 +46011,15 @@
           "level": 3
         },
         {
-          "emoji": "🦭",
-          "id": "nature.selkie",
-          "label": "selkie",
-          "level": 3
-        },
-        {
-          "emoji": "📅",
-          "id": "nature.september",
-          "label": "septembre",
-          "level": 3
-        },
-        {
-          "emoji": "🌲",
-          "id": "nature.sequoia_park",
-          "label": "parc de séquoias",
-          "level": 3
-        },
-        {
           "emoji": "🐚",
           "id": "nature.shell",
           "label": "coquillage",
           "level": 3
         },
         {
-          "emoji": "🏞️",
-          "id": "nature.shenandoah",
-          "label": "shenandoah",
-          "level": 3
-        },
-        {
           "emoji": "🌠",
           "id": "nature.shooting_star",
           "label": "étoile filante",
-          "level": 3
-        },
-        {
-          "emoji": "🌙",
-          "id": "nature.shortest_day",
-          "label": "jour le plus court",
           "level": 3
         },
         {
@@ -46821,24 +46089,6 @@
           "level": 2
         },
         {
-          "emoji": "☀️",
-          "id": "nature.solstice",
-          "label": "solstice",
-          "level": 3
-        },
-        {
-          "emoji": "🌵",
-          "id": "nature.sonoran_desert",
-          "label": "désert de sonora",
-          "level": 3
-        },
-        {
-          "emoji": "🗼",
-          "id": "nature.space_needle",
-          "label": "space needle",
-          "level": 3
-        },
-        {
           "emoji": "🛰️",
           "id": "nature.space_station",
           "label": "station spatiale",
@@ -46861,12 +46111,6 @@
           "id": "nature.sprout",
           "label": "pousse",
           "level": 2
-        },
-        {
-          "emoji": "🍀",
-          "id": "nature.st_patricks_day",
-          "label": "saint-patrick",
-          "level": 3
         },
         {
           "emoji": "⭐",
@@ -46935,12 +46179,6 @@
           "level": 3
         },
         {
-          "emoji": "📅",
-          "id": "nature.sunday",
-          "label": "dimanche",
-          "level": 3
-        },
-        {
           "emoji": "☀️",
           "id": "nature.sundog",
           "label": "parhélie",
@@ -46995,45 +46233,9 @@
           "level": 3
         },
         {
-          "emoji": "🎭",
-          "id": "nature.sydney_opera_house",
-          "label": "opéra de sydney",
-          "level": 3
-        },
-        {
-          "emoji": "🕌",
-          "id": "nature.taj_mahal",
-          "label": "taj mahal",
-          "level": 3
-        },
-        {
-          "emoji": "🔮",
-          "id": "nature.tarot",
-          "label": "tarot",
-          "level": 3
-        },
-        {
-          "emoji": "♉",
-          "id": "nature.taurus",
-          "label": "taureau",
-          "level": 3
-        },
-        {
-          "emoji": "🍎",
-          "id": "nature.teacher_appreciation",
-          "label": "journée des enseignants",
-          "level": 3
-        },
-        {
           "emoji": "🌡️",
           "id": "nature.temperature",
           "label": "température",
-          "level": 3
-        },
-        {
-          "emoji": "🦃",
-          "id": "nature.thanksgiving",
-          "label": "action de grâce",
           "level": 3
         },
         {
@@ -47052,12 +46254,6 @@
           "emoji": "⛈️",
           "id": "nature.thunderstorm",
           "label": "orage",
-          "level": 3
-        },
-        {
-          "emoji": "📅",
-          "id": "nature.thursday",
-          "label": "jeudi",
           "level": 3
         },
         {
@@ -47109,12 +46305,6 @@
           "level": 2
         },
         {
-          "emoji": "📅",
-          "id": "nature.tuesday",
-          "label": "mardi",
-          "level": 3
-        },
-        {
           "emoji": "❄️",
           "id": "nature.tundra",
           "label": "toundra",
@@ -47124,12 +46314,6 @@
           "emoji": "🌳",
           "id": "nature.twig",
           "label": "brindille",
-          "level": 3
-        },
-        {
-          "emoji": "🌆",
-          "id": "nature.twilight",
-          "label": "crépuscule",
           "level": 3
         },
         {
@@ -47157,18 +46341,6 @@
           "level": 3
         },
         {
-          "emoji": "🏖️",
-          "id": "nature.vacation",
-          "label": "vacances",
-          "level": 3
-        },
-        {
-          "emoji": "💘",
-          "id": "nature.valentines_day",
-          "label": "saint-valentin",
-          "level": 2
-        },
-        {
           "emoji": "🏞️",
           "id": "nature.valley",
           "label": "vallée",
@@ -47187,12 +46359,6 @@
           "level": 3
         },
         {
-          "emoji": "🎖️",
-          "id": "nature.veterans_day",
-          "label": "jour des vétérans",
-          "level": 3
-        },
-        {
           "emoji": "🍇",
           "id": "nature.vine",
           "label": "vigne",
@@ -47205,33 +46371,9 @@
           "level": 3
         },
         {
-          "emoji": "🏝️",
-          "id": "nature.virgin_islands",
-          "label": "îles vierges",
-          "level": 3
-        },
-        {
-          "emoji": "♍",
-          "id": "nature.virgo",
-          "label": "vierge",
-          "level": 3
-        },
-        {
           "emoji": "🌋",
           "id": "nature.volcano",
           "label": "volcan",
-          "level": 3
-        },
-        {
-          "emoji": "🧙",
-          "id": "nature.warlock",
-          "label": "sorcier",
-          "level": 3
-        },
-        {
-          "emoji": "🗼",
-          "id": "nature.washington_monument",
-          "label": "monument de washington",
           "level": 3
         },
         {
@@ -47247,24 +46389,6 @@
           "level": 3
         },
         {
-          "emoji": "📅",
-          "id": "nature.wednesday",
-          "label": "mercredi",
-          "level": 3
-        },
-        {
-          "emoji": "📅",
-          "id": "nature.week",
-          "label": "semaine",
-          "level": 3
-        },
-        {
-          "emoji": "🎉",
-          "id": "nature.weekend",
-          "label": "week-end",
-          "level": 3
-        },
-        {
           "emoji": "🦆",
           "id": "nature.wetland",
           "label": "zone humide",
@@ -47274,18 +46398,6 @@
           "emoji": "🌀",
           "id": "nature.whirlpool",
           "label": "tourbillon",
-          "level": 3
-        },
-        {
-          "emoji": "🏛️",
-          "id": "nature.white_house",
-          "label": "maison-blanche",
-          "level": 3
-        },
-        {
-          "emoji": "🏜️",
-          "id": "nature.white_sands",
-          "label": "white sands",
           "level": 3
         },
         {
@@ -47337,46 +46449,10 @@
           "level": 3
         },
         {
-          "emoji": "🍗",
-          "id": "nature.wishbone",
-          "label": "os à vœux",
-          "level": 3
-        },
-        {
           "emoji": "🌲",
           "id": "nature.woods",
           "label": "bois",
           "level": 2
-        },
-        {
-          "emoji": "📅",
-          "id": "nature.year",
-          "label": "année",
-          "level": 3
-        },
-        {
-          "emoji": "🌋",
-          "id": "nature.yellowstone",
-          "label": "yellowstone",
-          "level": 3
-        },
-        {
-          "emoji": "⛰️",
-          "id": "nature.yosemite",
-          "label": "yosemite",
-          "level": 3
-        },
-        {
-          "emoji": "🏞️",
-          "id": "nature.zion",
-          "label": "zion",
-          "level": 3
-        },
-        {
-          "emoji": "♈",
-          "id": "nature.zodiac",
-          "label": "zodiaque",
-          "level": 3
         }
       ]
     },
@@ -53169,6 +52245,24 @@
       "label": "Histoires",
       "words": [
         {
+          "emoji": "♒",
+          "id": "nature.aquarius",
+          "label": "verseau",
+          "level": 3
+        },
+        {
+          "emoji": "♈",
+          "id": "nature.aries",
+          "label": "bélier",
+          "level": 3
+        },
+        {
+          "emoji": "👻",
+          "id": "nature.banshee",
+          "label": "banshee",
+          "level": 3
+        },
+        {
           "emoji": "🐍",
           "id": "nature.basilisk",
           "label": "basilic",
@@ -53178,6 +52272,18 @@
           "emoji": "🦶",
           "id": "nature.bigfoot",
           "label": "bigfoot",
+          "level": 3
+        },
+        {
+          "emoji": "♋",
+          "id": "nature.cancer",
+          "label": "cancer",
+          "level": 3
+        },
+        {
+          "emoji": "♑",
+          "id": "nature.capricorn",
+          "label": "capricorne",
           "level": 3
         },
         {
@@ -53199,10 +52305,52 @@
           "level": 3
         },
         {
+          "emoji": "🐐",
+          "id": "nature.chupacabra",
+          "label": "chupacabra",
+          "level": 3
+        },
+        {
+          "emoji": "🔮",
+          "id": "nature.crystal_ball",
+          "label": "boule de cristal",
+          "level": 3
+        },
+        {
+          "emoji": "👁️",
+          "id": "nature.cyclops",
+          "label": "cyclope",
+          "level": 3
+        },
+        {
           "emoji": "🐉",
           "id": "nature.dragon",
           "label": "dragon",
           "level": 1
+        },
+        {
+          "emoji": "🌳",
+          "id": "nature.dryad",
+          "label": "dryade",
+          "level": 3
+        },
+        {
+          "emoji": "🧙",
+          "id": "nature.enchantress",
+          "label": "enchanteresse",
+          "level": 3
+        },
+        {
+          "emoji": "🍀",
+          "id": "nature.four_leaf_clover",
+          "label": "trèfle à quatre feuilles",
+          "level": 3
+        },
+        {
+          "emoji": "♊",
+          "id": "nature.gemini",
+          "label": "gémeaux",
+          "level": 3
         },
         {
           "emoji": "🧞",
@@ -53211,9 +52359,33 @@
           "level": 2
         },
         {
+          "emoji": "🧙",
+          "id": "nature.gnome",
+          "label": "gnome",
+          "level": 3
+        },
+        {
+          "emoji": "👺",
+          "id": "nature.goblin",
+          "label": "gobelin",
+          "level": 3
+        },
+        {
+          "emoji": "🐍",
+          "id": "nature.gorgon",
+          "label": "gorgone",
+          "level": 3
+        },
+        {
           "emoji": "🦅",
           "id": "nature.griffin",
           "label": "griffon",
+          "level": 3
+        },
+        {
+          "emoji": "♈",
+          "id": "nature.horoscope",
+          "label": "horoscope",
           "level": 3
         },
         {
@@ -53229,9 +52401,21 @@
           "level": 3
         },
         {
+          "emoji": "🐴",
+          "id": "nature.kelpie",
+          "label": "kelpie",
+          "level": 3
+        },
+        {
           "emoji": "🐙",
           "id": "nature.kraken",
           "label": "kraken",
+          "level": 3
+        },
+        {
+          "emoji": "♌",
+          "id": "nature.leo",
+          "label": "lion",
           "level": 3
         },
         {
@@ -53247,6 +52431,30 @@
           "level": 3
         },
         {
+          "emoji": "♎",
+          "id": "nature.libra",
+          "label": "balance",
+          "level": 3
+        },
+        {
+          "emoji": "🦕",
+          "id": "nature.loch_ness",
+          "label": "nessie",
+          "level": 3
+        },
+        {
+          "emoji": "🐴",
+          "id": "nature.lucky_horseshoe",
+          "label": "fer à cheval porte-bonheur",
+          "level": 3
+        },
+        {
+          "emoji": "🪔",
+          "id": "nature.magic_lamp",
+          "label": "lampe magique",
+          "level": 3
+        },
+        {
           "emoji": "🪄",
           "id": "nature.magic_wand",
           "label": "baguette magique",
@@ -53256,6 +52464,12 @@
           "emoji": "🐍",
           "id": "nature.medusa",
           "label": "méduse",
+          "level": 3
+        },
+        {
+          "emoji": "🧜",
+          "id": "nature.merman",
+          "label": "triton",
           "level": 3
         },
         {
@@ -53271,6 +52485,24 @@
           "level": 3
         },
         {
+          "emoji": "👹",
+          "id": "nature.ogre",
+          "label": "ogre",
+          "level": 3
+        },
+        {
+          "emoji": "👹",
+          "id": "nature.orc",
+          "label": "orque",
+          "level": 3
+        },
+        {
+          "emoji": "🤚",
+          "id": "nature.palm_reading",
+          "label": "chiromancie",
+          "level": 3
+        },
+        {
           "emoji": "🐴",
           "id": "nature.pegasus",
           "label": "pégase",
@@ -53283,9 +52515,39 @@
           "level": 3
         },
         {
+          "emoji": "♓",
+          "id": "nature.pisces",
+          "label": "poissons",
+          "level": 3
+        },
+        {
+          "emoji": "🪙",
+          "id": "nature.pot_of_gold",
+          "label": "pot d'or",
+          "level": 3
+        },
+        {
+          "emoji": "♐",
+          "id": "nature.sagittarius",
+          "label": "sagittaire",
+          "level": 3
+        },
+        {
           "emoji": "🐐",
           "id": "nature.satyr",
           "label": "satyre",
+          "level": 3
+        },
+        {
+          "emoji": "♏",
+          "id": "nature.scorpio",
+          "label": "scorpion",
+          "level": 3
+        },
+        {
+          "emoji": "🦭",
+          "id": "nature.selkie",
+          "label": "selkie",
           "level": 3
         },
         {
@@ -53301,6 +52563,18 @@
           "level": 3
         },
         {
+          "emoji": "🔮",
+          "id": "nature.tarot",
+          "label": "tarot",
+          "level": 3
+        },
+        {
+          "emoji": "♉",
+          "id": "nature.taurus",
+          "label": "taureau",
+          "level": 3
+        },
+        {
           "emoji": "🧌",
           "id": "nature.troll",
           "label": "troll",
@@ -53313,6 +52587,24 @@
           "level": 1
         },
         {
+          "emoji": "♍",
+          "id": "nature.virgo",
+          "label": "vierge",
+          "level": 3
+        },
+        {
+          "emoji": "🧙",
+          "id": "nature.warlock",
+          "label": "sorcier",
+          "level": 3
+        },
+        {
+          "emoji": "🍗",
+          "id": "nature.wishbone",
+          "label": "os à vœux",
+          "level": 3
+        },
+        {
           "emoji": "🧙",
           "id": "nature.witch",
           "label": "sorcière",
@@ -53322,6 +52614,12 @@
           "emoji": "🦍",
           "id": "nature.yeti",
           "label": "yéti",
+          "level": 3
+        },
+        {
+          "emoji": "♈",
+          "id": "nature.zodiac",
+          "label": "zodiaque",
           "level": 3
         },
         {
@@ -55988,6 +55286,246 @@
       "emoji": "⏰",
       "label": "Temps",
       "words": [
+        {
+          "emoji": "☀️",
+          "id": "nature.afternoon",
+          "label": "après-midi",
+          "level": 3
+        },
+        {
+          "emoji": "📅",
+          "id": "nature.april",
+          "label": "avril",
+          "level": 3
+        },
+        {
+          "emoji": "📅",
+          "id": "nature.august",
+          "label": "août",
+          "level": 3
+        },
+        {
+          "emoji": "🌅",
+          "id": "nature.dawn",
+          "label": "aube",
+          "level": 3
+        },
+        {
+          "emoji": "⏰",
+          "id": "nature.daylight_saving",
+          "label": "heure d'été",
+          "level": 3
+        },
+        {
+          "emoji": "☀️",
+          "id": "nature.daytime",
+          "label": "jour",
+          "level": 3
+        },
+        {
+          "emoji": "📅",
+          "id": "nature.december",
+          "label": "décembre",
+          "level": 3
+        },
+        {
+          "emoji": "🌆",
+          "id": "nature.dusk",
+          "label": "crépuscule",
+          "level": 3
+        },
+        {
+          "emoji": "🌍",
+          "id": "nature.equinox",
+          "label": "équinoxe",
+          "level": 3
+        },
+        {
+          "emoji": "🌆",
+          "id": "nature.evening",
+          "label": "soir",
+          "level": 3
+        },
+        {
+          "emoji": "📅",
+          "id": "nature.february",
+          "label": "février",
+          "level": 3
+        },
+        {
+          "emoji": "📅",
+          "id": "nature.friday",
+          "label": "vendredi",
+          "level": 3
+        },
+        {
+          "emoji": "📅",
+          "id": "nature.january",
+          "label": "janvier",
+          "level": 3
+        },
+        {
+          "emoji": "📅",
+          "id": "nature.july",
+          "label": "juillet",
+          "level": 3
+        },
+        {
+          "emoji": "📅",
+          "id": "nature.june",
+          "label": "juin",
+          "level": 3
+        },
+        {
+          "emoji": "☀️",
+          "id": "nature.longest_day",
+          "label": "jour le plus long",
+          "level": 3
+        },
+        {
+          "emoji": "📅",
+          "id": "nature.march",
+          "label": "mars",
+          "level": 3
+        },
+        {
+          "emoji": "📅",
+          "id": "nature.may",
+          "label": "mai",
+          "level": 3
+        },
+        {
+          "emoji": "🌙",
+          "id": "nature.midnight",
+          "label": "minuit",
+          "level": 2
+        },
+        {
+          "emoji": "📅",
+          "id": "nature.monday",
+          "label": "lundi",
+          "level": 3
+        },
+        {
+          "emoji": "📅",
+          "id": "nature.month",
+          "label": "mois",
+          "level": 3
+        },
+        {
+          "emoji": "🌅",
+          "id": "nature.morning",
+          "label": "matin",
+          "level": 3
+        },
+        {
+          "emoji": "🌙",
+          "id": "nature.night",
+          "label": "nuit",
+          "level": 3
+        },
+        {
+          "emoji": "🌙",
+          "id": "nature.nighttime",
+          "label": "nuit",
+          "level": 3
+        },
+        {
+          "emoji": "☀️",
+          "id": "nature.noon",
+          "label": "midi",
+          "level": 2
+        },
+        {
+          "emoji": "📅",
+          "id": "nature.november",
+          "label": "novembre",
+          "level": 3
+        },
+        {
+          "emoji": "📅",
+          "id": "nature.october",
+          "label": "octobre",
+          "level": 3
+        },
+        {
+          "emoji": "📅",
+          "id": "nature.saturday",
+          "label": "samedi",
+          "level": 3
+        },
+        {
+          "emoji": "🍂",
+          "id": "nature.season",
+          "label": "saison",
+          "level": 2
+        },
+        {
+          "emoji": "📅",
+          "id": "nature.september",
+          "label": "septembre",
+          "level": 3
+        },
+        {
+          "emoji": "🌙",
+          "id": "nature.shortest_day",
+          "label": "jour le plus court",
+          "level": 3
+        },
+        {
+          "emoji": "☀️",
+          "id": "nature.solstice",
+          "label": "solstice",
+          "level": 3
+        },
+        {
+          "emoji": "📅",
+          "id": "nature.sunday",
+          "label": "dimanche",
+          "level": 3
+        },
+        {
+          "emoji": "📅",
+          "id": "nature.thursday",
+          "label": "jeudi",
+          "level": 3
+        },
+        {
+          "emoji": "📅",
+          "id": "nature.tuesday",
+          "label": "mardi",
+          "level": 3
+        },
+        {
+          "emoji": "🌆",
+          "id": "nature.twilight",
+          "label": "crépuscule",
+          "level": 3
+        },
+        {
+          "emoji": "📅",
+          "id": "nature.wednesday",
+          "label": "mercredi",
+          "level": 3
+        },
+        {
+          "emoji": "📅",
+          "id": "nature.week",
+          "label": "semaine",
+          "level": 3
+        },
+        {
+          "emoji": "🎉",
+          "id": "nature.weekend",
+          "label": "week-end",
+          "level": 3
+        },
+        {
+          "emoji": "📅",
+          "id": "nature.year",
+          "label": "année",
+          "level": 3
+        },
         {
           "emoji": "🕯️",
           "id": "time.advent",
@@ -59337,15 +58875,345 @@
       "label": "Voyages",
       "words": [
         {
+          "emoji": "🌲",
+          "id": "nature.acadia",
+          "label": "acadie",
+          "level": 3
+        },
+        {
+          "emoji": "⛰️",
+          "id": "nature.alaska_range",
+          "label": "chaîne d'alaska",
+          "level": 3
+        },
+        {
+          "emoji": "🏝️",
+          "id": "nature.american_samoa",
+          "label": "samoa américaines",
+          "level": 3
+        },
+        {
+          "emoji": "⛰️",
+          "id": "nature.appalachian_mountains",
+          "label": "appalaches",
+          "level": 3
+        },
+        {
+          "emoji": "🏞️",
+          "id": "nature.arches",
+          "label": "arches",
+          "level": 3
+        },
+        {
+          "emoji": "🕰️",
+          "id": "nature.big_ben",
+          "label": "big ben",
+          "level": 3
+        },
+        {
+          "emoji": "🏜️",
+          "id": "nature.big_bend",
+          "label": "big bend",
+          "level": 3
+        },
+        {
+          "emoji": "🌊",
+          "id": "nature.biscayne",
+          "label": "biscayne",
+          "level": 3
+        },
+        {
+          "emoji": "🏞️",
+          "id": "nature.bryce_canyon",
+          "label": "bryce canyon",
+          "level": 3
+        },
+        {
+          "emoji": "🏛️",
+          "id": "nature.capitol",
+          "label": "capitole",
+          "level": 3
+        },
+        {
+          "emoji": "🦇",
+          "id": "nature.carlsbad_caverns",
+          "label": "grottes de carlsbad",
+          "level": 3
+        },
+        {
+          "emoji": "⛰️",
+          "id": "nature.cascade_mountains",
+          "label": "chaîne des cascades",
+          "level": 3
+        },
+        {
+          "emoji": "🏝️",
+          "id": "nature.channel_islands",
+          "label": "îles anglo-normandes",
+          "level": 3
+        },
+        {
+          "emoji": "🏝️",
+          "id": "nature.channel_islands_park",
+          "label": "îles du canal",
+          "level": 3
+        },
+        {
+          "emoji": "⛰️",
+          "id": "nature.christ_the_redeemer",
+          "label": "christ rédempteur",
+          "level": 3
+        },
+        {
           "emoji": "🏛️",
           "id": "nature.colosseum",
           "label": "colisée",
           "level": 3
         },
         {
+          "emoji": "🌳",
+          "id": "nature.congaree",
+          "label": "congaree",
+          "level": 3
+        },
+        {
+          "emoji": "🏞️",
+          "id": "nature.crater_lake",
+          "label": "crater lake",
+          "level": 3
+        },
+        {
+          "emoji": "🏞️",
+          "id": "nature.cuyahoga_valley",
+          "label": "vallée de cuyahoga",
+          "level": 3
+        },
+        {
+          "emoji": "🏜️",
+          "id": "nature.death_valley",
+          "label": "vallée de la mort",
+          "level": 3
+        },
+        {
+          "emoji": "🏜️",
+          "id": "nature.death_valley_park",
+          "label": "vallée de la mort",
+          "level": 3
+        },
+        {
+          "emoji": "⛰️",
+          "id": "nature.denali",
+          "label": "denali",
+          "level": 3
+        },
+        {
+          "emoji": "⛰️",
+          "id": "nature.denali_park",
+          "label": "parc denali",
+          "level": 3
+        },
+        {
+          "emoji": "🏝️",
+          "id": "nature.dry_tortugas",
+          "label": "dry tortugas",
+          "level": 3
+        },
+        {
           "emoji": "🗼",
           "id": "nature.eiffel_tower",
           "label": "tour eiffel",
+          "level": 3
+        },
+        {
+          "emoji": "🐊",
+          "id": "nature.everglades",
+          "label": "everglades",
+          "level": 3
+        },
+        {
+          "emoji": "🌉",
+          "id": "nature.gateway_arch",
+          "label": "arche de saint-louis",
+          "level": 3
+        },
+        {
+          "emoji": "🧊",
+          "id": "nature.glacier_park",
+          "label": "parc des glaciers",
+          "level": 3
+        },
+        {
+          "emoji": "🌉",
+          "id": "nature.golden_gate_bridge",
+          "label": "pont du golden gate",
+          "level": 3
+        },
+        {
+          "emoji": "🏞️",
+          "id": "nature.grand_canyon",
+          "label": "grand canyon",
+          "level": 2
+        },
+        {
+          "emoji": "🏜️",
+          "id": "nature.great_basin",
+          "label": "grand bassin",
+          "level": 3
+        },
+        {
+          "emoji": "🏞️",
+          "id": "nature.great_lakes",
+          "label": "grands lacs",
+          "level": 3
+        },
+        {
+          "emoji": "⛰️",
+          "id": "nature.great_smoky_mountains",
+          "label": "great smoky mountains",
+          "level": 3
+        },
+        {
+          "emoji": "🧱",
+          "id": "nature.great_wall",
+          "label": "grande muraille",
+          "level": 3
+        },
+        {
+          "emoji": "⛰️",
+          "id": "nature.guadalupe_mountains",
+          "label": "monts guadalupe",
+          "level": 3
+        },
+        {
+          "emoji": "🌋",
+          "id": "nature.haleakala",
+          "label": "haleakala",
+          "level": 3
+        },
+        {
+          "emoji": "🌋",
+          "id": "nature.hawaii_volcanoes",
+          "label": "volcans d'hawaï",
+          "level": 3
+        },
+        {
+          "emoji": "🌊",
+          "id": "nature.hoover_dam",
+          "label": "barrage hoover",
+          "level": 3
+        },
+        {
+          "emoji": "♨️",
+          "id": "nature.hot_springs_park",
+          "label": "hot springs",
+          "level": 3
+        },
+        {
+          "emoji": "🏖️",
+          "id": "nature.indiana_dunes",
+          "label": "dunes de l'indiana",
+          "level": 3
+        },
+        {
+          "emoji": "🌵",
+          "id": "nature.joshua_tree",
+          "label": "joshua tree",
+          "level": 3
+        },
+        {
+          "emoji": "🏞️",
+          "id": "nature.kings_canyon",
+          "label": "kings canyon",
+          "level": 3
+        },
+        {
+          "emoji": "🏞️",
+          "id": "nature.lake_michigan",
+          "label": "lac michigan",
+          "level": 3
+        },
+        {
+          "emoji": "🏞️",
+          "id": "nature.lake_superior",
+          "label": "lac supérieur",
+          "level": 3
+        },
+        {
+          "emoji": "🌋",
+          "id": "nature.lassen_volcanic",
+          "label": "lassen volcanique",
+          "level": 3
+        },
+        {
+          "emoji": "🗿",
+          "id": "nature.lincoln_memorial",
+          "label": "mémorial lincoln",
+          "level": 3
+        },
+        {
+          "emoji": "⛰️",
+          "id": "nature.machu_picchu",
+          "label": "machu picchu",
+          "level": 3
+        },
+        {
+          "emoji": "🦇",
+          "id": "nature.mammoth_cave",
+          "label": "grotte de mammoth",
+          "level": 3
+        },
+        {
+          "emoji": "🏞️",
+          "id": "nature.mississippi_river",
+          "label": "mississippi",
+          "level": 3
+        },
+        {
+          "emoji": "🏜️",
+          "id": "nature.mojave_desert",
+          "label": "désert de mojave",
+          "level": 3
+        },
+        {
+          "emoji": "⛰️",
+          "id": "nature.mount_rainier",
+          "label": "mont rainier",
+          "level": 3
+        },
+        {
+          "emoji": "⛰️",
+          "id": "nature.mount_rainier_park",
+          "label": "parc du mont rainier",
+          "level": 3
+        },
+        {
+          "emoji": "🗿",
+          "id": "nature.mount_rushmore",
+          "label": "mont rushmore",
+          "level": 3
+        },
+        {
+          "emoji": "🌋",
+          "id": "nature.mount_st_helens",
+          "label": "mont saint helens",
+          "level": 3
+        },
+        {
+          "emoji": "🏞️",
+          "id": "nature.new_river_gorge",
+          "label": "new river gorge",
+          "level": 3
+        },
+        {
+          "emoji": "💦",
+          "id": "nature.niagara_falls",
+          "label": "chutes du niagara",
+          "level": 3
+        },
+        {
+          "emoji": "⛰️",
+          "id": "nature.north_cascades",
+          "label": "cascades du nord",
           "level": 3
         },
         {
@@ -59361,9 +59229,69 @@
           "level": 3
         },
         {
+          "emoji": "🌵",
+          "id": "nature.organ_pipe_cactus",
+          "label": "orgue",
+          "level": 3
+        },
+        {
+          "emoji": "🪵",
+          "id": "nature.petrified_forest",
+          "label": "forêt pétrifiée",
+          "level": 3
+        },
+        {
+          "emoji": "⛰️",
+          "id": "nature.pinnacles",
+          "label": "pinnacles",
+          "level": 3
+        },
+        {
+          "emoji": "⛰️",
+          "id": "nature.pinnacles_park",
+          "label": "pinnacles",
+          "level": 3
+        },
+        {
+          "emoji": "🏝️",
+          "id": "nature.puuhonua",
+          "label": "pu'uhonua",
+          "level": 3
+        },
+        {
           "emoji": "🔺",
           "id": "nature.pyramids",
           "label": "pyramides",
+          "level": 3
+        },
+        {
+          "emoji": "🌲",
+          "id": "nature.redwood_forest",
+          "label": "forêt de séquoias",
+          "level": 3
+        },
+        {
+          "emoji": "⛰️",
+          "id": "nature.rocky_mountains",
+          "label": "montagnes rocheuses",
+          "level": 3
+        },
+        {
+          "emoji": "🛣️",
+          "id": "nature.route_66",
+          "label": "route 66",
+          "level": 3
+        },
+        {
+          "emoji": "🌲",
+          "id": "nature.sequoia_park",
+          "label": "parc de séquoias",
+          "level": 3
+        },
+        {
+          "emoji": "🏞️",
+          "id": "nature.shenandoah",
+          "label": "shenandoah",
           "level": 3
         },
         {
@@ -59373,9 +59301,81 @@
           "level": 3
         },
         {
+          "emoji": "🌵",
+          "id": "nature.sonoran_desert",
+          "label": "désert de sonora",
+          "level": 3
+        },
+        {
+          "emoji": "🗼",
+          "id": "nature.space_needle",
+          "label": "space needle",
+          "level": 3
+        },
+        {
           "emoji": "🗽",
           "id": "nature.statue_of_liberty",
           "label": "statue de la liberté",
+          "level": 3
+        },
+        {
+          "emoji": "🎭",
+          "id": "nature.sydney_opera_house",
+          "label": "opéra de sydney",
+          "level": 3
+        },
+        {
+          "emoji": "🕌",
+          "id": "nature.taj_mahal",
+          "label": "taj mahal",
+          "level": 3
+        },
+        {
+          "emoji": "🏖️",
+          "id": "nature.vacation",
+          "label": "vacances",
+          "level": 3
+        },
+        {
+          "emoji": "🏝️",
+          "id": "nature.virgin_islands",
+          "label": "îles vierges",
+          "level": 3
+        },
+        {
+          "emoji": "🗼",
+          "id": "nature.washington_monument",
+          "label": "monument de washington",
+          "level": 3
+        },
+        {
+          "emoji": "🏛️",
+          "id": "nature.white_house",
+          "label": "maison-blanche",
+          "level": 3
+        },
+        {
+          "emoji": "🏜️",
+          "id": "nature.white_sands",
+          "label": "white sands",
+          "level": 3
+        },
+        {
+          "emoji": "🌋",
+          "id": "nature.yellowstone",
+          "label": "yellowstone",
+          "level": 3
+        },
+        {
+          "emoji": "⛰️",
+          "id": "nature.yosemite",
+          "label": "yosemite",
+          "level": 3
+        },
+        {
+          "emoji": "🏞️",
+          "id": "nature.zion",
+          "label": "zion",
           "level": 3
         },
         {

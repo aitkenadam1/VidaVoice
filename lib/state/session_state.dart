@@ -196,6 +196,14 @@ class SessionState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Sets the onboarding flag directly (used by profile-backup import so a
+  /// restored value is reflected without re-running the wizard).
+  Future<void> setOnboardingComplete(bool value) async {
+    onboardingComplete = value;
+    await _prefs?.setBool('vidavoice.onboardingComplete', value);
+    notifyListeners();
+  }
+
   void tapWord(BoardItem item) {
     if (item.type == BoardItemType.folder) return;
     tts.speak(item.label);

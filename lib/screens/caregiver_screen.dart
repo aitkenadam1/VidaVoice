@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/word.dart';
 import '../state/session_state.dart';
 import '../widgets/activity_summary_section.dart';
+import '../widgets/backup_section.dart';
 import '../widgets/first_week_plan_section.dart';
 import '../widgets/word_finder_section.dart';
 
@@ -198,6 +199,15 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
                 ],
               ),
             ),
+          ),
+          const SizedBox(height: 16),
+          _sectionTitle(context, 'Profile backup'),
+          BackupSection(
+            onImported: () async {
+              await session.reloadProfileData();
+              await session.usage.load();
+              if (mounted) setState(() {});
+            },
           ),
           const SizedBox(height: 16),
           _sectionTitle(context, 'Modeling tips'),

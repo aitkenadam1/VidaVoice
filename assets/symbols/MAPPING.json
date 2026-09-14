@@ -1,0 +1,502 @@
+{
+  "core.a": {
+    "arasaac_id": 3021,
+    "reviewed": false,
+    "term": "a"
+  },
+  "core.about": {
+    "arasaac_id": 7234,
+    "reviewed": false,
+    "term": "roundabout"
+  },
+  "core.and": {
+    "arasaac_id": 11399,
+    "reviewed": false,
+    "term": "and"
+  },
+  "core.back": {
+    "arasaac_id": 2748,
+    "reviewed": false,
+    "term": "back"
+  },
+  "core.bathroom": {
+    "arasaac_id": 5921,
+    "reviewed": false,
+    "term": "toilet"
+  },
+  "core.beach": {
+    "arasaac_id": 30518,
+    "reviewed": false,
+    "term": "beach"
+  },
+  "core.because": {
+    "arasaac_id": 11348,
+    "reviewed": false,
+    "term": "because"
+  },
+  "core.bedroom": {
+    "arasaac_id": 5988,
+    "reviewed": false,
+    "term": "bedroom"
+  },
+  "core.bright": {
+    "arasaac_id": 7252,
+    "reviewed": false,
+    "term": "Sun"
+  },
+  "core.bus": {
+    "arasaac_id": 2262,
+    "reviewed": false,
+    "term": "bus"
+  },
+  "core.but": {
+    "arasaac_id": 11377,
+    "reviewed": false,
+    "term": "but"
+  },
+  "core.car": {
+    "arasaac_id": 2339,
+    "reviewed": false,
+    "term": "car"
+  },
+  "core.church": {
+    "arasaac_id": 3118,
+    "reviewed": false,
+    "term": "church"
+  },
+  "core.dark": {
+    "arasaac_id": 26993,
+    "reviewed": false,
+    "term": "dark"
+  },
+  "core.every": {
+    "arasaac_id": 17322,
+    "reviewed": false,
+    "term": "always"
+  },
+  "core.far": {
+    "arasaac_id": 30385,
+    "reviewed": false,
+    "term": "far"
+  },
+  "core.favorite": {
+    "arasaac_id": 30012,
+    "reviewed": false,
+    "term": "favorite"
+  },
+  "core.for": {
+    "arasaac_id": 7081,
+    "reviewed": false,
+    "term": "during"
+  },
+  "core.from": {
+    "arasaac_id": 7077,
+    "reviewed": false,
+    "term": "from"
+  },
+  "core.front": {
+    "arasaac_id": 39779,
+    "reviewed": false,
+    "term": "facade"
+  },
+  "core.home": {
+    "arasaac_id": 6964,
+    "reviewed": false,
+    "term": "house"
+  },
+  "core.hungryd": {
+    "arasaac_id": 4962,
+    "reviewed": false,
+    "term": "hungry"
+  },
+  "core.just": {
+    "arasaac_id": 8612,
+    "reviewed": false,
+    "term": "justice"
+  },
+  "core.later": {
+    "arasaac_id": 32749,
+    "reviewed": false,
+    "term": "after"
+  },
+  "core.left": {
+    "arasaac_id": 9203,
+    "reviewed": false,
+    "term": "left"
+  },
+  "core.near": {
+    "arasaac_id": 30383,
+    "reviewed": false,
+    "term": "close"
+  },
+  "core.now": {
+    "arasaac_id": 32747,
+    "reviewed": false,
+    "term": "now"
+  },
+  "core.only": {
+    "arasaac_id": 2627,
+    "reviewed": false,
+    "term": "one"
+  },
+  "core.oops": {
+    "arasaac_id": 11625,
+    "reviewed": false,
+    "term": "sorry"
+  },
+  "core.or": {
+    "arasaac_id": 11317,
+    "reviewed": false,
+    "term": "or"
+  },
+  "core.right": {
+    "arasaac_id": 5397,
+    "reviewed": false,
+    "term": "well"
+  },
+  "core.scary": {
+    "arasaac_id": 39668,
+    "reviewed": false,
+    "term": "be afraid"
+  },
+  "core.school": {
+    "arasaac_id": 32446,
+    "reviewed": false,
+    "term": "school"
+  },
+  "core.sick": {
+    "arasaac_id": 7040,
+    "reviewed": false,
+    "term": "get sick"
+  },
+  "core.store": {
+    "arasaac_id": 35695,
+    "reviewed": false,
+    "term": "shop"
+  },
+  "core.sweet": {
+    "arasaac_id": 32440,
+    "reviewed": false,
+    "term": "sweet"
+  },
+  "core.the": {
+    "arasaac_id": 8477,
+    "reviewed": false,
+    "term": "the"
+  },
+  "core.tired": {
+    "arasaac_id": 35537,
+    "reviewed": false,
+    "term": "tired"
+  },
+  "core.to": {
+    "arasaac_id": 7041,
+    "reviewed": false,
+    "term": "to"
+  },
+  "core.today": {
+    "arasaac_id": 7131,
+    "reviewed": false,
+    "term": "today"
+  },
+  "core.tomorrow": {
+    "arasaac_id": 38278,
+    "reviewed": false,
+    "term": "tomorrow"
+  },
+  "core.too": {
+    "arasaac_id": 5508,
+    "reviewed": false,
+    "term": "more"
+  },
+  "core.uhoh": {
+    "arasaac_id": 35529,
+    "reviewed": false,
+    "term": "surprised"
+  },
+  "core.very": {
+    "arasaac_id": 25708,
+    "reviewed": false,
+    "term": "very"
+  },
+  "core.which": {
+    "arasaac_id": 10368,
+    "reviewed": false,
+    "term": "which game do you want?"
+  },
+  "core.whose": {
+    "arasaac_id": 32743,
+    "reviewed": false,
+    "term": "whose is it?"
+  },
+  "core.why": {
+    "arasaac_id": 36719,
+    "reviewed": false,
+    "term": "why"
+  },
+  "core.with": {
+    "arasaac_id": 7064,
+    "reviewed": false,
+    "term": "with"
+  },
+  "core.yesterday": {
+    "arasaac_id": 38279,
+    "reviewed": false,
+    "term": "yesterday"
+  },
+  "core.zoo": {
+    "arasaac_id": 4773,
+    "reviewed": false,
+    "term": "zoological garden"
+  },
+  "feel.angry": {
+    "arasaac_id": 35539,
+    "reviewed": false,
+    "term": "angry"
+  },
+  "feel.bored": {
+    "arasaac_id": 35531,
+    "reviewed": false,
+    "term": "bored"
+  },
+  "feel.brave": {
+    "arasaac_id": 36163,
+    "reviewed": false,
+    "term": "brave"
+  },
+  "feel.calm": {
+    "arasaac_id": 31310,
+    "reviewed": false,
+    "term": "calm"
+  },
+  "feel.excited": {
+    "arasaac_id": 39090,
+    "reviewed": false,
+    "term": "excited"
+  },
+  "feel.hurt": {
+    "arasaac_id": 5484,
+    "reviewed": false,
+    "term": "injury"
+  },
+  "feel.love": {
+    "arasaac_id": 37721,
+    "reviewed": false,
+    "term": "like"
+  },
+  "feel.proud": {
+    "arasaac_id": 31408,
+    "reviewed": false,
+    "term": "proud"
+  },
+  "feel.scared": {
+    "arasaac_id": 35535,
+    "reviewed": false,
+    "term": "scared"
+  },
+  "feel.sick": {
+    "arasaac_id": 7040,
+    "reviewed": false,
+    "term": "get sick"
+  },
+  "feel.silly": {
+    "arasaac_id": 15483,
+    "reviewed": false,
+    "term": "nonsense"
+  },
+  "feel.tired": {
+    "arasaac_id": 35537,
+    "reviewed": false,
+    "term": "tired"
+  },
+  "food.apple": {
+    "arasaac_id": 2462,
+    "reviewed": false,
+    "term": "apple"
+  },
+  "food.banana": {
+    "arasaac_id": 2530,
+    "reviewed": false,
+    "term": "banana"
+  },
+  "food.bread": {
+    "arasaac_id": 2494,
+    "reviewed": false,
+    "term": "bread"
+  },
+  "food.cheese": {
+    "arasaac_id": 2541,
+    "reviewed": false,
+    "term": "cheese"
+  },
+  "food.cookie": {
+    "arasaac_id": 8312,
+    "reviewed": false,
+    "term": "biscuit"
+  },
+  "food.egg": {
+    "arasaac_id": 2427,
+    "reviewed": false,
+    "term": "egg"
+  },
+  "food.hungry": {
+    "arasaac_id": 4962,
+    "reviewed": false,
+    "term": "hungry"
+  },
+  "food.juice": {
+    "arasaac_id": 11461,
+    "reviewed": false,
+    "term": "juice"
+  },
+  "food.milk": {
+    "arasaac_id": 2445,
+    "reviewed": false,
+    "term": "milk"
+  },
+  "food.pizza": {
+    "arasaac_id": 2527,
+    "reviewed": false,
+    "term": "pizza"
+  },
+  "food.spaghetti": {
+    "arasaac_id": 2383,
+    "reviewed": false,
+    "term": "spaghetti"
+  },
+  "food.thirsty": {
+    "arasaac_id": 4963,
+    "reviewed": false,
+    "term": "thirsty"
+  },
+  "food.water": {
+    "arasaac_id": 32464,
+    "reviewed": false,
+    "term": "water"
+  },
+  "food.yucky": {
+    "arasaac_id": 7179,
+    "reviewed": false,
+    "term": "dislike"
+  },
+  "people.aunt": {
+    "arasaac_id": 30271,
+    "reviewed": false,
+    "term": "aunt"
+  },
+  "people.baby": {
+    "arasaac_id": 6060,
+    "reviewed": false,
+    "term": "baby"
+  },
+  "people.brother": {
+    "arasaac_id": 2423,
+    "reviewed": false,
+    "term": "brother"
+  },
+  "people.cousin": {
+    "arasaac_id": 30340,
+    "reviewed": false,
+    "term": "cousin"
+  },
+  "people.dad": {
+    "arasaac_id": 31146,
+    "reviewed": false,
+    "term": "dad"
+  },
+  "people.doctor": {
+    "arasaac_id": 6561,
+    "reviewed": false,
+    "term": "medical"
+  },
+  "people.friend": {
+    "arasaac_id": 25790,
+    "reviewed": false,
+    "term": "friend"
+  },
+  "people.grandma": {
+    "arasaac_id": 23710,
+    "reviewed": false,
+    "term": "grandmother"
+  },
+  "people.grandpa": {
+    "arasaac_id": 23718,
+    "reviewed": false,
+    "term": "grandfather"
+  },
+  "people.mom": {
+    "arasaac_id": 2458,
+    "reviewed": false,
+    "term": "mum"
+  },
+  "people.sister": {
+    "arasaac_id": 2422,
+    "reviewed": false,
+    "term": "sister"
+  },
+  "people.teacher": {
+    "arasaac_id": 6556,
+    "reviewed": false,
+    "term": "schoolteacher"
+  },
+  "play.ball": {
+    "arasaac_id": 3241,
+    "reviewed": false,
+    "term": "ball"
+  },
+  "play.book": {
+    "arasaac_id": 25191,
+    "reviewed": false,
+    "term": "book"
+  },
+  "play.draw": {
+    "arasaac_id": 8088,
+    "reviewed": false,
+    "term": "draw"
+  },
+  "play.game": {
+    "arasaac_id": 6170,
+    "reviewed": false,
+    "term": "game"
+  },
+  "play.music": {
+    "arasaac_id": 24791,
+    "reviewed": false,
+    "term": "music"
+  },
+  "play.outside": {
+    "arasaac_id": 5475,
+    "reviewed": false,
+    "term": "outside"
+  },
+  "play.park": {
+    "arasaac_id": 5379,
+    "reviewed": false,
+    "term": "park"
+  },
+  "play.puzzle": {
+    "arasaac_id": 2540,
+    "reviewed": false,
+    "term": "puzzle"
+  },
+  "play.slide": {
+    "arasaac_id": 4759,
+    "reviewed": false,
+    "term": "slide"
+  },
+  "play.swim": {
+    "arasaac_id": 6568,
+    "reviewed": false,
+    "term": "swim"
+  },
+  "play.toy": {
+    "arasaac_id": 9813,
+    "reviewed": false,
+    "term": "toys"
+  },
+  "play.tv": {
+    "arasaac_id": 25498,
+    "reviewed": false,
+    "term": "television"
+  }
+}

@@ -201,6 +201,16 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
     _order.insert(boundary, id);
   }
 
+  /// Stable partition: pinned sections first, preserving relative order.
+  /// Keeps the "pinned sections stay at the top" promise no matter how the
+  /// list is reordered or unpinned.
+  void _pinnedSectionsFirst() {
+    _order = [
+      for (final id in _order) if (_pinned.contains(id)) id,
+      for (final id in _order) if (!_pinned.contains(id)) id,
+    ];
+  }
+
   Future<void> _savePrefs() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -355,6 +365,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
               setState(() {
                 final id = _order.removeAt(oldIndex);
                 _order.insert(newIndex, id);
+                _pinnedSectionsFirst();
               });
               _savePrefs();
             },
@@ -381,14 +392,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
                           setState(() {
                             if (isPinned) {
                               _pinned.remove(s.id);
-                              // Keep the invariant the help text promises:
-                              // pinned sections sit at the top.
-                              _order = [
-                                for (final id in _order)
-                                  if (_pinned.contains(id)) id,
-                                for (final id in _order)
-                                  if (!_pinned.contains(id)) id,
-                              ];
+                              _pinnedSectionsFirst();
                             } else {
                               _pinToTop(s.id);
                             }

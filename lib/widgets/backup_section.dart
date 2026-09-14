@@ -53,18 +53,20 @@ class _BackupSectionState extends State<BackupSection> {
       widget.service ?? ProfileBackupService();
 
   Future<String?> _defaultPickFile() async {
-    final result = await FilePicker.platform.pickFiles(
+    final files = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['json'],
     );
-    return result?.files.single.path;
+    return files.isEmpty ? null : files.single.path;
   }
 
   Future<void> _defaultShareFile(String path) async {
-    await Share.shareXFiles(
-      [XFile(path)],
-      subject: 'VidaVoice profile backup',
-      text: 'VidaVoice profile backup — keep this file somewhere safe.',
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(path)],
+        subject: 'VidaVoice profile backup',
+        text: 'VidaVoice profile backup — keep this file somewhere safe.',
+      ),
     );
   }
 

@@ -2,8 +2,8 @@
 
 Pictograms (c) ARASAAC, CC BY-NC-SA. First search hit used; some matches may be wrong.
 
-- core.uhoh ("uh-oh" via "surprised"): arasaac_id=35529 keyword="surprised" [retry]
-- core.oops ("oops" via "sorry"): arasaac_id=11625 keyword="sorry" [retry]
+- core.uhoh ("uh-oh" via "surprised"): arasaac_id=26985 keyword="surprised" [retry] [qa-swap 2026-09-14: old surprised face nearly identical to 'wow'; facepalm with '!?' bubble shows 'something went wrong' dismay]
+- core.oops ("oops" via "sorry"): arasaac_id=6922 keyword="sorry" [retry] [qa-swap 2026-09-14: old hand-on-chest read as 'sorry' not 'oops'; sheepish blushing face = the 'oops!' mistake face]
 - core.dark ("dark" via "dark"): arasaac_id=26993 keyword="dark"
 - core.bright ("bright" via "sun"): arasaac_id=7252 keyword="Sun" [retry]
 - core.sweet ("sweet" via "sweet"): arasaac_id=32440 keyword="sweet"
@@ -17,12 +17,12 @@ Pictograms (c) ARASAAC, CC BY-NC-SA. First search hit used; some matches may be 
 - core.whose ("whose" via "whose"): arasaac_id=32743 keyword="whose is it?"
 - core.now ("now" via "now"): arasaac_id=32747 keyword="now"
 - core.later ("later" via "later"): arasaac_id=32749 keyword="after"
-- core.today ("today" via "today"): arasaac_id=7131 keyword="today"
+- core.today ("today" via "today"): arasaac_id=38276 keyword="today" [qa-swap 2026-09-14: old sun over downward arrow read as sunset; new calendar with red arrow on highlighted day, consistent with tomorrow/yesterday]
 - core.tomorrow ("tomorrow" via "tomorrow"): arasaac_id=38278 keyword="tomorrow"
 - core.yesterday ("yesterday" via "yesterday"): arasaac_id=38279 keyword="yesterday"
 - core.left ("left" via "left"): arasaac_id=9203 keyword="left"
-- core.right ("right" via "right"): arasaac_id=5397 keyword="well"
-- core.front ("front" via "front"): arasaac_id=39779 keyword="facade"
+- core.right ("right" via "right"): arasaac_id=9202 keyword="well" [qa-swap 2026-09-14: old was thumbs-up (keyword 'well/okay') — wrong meaning for direction; new bold blue right arrow mirrors core.left]
+- core.front ("front" via "front"): arasaac_id=5438 keyword="facade" [qa-swap 2026-09-14: old was hatched building facade (keyword 'facade') reading as a building; new conveys spatial 'in front/ahead']
 - core.back ("back" via "back"): arasaac_id=2748 keyword="back"
 - core.near ("near" via "near"): arasaac_id=30383 keyword="close"
 - core.far ("far" via "far"): arasaac_id=30385 keyword="far"
@@ -55,7 +55,7 @@ Pictograms (c) ARASAAC, CC BY-NC-SA. First search hit used; some matches may be 
 - feel.excited ("excited" via "excited"): arasaac_id=39090 keyword="excited"
 - feel.scared ("scared" via "scared"): arasaac_id=35535 keyword="scared"
 - feel.angry ("angry" via "angry"): arasaac_id=35539 keyword="angry"
-- feel.tired ("tired" via "tired"): arasaac_id=35537 keyword="tired"
+- feel.tired ("tired" via "tired"): arasaac_id=8513 keyword="tired" [qa-swap 2026-09-14: old droopy face read as 'sad'; new yawning face with hand over mouth]
 - feel.sick ("sick" via "sick"): arasaac_id=7040 keyword="get sick"
 - feel.hurt ("hurt" via "hurt"): arasaac_id=5484 keyword="injury"
 - feel.calm ("calm" via "calm"): arasaac_id=31310 keyword="calm"
@@ -70,7 +70,7 @@ Pictograms (c) ARASAAC, CC BY-NC-SA. First search hit used; some matches may be 
 - food.bread ("bread" via "bread"): arasaac_id=2494 keyword="bread"
 - food.cheese ("cheese" via "cheese"): arasaac_id=2541 keyword="cheese"
 - food.egg ("egg" via "egg"): arasaac_id=2427 keyword="egg"
-- food.water ("water" via "water"): arasaac_id=32464 keyword="water"
+- food.water ("water" via "water"): arasaac_id=4768 keyword="water" [qa-swap 2026-09-14: old faucet/tap ambiguous (sink? wash?); new clear glass of water]
 - food.milk ("milk" via "milk"): arasaac_id=2445 keyword="milk"
 - food.juice ("juice" via "juice"): arasaac_id=11461 keyword="juice"
 - food.hungry ("hungry" via "hungry"): arasaac_id=4962 keyword="hungry"
@@ -93,12 +93,26 @@ Pictograms (c) ARASAAC, CC BY-NC-SA. First search hit used; some matches may be 
 - play.ball ("ball" via "ball"): arasaac_id=3241 keyword="ball"
 - play.toy ("toy" via "toy"): arasaac_id=9813 keyword="toys"
 - play.book ("book" via "book"): arasaac_id=25191 keyword="book"
-- play.game ("game" via "game"): arasaac_id=6170 keyword="game"
-- play.music ("music" via "music"): arasaac_id=24791 keyword="music"
-- play.outside ("outside" via "outside"): arasaac_id=5475 keyword="outside"
-- play.park ("park" via "park"): arasaac_id=5379 keyword="park"
+- play.game ("game" via "game"): arasaac_id=37952 keyword="game" [qa-swap 2026-09-14: old soccer match on TV screen (confused with soccer/TV); new two figures tossing a ball — playing a game together]
+- play.music ("music" via "music"): arasaac_id=6960 keyword="music" [qa-swap 2026-09-14: old abstract staff notation; new singing face with music notes, same style as other faces]
+- play.outside ("outside" via "outside"): arasaac_id=2806 keyword="outside" [qa-swap 2026-09-14: old abstract square/arrow/red-circle diagram no child would parse; new person walking out a door]
+- play.park ("park" via "park"): arasaac_id=2859 keyword="park" [qa-swap 2026-09-14: old showed cars parked on a road ('to park' keyword mismatch — worst failure in set); new playground with swings/seesaw/slide]
 - play.swim ("swim" via "swim"): arasaac_id=6568 keyword="swim"
 - play.draw ("draw" via "draw"): arasaac_id=8088 keyword="draw"
 - play.tv ("tv" via "tv"): arasaac_id=25498 keyword="television"
 - play.puzzle ("puzzle" via "puzzle"): arasaac_id=2540 keyword="puzzle"
 - play.slide ("slide" via "slide"): arasaac_id=4759 keyword="slide"
+- core.want ("want"): arasaac_id=36518 (was: unmapped) [qa-swap 2026-09-14: was disembodied hand reaching for ball; now whole person with arms outstretched toward ball — reads as 'I want that']
+- core.need ("need"): arasaac_id=7171 (was: unmapped) [qa-swap 2026-09-14: was finger pointing at abstract red oval; now person with raised arms — unambiguous need]
+- core.out ("out"): arasaac_id=2806 (was: unmapped) [qa-swap 2026-09-14: was burnt-out candle (keyword miss); now person walking out a door]
+- core.down ("down"): arasaac_id=5355 (was: unmapped) [qa-swap 2026-09-14: was person climbing pool ladder (read as swimming pool); now abstract 'below' circle mirroring the 'up' pictogram]
+- core.look ("look"): arasaac_id=16907 (was: unmapped) [qa-swap 2026-09-14: was pixel-identical to 'see'; now person shading eyes looking into distance (same set style)]
+- core.tell ("tell"): arasaac_id=5973 (was: unmapped) [qa-swap 2026-09-14: was pixel-identical to 'say'; now storyteller narrating to a child]
+- core.ask ("ask"): arasaac_id=9847 (was: unmapped) [qa-swap 2026-09-14: was two people passing a ball (read as 'give'); now head with '?' speech bubble]
+- core.close ("close"): arasaac_id=24022 (was: unmapped) [qa-swap 2026-09-14: old abstract red circle with lines unreadable; person closing a door is the clear AAC convention]
+- core.pull ("pull"): arasaac_id=36454 (was: unmapped) [qa-swap 2026-09-14: old showed person pulling a toilet flush chain (read as toilet/flush); tug-of-war shows clear pulling]
+- core.wait ("wait"): arasaac_id=35187 (was: unmapped) [qa-swap 2026-09-14: old standing figure indistinguishable from 'stand'; people queuing clearly shows waiting]
+- core.myturn ("my turn"): arasaac_id=7158 (was: unmapped) [qa-swap 2026-09-14: old playground scene duplicated for my/your turn; person pointing at self with turn arrow]
+- core.yourturn ("your turn"): arasaac_id=6625 (was: unmapped) [qa-swap 2026-09-14: old was same playground image as my turn; person pointing at viewer = 'you' convention]
+- core.old ("old"): arasaac_id=34894 (was: unmapped) [qa-swap 2026-09-14: old cracked brown egg-blob unreadable; elderly person with cane is the standard AAC convention]
+- core.light ("light"): arasaac_id=5545 (was: unmapped) [qa-swap 2026-09-14: old glowing light bulb read as lamp/idea not weight; new feather is the classic AAC light-vs-heavy convention]

@@ -54,6 +54,21 @@ void main() {
         expect(count, greaterThan(40));
       });
 
+      test('pack holds the full 10,000-concept vocabulary', () {
+        final ids = <String>{
+          for (final i in pack.homeItems) i.id,
+          for (final f in pack.folders.values)
+            for (final w in f.words) w.id,
+        };
+        expect(
+          ids.length,
+          greaterThanOrEqualTo(10000),
+          reason:
+              'The 10k expansion must ship at least 10,000 unique concept '
+              'ids per locale.',
+        );
+      });
+
       test('wordById resolves home and folder words', () {
         expect(pack.wordById('core.want').label, isNotEmpty);
         expect(pack.wordById('food.apple').label, isNotEmpty);

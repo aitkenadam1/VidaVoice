@@ -1,0 +1,650 @@
+[
+ {
+  "id": "feel.excited",
+  "label": "excited",
+  "folder": "folder.feelings",
+  "level": 1
+ },
+ {
+  "id": "feel.scared",
+  "label": "scared",
+  "folder": "folder.feelings",
+  "level": 1
+ },
+ {
+  "id": "feel.angry",
+  "label": "angry",
+  "folder": "folder.feelings",
+  "level": 1
+ },
+ {
+  "id": "feel.tired",
+  "label": "tired",
+  "folder": "folder.feelings",
+  "level": 1
+ },
+ {
+  "id": "feel.sick",
+  "label": "sick",
+  "folder": "folder.feelings",
+  "level": 1
+ },
+ {
+  "id": "feel.hurt",
+  "label": "hurt",
+  "folder": "folder.feelings",
+  "level": 1
+ },
+ {
+  "id": "feel.calm",
+  "label": "calm",
+  "folder": "folder.feelings",
+  "level": 2
+ },
+ {
+  "id": "feel.silly",
+  "label": "silly",
+  "folder": "folder.feelings",
+  "level": 3
+ },
+ {
+  "id": "feel.love",
+  "label": "love",
+  "folder": "folder.feelings",
+  "level": 2
+ },
+ {
+  "id": "feel.proud",
+  "label": "proud",
+  "folder": "folder.feelings",
+  "level": 2
+ },
+ {
+  "id": "feel.bored",
+  "label": "bored",
+  "folder": "folder.feelings",
+  "level": 2
+ },
+ {
+  "id": "feel.brave",
+  "label": "brave",
+  "folder": "folder.feelings",
+  "level": 3
+ },
+ {
+  "id": "feelings.happy",
+  "label": "happy",
+  "folder": "folder.feelings",
+  "level": 1
+ },
+ {
+  "id": "feelings.sad",
+  "label": "sad",
+  "folder": "folder.feelings",
+  "level": 1
+ },
+ {
+  "id": "feelings.worried",
+  "label": "worried",
+  "folder": "folder.feelings",
+  "level": 2
+ },
+ {
+  "id": "feelings.nervous",
+  "label": "nervous",
+  "folder": "folder.feelings",
+  "level": 2
+ },
+ {
+  "id": "feelings.confused",
+  "label": "confused",
+  "folder": "folder.feelings",
+  "level": 3
+ },
+ {
+  "id": "feelings.jealous",
+  "label": "jealous",
+  "folder": "folder.feelings",
+  "level": 3
+ },
+ {
+  "id": "feelings.grumpy",
+  "label": "grumpy",
+  "folder": "folder.feelings",
+  "level": 2
+ },
+ {
+  "id": "feelings.lonely",
+  "label": "lonely",
+  "folder": "folder.feelings",
+  "level": 3
+ },
+ {
+  "id": "food.apple",
+  "label": "apple",
+  "folder": "folder.food",
+  "level": 1
+ },
+ {
+  "id": "food.banana",
+  "label": "banana",
+  "folder": "folder.food",
+  "level": 2
+ },
+ {
+  "id": "food.cookie",
+  "label": "cookie",
+  "folder": "folder.food",
+  "level": 1
+ },
+ {
+  "id": "food.bread",
+  "label": "bread",
+  "folder": "folder.food",
+  "level": 2
+ },
+ {
+  "id": "food.cheese",
+  "label": "cheese",
+  "folder": "folder.food",
+  "level": 2
+ },
+ {
+  "id": "food.egg",
+  "label": "egg",
+  "folder": "folder.food",
+  "level": 2
+ },
+ {
+  "id": "food.water",
+  "label": "water",
+  "folder": "folder.food",
+  "level": 1
+ },
+ {
+  "id": "food.milk",
+  "label": "milk",
+  "folder": "folder.food",
+  "level": 1
+ },
+ {
+  "id": "food.juice",
+  "label": "juice",
+  "folder": "folder.food",
+  "level": 1
+ },
+ {
+  "id": "food.hungry",
+  "label": "hungry",
+  "folder": "folder.food",
+  "level": 1
+ },
+ {
+  "id": "food.thirsty",
+  "label": "thirsty",
+  "folder": "folder.food",
+  "level": 1
+ },
+ {
+  "id": "food.yucky",
+  "label": "yucky",
+  "folder": "folder.food",
+  "level": 2
+ },
+ {
+  "id": "food.pizza",
+  "label": "pizza",
+  "folder": "folder.food",
+  "level": 2
+ },
+ {
+  "id": "food.spaghetti",
+  "label": "spaghetti",
+  "folder": "folder.food",
+  "level": 3
+ },
+ {
+  "id": "food.chicken",
+  "label": "chicken",
+  "folder": "folder.food",
+  "level": 2
+ },
+ {
+  "id": "food.taco",
+  "label": "taco",
+  "folder": "folder.food",
+  "level": 2
+ },
+ {
+  "id": "food.rice",
+  "label": "rice",
+  "folder": "folder.food",
+  "level": 2
+ },
+ {
+  "id": "food.soup",
+  "label": "soup",
+  "folder": "folder.food",
+  "level": 2
+ },
+ {
+  "id": "food.yogurt",
+  "label": "yogurt",
+  "folder": "folder.food",
+  "level": 2
+ },
+ {
+  "id": "food.popcorn",
+  "label": "popcorn",
+  "folder": "folder.food",
+  "level": 2
+ },
+ {
+  "id": "food.cracker",
+  "label": "cracker",
+  "folder": "folder.food",
+  "level": 3
+ },
+ {
+  "id": "food.noodles",
+  "label": "noodles",
+  "folder": "folder.food",
+  "level": 3
+ },
+ {
+  "id": "food.salad",
+  "label": "salad",
+  "folder": "folder.food",
+  "level": 3
+ },
+ {
+  "id": "food.watermelon",
+  "label": "watermelon",
+  "folder": "folder.food",
+  "level": 2
+ },
+ {
+  "id": "people.mom",
+  "label": "mom",
+  "folder": "folder.people",
+  "level": 1
+ },
+ {
+  "id": "people.dad",
+  "label": "dad",
+  "folder": "folder.people",
+  "level": 1
+ },
+ {
+  "id": "people.grandma",
+  "label": "grandma",
+  "folder": "folder.people",
+  "level": 2
+ },
+ {
+  "id": "people.grandpa",
+  "label": "grandpa",
+  "folder": "folder.people",
+  "level": 2
+ },
+ {
+  "id": "people.sister",
+  "label": "sister",
+  "folder": "folder.people",
+  "level": 2
+ },
+ {
+  "id": "people.brother",
+  "label": "brother",
+  "folder": "folder.people",
+  "level": 2
+ },
+ {
+  "id": "people.friend",
+  "label": "friend",
+  "folder": "folder.people",
+  "level": 2
+ },
+ {
+  "id": "people.teacher",
+  "label": "teacher",
+  "folder": "folder.people",
+  "level": 2
+ },
+ {
+  "id": "people.doctor",
+  "label": "doctor",
+  "folder": "folder.people",
+  "level": 3
+ },
+ {
+  "id": "people.baby",
+  "label": "baby",
+  "folder": "folder.people",
+  "level": 1
+ },
+ {
+  "id": "people.cousin",
+  "label": "cousin",
+  "folder": "folder.people",
+  "level": 3
+ },
+ {
+  "id": "people.aunt",
+  "label": "aunt",
+  "folder": "folder.people",
+  "level": 3
+ },
+ {
+  "id": "people.uncle",
+  "label": "uncle",
+  "folder": "folder.people",
+  "level": 3
+ },
+ {
+  "id": "people.nurse",
+  "label": "nurse",
+  "folder": "folder.people",
+  "level": 3
+ },
+ {
+  "id": "people.dentist",
+  "label": "dentist",
+  "folder": "folder.people",
+  "level": 3
+ },
+ {
+  "id": "people.neighbor",
+  "label": "neighbor",
+  "folder": "folder.people",
+  "level": 3
+ },
+ {
+  "id": "people.classmate",
+  "label": "classmate",
+  "folder": "folder.people",
+  "level": 3
+ },
+ {
+  "id": "people.family",
+  "label": "family",
+  "folder": "folder.people",
+  "level": 2
+ },
+ {
+  "id": "people.girl",
+  "label": "girl",
+  "folder": "folder.people",
+  "level": 2
+ },
+ {
+  "id": "people.boy",
+  "label": "boy",
+  "folder": "folder.people",
+  "level": 2
+ },
+ {
+  "id": "play.ball",
+  "label": "ball",
+  "folder": "folder.play",
+  "level": 1
+ },
+ {
+  "id": "play.toy",
+  "label": "toy",
+  "folder": "folder.play",
+  "level": 1
+ },
+ {
+  "id": "play.book",
+  "label": "book",
+  "folder": "folder.play",
+  "level": 1
+ },
+ {
+  "id": "play.game",
+  "label": "game",
+  "folder": "folder.play",
+  "level": 2
+ },
+ {
+  "id": "play.music",
+  "label": "music",
+  "folder": "folder.play",
+  "level": 2
+ },
+ {
+  "id": "play.outside",
+  "label": "outside",
+  "folder": "folder.play",
+  "level": 1
+ },
+ {
+  "id": "play.park",
+  "label": "park",
+  "folder": "folder.play",
+  "level": 2
+ },
+ {
+  "id": "play.swim",
+  "label": "swim",
+  "folder": "folder.play",
+  "level": 2
+ },
+ {
+  "id": "play.draw",
+  "label": "draw",
+  "folder": "folder.play",
+  "level": 2
+ },
+ {
+  "id": "play.tv",
+  "label": "tv",
+  "folder": "folder.play",
+  "level": 2
+ },
+ {
+  "id": "play.puzzle",
+  "label": "puzzle",
+  "folder": "folder.play",
+  "level": 3
+ },
+ {
+  "id": "play.slide",
+  "label": "slide",
+  "folder": "folder.play",
+  "level": 3
+ },
+ {
+  "id": "play.blocks",
+  "label": "blocks",
+  "folder": "folder.play",
+  "level": 2
+ },
+ {
+  "id": "play.doll",
+  "label": "doll",
+  "folder": "folder.play",
+  "level": 2
+ },
+ {
+  "id": "play.cars",
+  "label": "cars",
+  "folder": "folder.play",
+  "level": 2
+ },
+ {
+  "id": "play.bubbles",
+  "label": "bubbles",
+  "folder": "folder.play",
+  "level": 1
+ },
+ {
+  "id": "play.trampoline",
+  "label": "trampoline",
+  "folder": "folder.play",
+  "level": 3
+ },
+ {
+  "id": "play.swing",
+  "label": "swing",
+  "folder": "folder.play",
+  "level": 2
+ },
+ {
+  "id": "play.bike",
+  "label": "bike",
+  "folder": "folder.play",
+  "level": 2
+ },
+ {
+  "id": "play.soccer",
+  "label": "soccer",
+  "folder": "folder.play",
+  "level": 3
+ },
+ {
+  "id": "play.coloring",
+  "label": "coloring",
+  "folder": "folder.play",
+  "level": 2
+ },
+ {
+  "id": "play.story",
+  "label": "story",
+  "folder": "folder.play",
+  "level": 2
+ },
+ {
+  "id": "phrase.ineedhelp",
+  "label": "I need help",
+  "folder": "folder.phrases",
+  "level": 1
+ },
+ {
+  "id": "phrase.bathroomplease",
+  "label": "Bathroom please",
+  "folder": "folder.phrases",
+  "level": 1
+ },
+ {
+  "id": "phrase.iwanttogohome",
+  "label": "I want to go home",
+  "folder": "folder.phrases",
+  "level": 1
+ },
+ {
+  "id": "phrase.thankyou",
+  "label": "Thank you",
+  "folder": "folder.phrases",
+  "level": 1
+ },
+ {
+  "id": "phrase.yesplease",
+  "label": "Yes please",
+  "folder": "folder.phrases",
+  "level": 1
+ },
+ {
+  "id": "phrase.nothankyou",
+  "label": "No thank you",
+  "folder": "folder.phrases",
+  "level": 1
+ },
+ {
+  "id": "phrase.excuseme",
+  "label": "Excuse me",
+  "folder": "folder.phrases",
+  "level": 1
+ },
+ {
+  "id": "phrase.goodmorning",
+  "label": "Good morning",
+  "folder": "folder.phrases",
+  "level": 1
+ },
+ {
+  "id": "phrase.goodnight",
+  "label": "Good night",
+  "folder": "folder.phrases",
+  "level": 1
+ },
+ {
+  "id": "phrase.iloveyou",
+  "label": "I love you",
+  "folder": "folder.phrases",
+  "level": 1
+ },
+ {
+  "id": "phrase.waitaminute",
+  "label": "Wait a minute",
+  "folder": "folder.phrases",
+  "level": 1
+ },
+ {
+  "id": "phrase.alldone",
+  "label": "All done",
+  "folder": "folder.phrases",
+  "level": 1
+ },
+ {
+  "id": "phrase.lookatme",
+  "label": "Look at me",
+  "folder": "folder.phrases",
+  "level": 1
+ },
+ {
+  "id": "phrase.idontunderstand",
+  "label": "I don't understand",
+  "folder": "folder.phrases",
+  "level": 1
+ },
+ {
+  "id": "school.crayon",
+  "label": "crayon",
+  "folder": "folder.school",
+  "level": 1
+ },
+ {
+  "id": "school.glue",
+  "label": "glue",
+  "folder": "folder.school",
+  "level": 2
+ },
+ {
+  "id": "school.scissors",
+  "label": "scissors",
+  "folder": "folder.school",
+  "level": 2
+ },
+ {
+  "id": "school.backpack",
+  "label": "backpack",
+  "folder": "folder.school",
+  "level": 1
+ },
+ {
+  "id": "school.recess",
+  "label": "recess",
+  "folder": "folder.school",
+  "level": 2
+ },
+ {
+  "id": "school.lunchbox",
+  "label": "lunch box",
+  "folder": "folder.school",
+  "level": 2
+ },
+ {
+  "id": "school.ruler",
+  "label": "ruler",
+  "folder": "folder.school",
+  "level": 3
+ },
+ {
+  "id": "school.paint",
+  "label": "paint",
+  "folder": "folder.school",
+  "level": 2
+ }
+]

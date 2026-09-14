@@ -1,0 +1,3512 @@
+{
+  "core.a": {
+    "category": "little",
+    "col": 0,
+    "kind": "home",
+    "label": "a",
+    "level": 2,
+    "row": 23,
+    "type": "word"
+  },
+  "core.about": {
+    "category": "little",
+    "col": 6,
+    "kind": "home",
+    "label": "about",
+    "level": 3,
+    "row": 24,
+    "type": "word"
+  },
+  "core.again": {
+    "category": "social",
+    "col": 1,
+    "kind": "home",
+    "label": "again",
+    "level": 1,
+    "row": 2,
+    "type": "word"
+  },
+  "core.all": {
+    "category": "descriptors",
+    "col": 1,
+    "kind": "home",
+    "label": "all",
+    "level": 2,
+    "row": 18,
+    "type": "word"
+  },
+  "core.and": {
+    "category": "little",
+    "col": 2,
+    "kind": "home",
+    "label": "and",
+    "level": 2,
+    "row": 23,
+    "type": "word"
+  },
+  "core.ask": {
+    "category": "verbs",
+    "col": 5,
+    "kind": "home",
+    "label": "ask",
+    "level": 2,
+    "row": 8,
+    "type": "word"
+  },
+  "core.back": {
+    "category": "places",
+    "col": 3,
+    "kind": "home",
+    "label": "back",
+    "level": 3,
+    "row": 21,
+    "type": "word"
+  },
+  "core.bad": {
+    "category": "descriptors",
+    "col": 0,
+    "kind": "home",
+    "label": "bad",
+    "level": 1,
+    "row": 16,
+    "type": "word"
+  },
+  "core.bathroom": {
+    "category": "places",
+    "col": 4,
+    "kind": "home",
+    "label": "bathroom",
+    "level": 2,
+    "row": 22,
+    "type": "word"
+  },
+  "core.beach": {
+    "category": "places",
+    "col": 7,
+    "kind": "home",
+    "label": "beach",
+    "level": 3,
+    "row": 22,
+    "type": "word"
+  },
+  "core.bear": {
+    "category": "animals",
+    "col": 3,
+    "kind": "home",
+    "label": "bear",
+    "level": 3,
+    "row": 26,
+    "type": "word"
+  },
+  "core.beautiful": {
+    "category": "descriptors",
+    "col": 2,
+    "kind": "home",
+    "label": "beautiful",
+    "level": 3,
+    "row": 35,
+    "type": "word"
+  },
+  "core.because": {
+    "category": "little",
+    "col": 5,
+    "kind": "home",
+    "label": "because",
+    "level": 3,
+    "row": 23,
+    "type": "word"
+  },
+  "core.bedroom": {
+    "category": "places",
+    "col": 5,
+    "kind": "home",
+    "label": "bedroom",
+    "level": 3,
+    "row": 22,
+    "type": "word"
+  },
+  "core.big": {
+    "category": "descriptors",
+    "col": 5,
+    "kind": "home",
+    "label": "big",
+    "level": 1,
+    "row": 5,
+    "type": "word"
+  },
+  "core.bird": {
+    "category": "animals",
+    "col": 2,
+    "kind": "home",
+    "label": "bird",
+    "level": 2,
+    "row": 25,
+    "type": "word"
+  },
+  "core.black": {
+    "category": "descriptors",
+    "col": 7,
+    "kind": "home",
+    "label": "black",
+    "level": 2,
+    "row": 27,
+    "type": "word"
+  },
+  "core.blue": {
+    "category": "descriptors",
+    "col": 0,
+    "kind": "home",
+    "label": "blue",
+    "level": 2,
+    "row": 27,
+    "type": "word"
+  },
+  "core.brave": {
+    "category": "descriptors",
+    "col": 6,
+    "kind": "home",
+    "label": "brave",
+    "level": 3,
+    "row": 35,
+    "type": "word"
+  },
+  "core.break": {
+    "category": "verbs",
+    "col": 3,
+    "kind": "home",
+    "label": "break",
+    "level": 3,
+    "row": 10,
+    "type": "word"
+  },
+  "core.bright": {
+    "category": "descriptors",
+    "col": 1,
+    "kind": "home",
+    "label": "bright",
+    "level": 3,
+    "row": 19,
+    "type": "word"
+  },
+  "core.bring": {
+    "category": "verbs",
+    "col": 6,
+    "kind": "home",
+    "label": "bring",
+    "level": 2,
+    "row": 32,
+    "type": "word"
+  },
+  "core.brown": {
+    "category": "descriptors",
+    "col": 6,
+    "kind": "home",
+    "label": "brown",
+    "level": 2,
+    "row": 27,
+    "type": "word"
+  },
+  "core.bus": {
+    "category": "places",
+    "col": 2,
+    "kind": "home",
+    "label": "bus",
+    "level": 3,
+    "row": 22,
+    "type": "word"
+  },
+  "core.but": {
+    "category": "little",
+    "col": 3,
+    "kind": "home",
+    "label": "but",
+    "level": 2,
+    "row": 23,
+    "type": "word"
+  },
+  "core.butterfly": {
+    "category": "animals",
+    "col": 4,
+    "kind": "home",
+    "label": "butterfly",
+    "level": 3,
+    "row": 26,
+    "type": "word"
+  },
+  "core.buy": {
+    "category": "verbs",
+    "col": 7,
+    "kind": "home",
+    "label": "buy",
+    "level": 3,
+    "row": 11,
+    "type": "word"
+  },
+  "core.cake": {
+    "category": "food",
+    "col": 0,
+    "kind": "home",
+    "label": "cake",
+    "level": 2,
+    "row": 31,
+    "type": "word"
+  },
+  "core.call": {
+    "category": "verbs",
+    "col": 5,
+    "kind": "home",
+    "label": "call",
+    "level": 3,
+    "row": 32,
+    "type": "word"
+  },
+  "core.car": {
+    "category": "places",
+    "col": 1,
+    "kind": "home",
+    "label": "car",
+    "level": 2,
+    "row": 22,
+    "type": "word"
+  },
+  "core.careful": {
+    "category": "social",
+    "col": 3,
+    "kind": "home",
+    "label": "careful",
+    "level": 2,
+    "row": 15,
+    "type": "word"
+  },
+  "core.carrot": {
+    "category": "food",
+    "col": 6,
+    "kind": "home",
+    "label": "carrot",
+    "level": 3,
+    "row": 30,
+    "type": "word"
+  },
+  "core.carry": {
+    "category": "verbs",
+    "col": 7,
+    "kind": "home",
+    "label": "carry",
+    "level": 2,
+    "row": 32,
+    "type": "word"
+  },
+  "core.cat": {
+    "category": "animals",
+    "col": 1,
+    "kind": "home",
+    "label": "cat",
+    "level": 2,
+    "row": 25,
+    "type": "word"
+  },
+  "core.catch": {
+    "category": "verbs",
+    "col": 2,
+    "kind": "home",
+    "label": "catch",
+    "level": 2,
+    "row": 33,
+    "type": "word"
+  },
+  "core.cereal": {
+    "category": "food",
+    "col": 2,
+    "kind": "home",
+    "label": "cereal",
+    "level": 2,
+    "row": 31,
+    "type": "word"
+  },
+  "core.choose": {
+    "category": "verbs",
+    "col": 7,
+    "kind": "home",
+    "label": "choose",
+    "level": 3,
+    "row": 33,
+    "type": "word"
+  },
+  "core.church": {
+    "category": "places",
+    "col": 3,
+    "kind": "home",
+    "label": "church",
+    "level": 3,
+    "row": 22,
+    "type": "word"
+  },
+  "core.cinema": {
+    "category": "places",
+    "col": 3,
+    "kind": "home",
+    "label": "cinema",
+    "level": 3,
+    "row": 30,
+    "type": "word"
+  },
+  "core.class": {
+    "category": "school",
+    "col": 4,
+    "kind": "home",
+    "label": "class",
+    "level": 3,
+    "row": 36,
+    "type": "word"
+  },
+  "core.cleand": {
+    "category": "descriptors",
+    "col": 7,
+    "kind": "home",
+    "label": "clean",
+    "level": 2,
+    "row": 16,
+    "type": "word"
+  },
+  "core.cleanv": {
+    "category": "verbs",
+    "col": 5,
+    "kind": "home",
+    "label": "clean",
+    "level": 2,
+    "row": 10,
+    "type": "word"
+  },
+  "core.climb": {
+    "category": "verbs",
+    "col": 5,
+    "kind": "home",
+    "label": "climb",
+    "level": 3,
+    "row": 11,
+    "type": "word"
+  },
+  "core.close": {
+    "category": "verbs",
+    "col": 5,
+    "kind": "home",
+    "label": "close",
+    "level": 2,
+    "row": 9,
+    "type": "word"
+  },
+  "core.cold": {
+    "category": "descriptors",
+    "col": 2,
+    "kind": "home",
+    "label": "cold",
+    "level": 2,
+    "row": 16,
+    "type": "word"
+  },
+  "core.come": {
+    "category": "verbs",
+    "col": 5,
+    "kind": "home",
+    "label": "come",
+    "level": 1,
+    "row": 1,
+    "type": "word"
+  },
+  "core.cook": {
+    "category": "verbs",
+    "col": 6,
+    "kind": "home",
+    "label": "cook",
+    "level": 2,
+    "row": 10,
+    "type": "word"
+  },
+  "core.count": {
+    "category": "school",
+    "col": 7,
+    "kind": "home",
+    "label": "count",
+    "level": 3,
+    "row": 36,
+    "type": "word"
+  },
+  "core.cow": {
+    "category": "animals",
+    "col": 5,
+    "kind": "home",
+    "label": "cow",
+    "level": 3,
+    "row": 25,
+    "type": "word"
+  },
+  "core.cry": {
+    "category": "verbs",
+    "col": 6,
+    "kind": "home",
+    "label": "cry",
+    "level": 3,
+    "row": 13,
+    "type": "word"
+  },
+  "core.cupcake": {
+    "category": "food",
+    "col": 7,
+    "kind": "home",
+    "label": "cupcake",
+    "level": 3,
+    "row": 31,
+    "type": "word"
+  },
+  "core.curious": {
+    "category": "descriptors",
+    "col": 7,
+    "kind": "home",
+    "label": "curious",
+    "level": 3,
+    "row": 35,
+    "type": "word"
+  },
+  "core.dance": {
+    "category": "verbs",
+    "col": 2,
+    "kind": "home",
+    "label": "dance",
+    "level": 2,
+    "row": 11,
+    "type": "word"
+  },
+  "core.dark": {
+    "category": "descriptors",
+    "col": 0,
+    "kind": "home",
+    "label": "dark",
+    "level": 3,
+    "row": 19,
+    "type": "word"
+  },
+  "core.desk": {
+    "category": "school",
+    "col": 3,
+    "kind": "home",
+    "label": "desk",
+    "level": 3,
+    "row": 36,
+    "type": "word"
+  },
+  "core.different": {
+    "category": "descriptors",
+    "col": 0,
+    "kind": "home",
+    "label": "different",
+    "level": 3,
+    "row": 18,
+    "type": "word"
+  },
+  "core.dirty": {
+    "category": "descriptors",
+    "col": 0,
+    "kind": "home",
+    "label": "dirty",
+    "level": 2,
+    "row": 17,
+    "type": "word"
+  },
+  "core.do": {
+    "category": "actions",
+    "col": 5,
+    "kind": "home",
+    "label": "do",
+    "level": 2,
+    "row": 3,
+    "type": "word"
+  },
+  "core.dog": {
+    "category": "animals",
+    "col": 0,
+    "kind": "home",
+    "label": "dog",
+    "level": 2,
+    "row": 25,
+    "type": "word"
+  },
+  "core.dont": {
+    "category": "verbs",
+    "col": 3,
+    "kind": "home",
+    "label": "don't",
+    "level": 1,
+    "row": 1,
+    "type": "word"
+  },
+  "core.down": {
+    "category": "places",
+    "col": 3,
+    "kind": "home",
+    "label": "down",
+    "level": 1,
+    "row": 4,
+    "type": "word"
+  },
+  "core.dream": {
+    "category": "verbs",
+    "col": 4,
+    "kind": "home",
+    "label": "dream",
+    "level": 3,
+    "row": 13,
+    "type": "word"
+  },
+  "core.dress": {
+    "category": "verbs",
+    "col": 5,
+    "kind": "home",
+    "label": "dress",
+    "level": 2,
+    "row": 33,
+    "type": "word"
+  },
+  "core.drink": {
+    "category": "actions",
+    "col": 7,
+    "kind": "home",
+    "label": "drink",
+    "level": 1,
+    "row": 3,
+    "type": "word"
+  },
+  "core.drop": {
+    "category": "verbs",
+    "col": 2,
+    "kind": "home",
+    "label": "drop",
+    "level": 2,
+    "row": 10,
+    "type": "word"
+  },
+  "core.dry": {
+    "category": "descriptors",
+    "col": 2,
+    "kind": "home",
+    "label": "dry",
+    "level": 3,
+    "row": 17,
+    "type": "word"
+  },
+  "core.duck": {
+    "category": "animals",
+    "col": 7,
+    "kind": "home",
+    "label": "duck",
+    "level": 3,
+    "row": 25,
+    "type": "word"
+  },
+  "core.easy": {
+    "category": "descriptors",
+    "col": 5,
+    "kind": "home",
+    "label": "easy",
+    "level": 3,
+    "row": 17,
+    "type": "word"
+  },
+  "core.eat": {
+    "category": "actions",
+    "col": 6,
+    "kind": "home",
+    "label": "eat",
+    "level": 1,
+    "row": 3,
+    "type": "word"
+  },
+  "core.eight": {
+    "category": "descriptors",
+    "col": 1,
+    "kind": "home",
+    "label": "eight",
+    "level": 2,
+    "row": 29,
+    "type": "word"
+  },
+  "core.empty": {
+    "category": "descriptors",
+    "col": 5,
+    "kind": "home",
+    "label": "empty",
+    "level": 2,
+    "row": 34,
+    "type": "word"
+  },
+  "core.every": {
+    "category": "little",
+    "col": 7,
+    "kind": "home",
+    "label": "every",
+    "level": 3,
+    "row": 24,
+    "type": "word"
+  },
+  "core.excuseme": {
+    "category": "social",
+    "col": 2,
+    "kind": "home",
+    "label": "excuse me",
+    "level": 2,
+    "row": 14,
+    "type": "word"
+  },
+  "core.far": {
+    "category": "places",
+    "col": 5,
+    "kind": "home",
+    "label": "far",
+    "level": 2,
+    "row": 21,
+    "type": "word"
+  },
+  "core.farm": {
+    "category": "places",
+    "col": 0,
+    "kind": "home",
+    "label": "farm",
+    "level": 3,
+    "row": 30,
+    "type": "word"
+  },
+  "core.fast": {
+    "category": "descriptors",
+    "col": 3,
+    "kind": "home",
+    "label": "fast",
+    "level": 2,
+    "row": 16,
+    "type": "word"
+  },
+  "core.favorite": {
+    "category": "descriptors",
+    "col": 5,
+    "kind": "home",
+    "label": "favorite",
+    "level": 2,
+    "row": 19,
+    "type": "word"
+  },
+  "core.find": {
+    "category": "verbs",
+    "col": 0,
+    "kind": "home",
+    "label": "find",
+    "level": 2,
+    "row": 12,
+    "type": "word"
+  },
+  "core.finished": {
+    "category": "social",
+    "col": 2,
+    "kind": "home",
+    "label": "finished",
+    "level": 1,
+    "row": 2,
+    "type": "word"
+  },
+  "core.fish": {
+    "category": "animals",
+    "col": 3,
+    "kind": "home",
+    "label": "fish",
+    "level": 2,
+    "row": 25,
+    "type": "word"
+  },
+  "core.five": {
+    "category": "descriptors",
+    "col": 6,
+    "kind": "home",
+    "label": "five",
+    "level": 2,
+    "row": 28,
+    "type": "word"
+  },
+  "core.fix": {
+    "category": "verbs",
+    "col": 4,
+    "kind": "home",
+    "label": "fix",
+    "level": 2,
+    "row": 10,
+    "type": "word"
+  },
+  "core.fly": {
+    "category": "verbs",
+    "col": 7,
+    "kind": "home",
+    "label": "fly",
+    "level": 3,
+    "row": 13,
+    "type": "word"
+  },
+  "core.for": {
+    "category": "little",
+    "col": 7,
+    "kind": "home",
+    "label": "for",
+    "level": 3,
+    "row": 23,
+    "type": "word"
+  },
+  "core.forget": {
+    "category": "verbs",
+    "col": 3,
+    "kind": "home",
+    "label": "forget",
+    "level": 3,
+    "row": 13,
+    "type": "word"
+  },
+  "core.four": {
+    "category": "descriptors",
+    "col": 5,
+    "kind": "home",
+    "label": "four",
+    "level": 2,
+    "row": 28,
+    "type": "word"
+  },
+  "core.fries": {
+    "category": "food",
+    "col": 4,
+    "kind": "home",
+    "label": "fries",
+    "level": 2,
+    "row": 31,
+    "type": "word"
+  },
+  "core.frog": {
+    "category": "animals",
+    "col": 0,
+    "kind": "home",
+    "label": "frog",
+    "level": 3,
+    "row": 26,
+    "type": "word"
+  },
+  "core.from": {
+    "category": "little",
+    "col": 1,
+    "kind": "home",
+    "label": "from",
+    "level": 3,
+    "row": 24,
+    "type": "word"
+  },
+  "core.front": {
+    "category": "places",
+    "col": 2,
+    "kind": "home",
+    "label": "front",
+    "level": 3,
+    "row": 21,
+    "type": "word"
+  },
+  "core.full": {
+    "category": "descriptors",
+    "col": 4,
+    "kind": "home",
+    "label": "full",
+    "level": 2,
+    "row": 34,
+    "type": "word"
+  },
+  "core.funny": {
+    "category": "descriptors",
+    "col": 4,
+    "kind": "home",
+    "label": "funny",
+    "level": 2,
+    "row": 17,
+    "type": "word"
+  },
+  "core.garden": {
+    "category": "places",
+    "col": 1,
+    "kind": "home",
+    "label": "garden",
+    "level": 3,
+    "row": 30,
+    "type": "word"
+  },
+  "core.gentle": {
+    "category": "social",
+    "col": 4,
+    "kind": "home",
+    "label": "gentle",
+    "level": 3,
+    "row": 15,
+    "type": "word"
+  },
+  "core.get": {
+    "category": "actions",
+    "col": 0,
+    "kind": "home",
+    "label": "get",
+    "level": 1,
+    "row": 3,
+    "type": "word"
+  },
+  "core.give": {
+    "category": "actions",
+    "col": 1,
+    "kind": "home",
+    "label": "give",
+    "level": 1,
+    "row": 3,
+    "type": "word"
+  },
+  "core.go": {
+    "category": "verbs",
+    "col": 4,
+    "kind": "home",
+    "label": "go",
+    "level": 1,
+    "row": 1,
+    "type": "word"
+  },
+  "core.good": {
+    "category": "descriptors",
+    "col": 7,
+    "kind": "home",
+    "label": "good",
+    "level": 1,
+    "row": 5,
+    "type": "word"
+  },
+  "core.goodbye": {
+    "category": "social",
+    "col": 1,
+    "kind": "home",
+    "label": "goodbye",
+    "level": 1,
+    "row": 14,
+    "type": "word"
+  },
+  "core.goodmorning": {
+    "category": "social",
+    "col": 6,
+    "kind": "home",
+    "label": "good morning",
+    "level": 2,
+    "row": 14,
+    "type": "word"
+  },
+  "core.goodnight": {
+    "category": "social",
+    "col": 7,
+    "kind": "home",
+    "label": "good night",
+    "level": 2,
+    "row": 14,
+    "type": "word"
+  },
+  "core.grapes": {
+    "category": "food",
+    "col": 4,
+    "kind": "home",
+    "label": "grapes",
+    "level": 3,
+    "row": 30,
+    "type": "word"
+  },
+  "core.gray": {
+    "category": "descriptors",
+    "col": 1,
+    "kind": "home",
+    "label": "gray",
+    "level": 2,
+    "row": 28,
+    "type": "word"
+  },
+  "core.green": {
+    "category": "descriptors",
+    "col": 1,
+    "kind": "home",
+    "label": "green",
+    "level": 2,
+    "row": 27,
+    "type": "word"
+  },
+  "core.hard": {
+    "category": "descriptors",
+    "col": 6,
+    "kind": "home",
+    "label": "hard",
+    "level": 3,
+    "row": 17,
+    "type": "word"
+  },
+  "core.he": {
+    "category": "pronouns",
+    "col": 2,
+    "kind": "home",
+    "label": "he",
+    "level": 2,
+    "row": 0,
+    "type": "word"
+  },
+  "core.hear": {
+    "category": "verbs",
+    "col": 3,
+    "kind": "home",
+    "label": "hear",
+    "level": 2,
+    "row": 32,
+    "type": "word"
+  },
+  "core.heavy": {
+    "category": "descriptors",
+    "col": 6,
+    "kind": "home",
+    "label": "heavy",
+    "level": 3,
+    "row": 18,
+    "type": "word"
+  },
+  "core.hello": {
+    "category": "social",
+    "col": 0,
+    "kind": "home",
+    "label": "hello",
+    "level": 1,
+    "row": 14,
+    "type": "word"
+  },
+  "core.help": {
+    "category": "verbs",
+    "col": 7,
+    "kind": "home",
+    "label": "help",
+    "level": 1,
+    "row": 1,
+    "type": "word"
+  },
+  "core.her": {
+    "category": "pronouns",
+    "col": 3,
+    "kind": "home",
+    "label": "her",
+    "level": 3,
+    "row": 7,
+    "type": "word"
+  },
+  "core.here": {
+    "category": "places",
+    "col": 0,
+    "kind": "home",
+    "label": "here",
+    "level": 1,
+    "row": 4,
+    "type": "word"
+  },
+  "core.hide": {
+    "category": "verbs",
+    "col": 2,
+    "kind": "home",
+    "label": "hide",
+    "level": 3,
+    "row": 12,
+    "type": "word"
+  },
+  "core.his": {
+    "category": "pronouns",
+    "col": 2,
+    "kind": "home",
+    "label": "his",
+    "level": 3,
+    "row": 7,
+    "type": "word"
+  },
+  "core.hold": {
+    "category": "verbs",
+    "col": 1,
+    "kind": "home",
+    "label": "hold",
+    "level": 2,
+    "row": 10,
+    "type": "word"
+  },
+  "core.home": {
+    "category": "places",
+    "col": 6,
+    "kind": "home",
+    "label": "home",
+    "level": 2,
+    "row": 21,
+    "type": "word"
+  },
+  "core.homework": {
+    "category": "school",
+    "col": 0,
+    "kind": "home",
+    "label": "homework",
+    "level": 3,
+    "row": 36,
+    "type": "word"
+  },
+  "core.horse": {
+    "category": "animals",
+    "col": 4,
+    "kind": "home",
+    "label": "horse",
+    "level": 3,
+    "row": 25,
+    "type": "word"
+  },
+  "core.hot": {
+    "category": "descriptors",
+    "col": 1,
+    "kind": "home",
+    "label": "hot",
+    "level": 2,
+    "row": 16,
+    "type": "word"
+  },
+  "core.hotdog": {
+    "category": "food",
+    "col": 6,
+    "kind": "home",
+    "label": "hot dog",
+    "level": 3,
+    "row": 31,
+    "type": "word"
+  },
+  "core.how": {
+    "category": "questions",
+    "col": 4,
+    "kind": "home",
+    "label": "how",
+    "level": 2,
+    "row": 5,
+    "type": "word"
+  },
+  "core.hug": {
+    "category": "verbs",
+    "col": 0,
+    "kind": "home",
+    "label": "hug",
+    "level": 2,
+    "row": 34,
+    "type": "word"
+  },
+  "core.hungryd": {
+    "category": "descriptors",
+    "col": 7,
+    "kind": "home",
+    "label": "hungry",
+    "level": 2,
+    "row": 19,
+    "type": "word"
+  },
+  "core.hurray": {
+    "category": "social",
+    "col": 5,
+    "kind": "home",
+    "label": "hurray",
+    "level": 2,
+    "row": 15,
+    "type": "word"
+  },
+  "core.i": {
+    "category": "pronouns",
+    "col": 0,
+    "kind": "home",
+    "label": "I",
+    "level": 1,
+    "row": 0,
+    "type": "word"
+  },
+  "core.icecream": {
+    "category": "food",
+    "col": 7,
+    "kind": "home",
+    "label": "ice cream",
+    "level": 2,
+    "row": 30,
+    "type": "word"
+  },
+  "core.in": {
+    "category": "places",
+    "col": 4,
+    "kind": "home",
+    "label": "in",
+    "level": 1,
+    "row": 4,
+    "type": "word"
+  },
+  "core.it": {
+    "category": "pronouns",
+    "col": 6,
+    "kind": "home",
+    "label": "it",
+    "level": 1,
+    "row": 0,
+    "type": "word"
+  },
+  "core.jump": {
+    "category": "verbs",
+    "col": 4,
+    "kind": "home",
+    "label": "jump",
+    "level": 2,
+    "row": 11,
+    "type": "word"
+  },
+  "core.just": {
+    "category": "little",
+    "col": 4,
+    "kind": "home",
+    "label": "just",
+    "level": 3,
+    "row": 24,
+    "type": "word"
+  },
+  "core.kind": {
+    "category": "descriptors",
+    "col": 3,
+    "kind": "home",
+    "label": "kind",
+    "level": 3,
+    "row": 35,
+    "type": "word"
+  },
+  "core.knock": {
+    "category": "verbs",
+    "col": 2,
+    "kind": "home",
+    "label": "knock",
+    "level": 3,
+    "row": 34,
+    "type": "word"
+  },
+  "core.know": {
+    "category": "verbs",
+    "col": 0,
+    "kind": "home",
+    "label": "know",
+    "level": 2,
+    "row": 13,
+    "type": "word"
+  },
+  "core.later": {
+    "category": "questions",
+    "col": 4,
+    "kind": "home",
+    "label": "later",
+    "level": 2,
+    "row": 20,
+    "type": "word"
+  },
+  "core.laugh": {
+    "category": "verbs",
+    "col": 5,
+    "kind": "home",
+    "label": "laugh",
+    "level": 3,
+    "row": 13,
+    "type": "word"
+  },
+  "core.learn": {
+    "category": "verbs",
+    "col": 1,
+    "kind": "home",
+    "label": "learn",
+    "level": 3,
+    "row": 13,
+    "type": "word"
+  },
+  "core.leave": {
+    "category": "verbs",
+    "col": 0,
+    "kind": "home",
+    "label": "leave",
+    "level": 2,
+    "row": 33,
+    "type": "word"
+  },
+  "core.left": {
+    "category": "places",
+    "col": 0,
+    "kind": "home",
+    "label": "left",
+    "level": 3,
+    "row": 21,
+    "type": "word"
+  },
+  "core.lesson": {
+    "category": "school",
+    "col": 5,
+    "kind": "home",
+    "label": "lesson",
+    "level": 3,
+    "row": 36,
+    "type": "word"
+  },
+  "core.library": {
+    "category": "places",
+    "col": 4,
+    "kind": "home",
+    "label": "library",
+    "level": 3,
+    "row": 29,
+    "type": "word"
+  },
+  "core.light": {
+    "category": "descriptors",
+    "col": 7,
+    "kind": "home",
+    "label": "light",
+    "level": 3,
+    "row": 18,
+    "type": "word"
+  },
+  "core.like": {
+    "category": "verbs",
+    "col": 2,
+    "kind": "home",
+    "label": "like",
+    "level": 1,
+    "row": 1,
+    "type": "word"
+  },
+  "core.lion": {
+    "category": "animals",
+    "col": 2,
+    "kind": "home",
+    "label": "lion",
+    "level": 3,
+    "row": 26,
+    "type": "word"
+  },
+  "core.listen": {
+    "category": "verbs",
+    "col": 2,
+    "kind": "home",
+    "label": "listen",
+    "level": 2,
+    "row": 8,
+    "type": "word"
+  },
+  "core.little": {
+    "category": "descriptors",
+    "col": 6,
+    "kind": "home",
+    "label": "little",
+    "level": 1,
+    "row": 5,
+    "type": "word"
+  },
+  "core.long": {
+    "category": "descriptors",
+    "col": 7,
+    "kind": "home",
+    "label": "long",
+    "level": 2,
+    "row": 34,
+    "type": "word"
+  },
+  "core.look": {
+    "category": "verbs",
+    "col": 1,
+    "kind": "home",
+    "label": "look",
+    "level": 1,
+    "row": 8,
+    "type": "word"
+  },
+  "core.lose": {
+    "category": "verbs",
+    "col": 1,
+    "kind": "home",
+    "label": "lose",
+    "level": 3,
+    "row": 12,
+    "type": "word"
+  },
+  "core.loud": {
+    "category": "descriptors",
+    "col": 3,
+    "kind": "home",
+    "label": "loud",
+    "level": 3,
+    "row": 17,
+    "type": "word"
+  },
+  "core.make": {
+    "category": "actions",
+    "col": 4,
+    "kind": "home",
+    "label": "make",
+    "level": 2,
+    "row": 3,
+    "type": "word"
+  },
+  "core.me": {
+    "category": "pronouns",
+    "col": 7,
+    "kind": "home",
+    "label": "me",
+    "level": 1,
+    "row": 0,
+    "type": "word"
+  },
+  "core.mine": {
+    "category": "pronouns",
+    "col": 6,
+    "kind": "home",
+    "label": "mine",
+    "level": 2,
+    "row": 7,
+    "type": "word"
+  },
+  "core.monkey": {
+    "category": "animals",
+    "col": 1,
+    "kind": "home",
+    "label": "monkey",
+    "level": 3,
+    "row": 26,
+    "type": "word"
+  },
+  "core.more": {
+    "category": "social",
+    "col": 0,
+    "kind": "home",
+    "label": "more",
+    "level": 1,
+    "row": 2,
+    "type": "word"
+  },
+  "core.museum": {
+    "category": "places",
+    "col": 2,
+    "kind": "home",
+    "label": "museum",
+    "level": 3,
+    "row": 30,
+    "type": "word"
+  },
+  "core.my": {
+    "category": "pronouns",
+    "col": 0,
+    "kind": "home",
+    "label": "my",
+    "level": 1,
+    "row": 7,
+    "type": "word"
+  },
+  "core.myturn": {
+    "category": "social",
+    "col": 1,
+    "kind": "home",
+    "label": "my turn",
+    "level": 2,
+    "row": 15,
+    "type": "word"
+  },
+  "core.near": {
+    "category": "places",
+    "col": 4,
+    "kind": "home",
+    "label": "near",
+    "level": 2,
+    "row": 21,
+    "type": "word"
+  },
+  "core.need": {
+    "category": "verbs",
+    "col": 1,
+    "kind": "home",
+    "label": "need",
+    "level": 1,
+    "row": 1,
+    "type": "word"
+  },
+  "core.new": {
+    "category": "descriptors",
+    "col": 5,
+    "kind": "home",
+    "label": "new",
+    "level": 2,
+    "row": 16,
+    "type": "word"
+  },
+  "core.nine": {
+    "category": "descriptors",
+    "col": 2,
+    "kind": "home",
+    "label": "nine",
+    "level": 2,
+    "row": 29,
+    "type": "word"
+  },
+  "core.no": {
+    "category": "social",
+    "col": 4,
+    "kind": "home",
+    "label": "no",
+    "level": 1,
+    "row": 2,
+    "type": "word"
+  },
+  "core.now": {
+    "category": "questions",
+    "col": 3,
+    "kind": "home",
+    "label": "now",
+    "level": 2,
+    "row": 20,
+    "type": "word"
+  },
+  "core.off": {
+    "category": "places",
+    "col": 7,
+    "kind": "home",
+    "label": "off",
+    "level": 1,
+    "row": 4,
+    "type": "word"
+  },
+  "core.okay": {
+    "category": "social",
+    "col": 3,
+    "kind": "home",
+    "label": "okay",
+    "level": 2,
+    "row": 14,
+    "type": "word"
+  },
+  "core.old": {
+    "category": "descriptors",
+    "col": 6,
+    "kind": "home",
+    "label": "old",
+    "level": 2,
+    "row": 16,
+    "type": "word"
+  },
+  "core.on": {
+    "category": "places",
+    "col": 6,
+    "kind": "home",
+    "label": "on",
+    "level": 1,
+    "row": 4,
+    "type": "word"
+  },
+  "core.one": {
+    "category": "descriptors",
+    "col": 2,
+    "kind": "home",
+    "label": "one",
+    "level": 2,
+    "row": 28,
+    "type": "word"
+  },
+  "core.only": {
+    "category": "little",
+    "col": 5,
+    "kind": "home",
+    "label": "only",
+    "level": 3,
+    "row": 24,
+    "type": "word"
+  },
+  "core.oops": {
+    "category": "social",
+    "col": 7,
+    "kind": "home",
+    "label": "oops",
+    "level": 3,
+    "row": 15,
+    "type": "word"
+  },
+  "core.open": {
+    "category": "verbs",
+    "col": 4,
+    "kind": "home",
+    "label": "open",
+    "level": 1,
+    "row": 9,
+    "type": "word"
+  },
+  "core.or": {
+    "category": "little",
+    "col": 4,
+    "kind": "home",
+    "label": "or",
+    "level": 3,
+    "row": 23,
+    "type": "word"
+  },
+  "core.orange": {
+    "category": "descriptors",
+    "col": 3,
+    "kind": "home",
+    "label": "orange",
+    "level": 2,
+    "row": 27,
+    "type": "word"
+  },
+  "core.our": {
+    "category": "pronouns",
+    "col": 4,
+    "kind": "home",
+    "label": "our",
+    "level": 3,
+    "row": 7,
+    "type": "word"
+  },
+  "core.out": {
+    "category": "places",
+    "col": 5,
+    "kind": "home",
+    "label": "out",
+    "level": 1,
+    "row": 4,
+    "type": "word"
+  },
+  "core.pancake": {
+    "category": "food",
+    "col": 5,
+    "kind": "home",
+    "label": "pancake",
+    "level": 3,
+    "row": 31,
+    "type": "word"
+  },
+  "core.paper": {
+    "category": "school",
+    "col": 2,
+    "kind": "home",
+    "label": "paper",
+    "level": 2,
+    "row": 36,
+    "type": "word"
+  },
+  "core.pencil": {
+    "category": "school",
+    "col": 1,
+    "kind": "home",
+    "label": "pencil",
+    "level": 2,
+    "row": 36,
+    "type": "word"
+  },
+  "core.pig": {
+    "category": "animals",
+    "col": 6,
+    "kind": "home",
+    "label": "pig",
+    "level": 3,
+    "row": 25,
+    "type": "word"
+  },
+  "core.pink": {
+    "category": "descriptors",
+    "col": 5,
+    "kind": "home",
+    "label": "pink",
+    "level": 2,
+    "row": 27,
+    "type": "word"
+  },
+  "core.playground": {
+    "category": "places",
+    "col": 5,
+    "kind": "home",
+    "label": "playground",
+    "level": 2,
+    "row": 29,
+    "type": "word"
+  },
+  "core.playv": {
+    "category": "verbs",
+    "col": 6,
+    "kind": "home",
+    "label": "play",
+    "level": 1,
+    "row": 8,
+    "type": "word"
+  },
+  "core.please": {
+    "category": "social",
+    "col": 5,
+    "kind": "home",
+    "label": "please",
+    "level": 1,
+    "row": 2,
+    "type": "word"
+  },
+  "core.pool": {
+    "category": "places",
+    "col": 7,
+    "kind": "home",
+    "label": "pool",
+    "level": 2,
+    "row": 29,
+    "type": "word"
+  },
+  "core.pretty": {
+    "category": "descriptors",
+    "col": 3,
+    "kind": "home",
+    "label": "pretty",
+    "level": 3,
+    "row": 18,
+    "type": "word"
+  },
+  "core.pull": {
+    "category": "verbs",
+    "col": 0,
+    "kind": "home",
+    "label": "pull",
+    "level": 2,
+    "row": 10,
+    "type": "word"
+  },
+  "core.purple": {
+    "category": "descriptors",
+    "col": 4,
+    "kind": "home",
+    "label": "purple",
+    "level": 2,
+    "row": 27,
+    "type": "word"
+  },
+  "core.push": {
+    "category": "verbs",
+    "col": 7,
+    "kind": "home",
+    "label": "push",
+    "level": 2,
+    "row": 9,
+    "type": "word"
+  },
+  "core.put": {
+    "category": "actions",
+    "col": 2,
+    "kind": "home",
+    "label": "put",
+    "level": 1,
+    "row": 3,
+    "type": "word"
+  },
+  "core.read": {
+    "category": "verbs",
+    "col": 7,
+    "kind": "home",
+    "label": "read",
+    "level": 2,
+    "row": 10,
+    "type": "word"
+  },
+  "core.red": {
+    "category": "descriptors",
+    "col": 7,
+    "kind": "home",
+    "label": "red",
+    "level": 2,
+    "row": 26,
+    "type": "word"
+  },
+  "core.remember": {
+    "category": "verbs",
+    "col": 2,
+    "kind": "home",
+    "label": "remember",
+    "level": 3,
+    "row": 13,
+    "type": "word"
+  },
+  "core.restaurant": {
+    "category": "places",
+    "col": 6,
+    "kind": "home",
+    "label": "restaurant",
+    "level": 3,
+    "row": 29,
+    "type": "word"
+  },
+  "core.ride": {
+    "category": "verbs",
+    "col": 6,
+    "kind": "home",
+    "label": "ride",
+    "level": 3,
+    "row": 11,
+    "type": "word"
+  },
+  "core.right": {
+    "category": "places",
+    "col": 1,
+    "kind": "home",
+    "label": "right",
+    "level": 3,
+    "row": 21,
+    "type": "word"
+  },
+  "core.round": {
+    "category": "descriptors",
+    "col": 6,
+    "kind": "home",
+    "label": "round",
+    "level": 2,
+    "row": 34,
+    "type": "word"
+  },
+  "core.run": {
+    "category": "verbs",
+    "col": 3,
+    "kind": "home",
+    "label": "run",
+    "level": 2,
+    "row": 11,
+    "type": "word"
+  },
+  "core.same": {
+    "category": "descriptors",
+    "col": 7,
+    "kind": "home",
+    "label": "same",
+    "level": 3,
+    "row": 17,
+    "type": "word"
+  },
+  "core.sandwich": {
+    "category": "food",
+    "col": 1,
+    "kind": "home",
+    "label": "sandwich",
+    "level": 3,
+    "row": 31,
+    "type": "word"
+  },
+  "core.say": {
+    "category": "verbs",
+    "col": 3,
+    "kind": "home",
+    "label": "say",
+    "level": 2,
+    "row": 8,
+    "type": "word"
+  },
+  "core.scary": {
+    "category": "descriptors",
+    "col": 6,
+    "kind": "home",
+    "label": "scary",
+    "level": 3,
+    "row": 19,
+    "type": "word"
+  },
+  "core.school": {
+    "category": "places",
+    "col": 7,
+    "kind": "home",
+    "label": "school",
+    "level": 2,
+    "row": 21,
+    "type": "word"
+  },
+  "core.see": {
+    "category": "verbs",
+    "col": 0,
+    "kind": "home",
+    "label": "see",
+    "level": 1,
+    "row": 8,
+    "type": "word"
+  },
+  "core.seven": {
+    "category": "descriptors",
+    "col": 0,
+    "kind": "home",
+    "label": "seven",
+    "level": 2,
+    "row": 29,
+    "type": "word"
+  },
+  "core.share": {
+    "category": "verbs",
+    "col": 6,
+    "kind": "home",
+    "label": "share",
+    "level": 2,
+    "row": 33,
+    "type": "word"
+  },
+  "core.she": {
+    "category": "pronouns",
+    "col": 3,
+    "kind": "home",
+    "label": "she",
+    "level": 2,
+    "row": 0,
+    "type": "word"
+  },
+  "core.shhh": {
+    "category": "social",
+    "col": 6,
+    "kind": "home",
+    "label": "shhh",
+    "level": 3,
+    "row": 15,
+    "type": "word"
+  },
+  "core.short": {
+    "category": "descriptors",
+    "col": 0,
+    "kind": "home",
+    "label": "short",
+    "level": 2,
+    "row": 35,
+    "type": "word"
+  },
+  "core.show": {
+    "category": "verbs",
+    "col": 3,
+    "kind": "home",
+    "label": "show",
+    "level": 2,
+    "row": 12,
+    "type": "word"
+  },
+  "core.shy": {
+    "category": "descriptors",
+    "col": 4,
+    "kind": "home",
+    "label": "shy",
+    "level": 3,
+    "row": 35,
+    "type": "word"
+  },
+  "core.sick": {
+    "category": "descriptors",
+    "col": 4,
+    "kind": "home",
+    "label": "sick",
+    "level": 2,
+    "row": 19,
+    "type": "word"
+  },
+  "core.sing": {
+    "category": "verbs",
+    "col": 1,
+    "kind": "home",
+    "label": "sing",
+    "level": 2,
+    "row": 11,
+    "type": "word"
+  },
+  "core.sit": {
+    "category": "verbs",
+    "col": 1,
+    "kind": "home",
+    "label": "sit",
+    "level": 2,
+    "row": 9,
+    "type": "word"
+  },
+  "core.six": {
+    "category": "descriptors",
+    "col": 7,
+    "kind": "home",
+    "label": "six",
+    "level": 2,
+    "row": 28,
+    "type": "word"
+  },
+  "core.sleep": {
+    "category": "verbs",
+    "col": 0,
+    "kind": "home",
+    "label": "sleep",
+    "level": 2,
+    "row": 9,
+    "type": "word"
+  },
+  "core.slow": {
+    "category": "descriptors",
+    "col": 4,
+    "kind": "home",
+    "label": "slow",
+    "level": 2,
+    "row": 16,
+    "type": "word"
+  },
+  "core.smell": {
+    "category": "verbs",
+    "col": 2,
+    "kind": "home",
+    "label": "smell",
+    "level": 2,
+    "row": 32,
+    "type": "word"
+  },
+  "core.snake": {
+    "category": "animals",
+    "col": 6,
+    "kind": "home",
+    "label": "snake",
+    "level": 3,
+    "row": 26,
+    "type": "word"
+  },
+  "core.soft": {
+    "category": "descriptors",
+    "col": 4,
+    "kind": "home",
+    "label": "soft",
+    "level": 3,
+    "row": 18,
+    "type": "word"
+  },
+  "core.some": {
+    "category": "descriptors",
+    "col": 2,
+    "kind": "home",
+    "label": "some",
+    "level": 2,
+    "row": 18,
+    "type": "word"
+  },
+  "core.sorry": {
+    "category": "social",
+    "col": 7,
+    "kind": "home",
+    "label": "sorry",
+    "level": 2,
+    "row": 2,
+    "type": "word"
+  },
+  "core.spider": {
+    "category": "animals",
+    "col": 5,
+    "kind": "home",
+    "label": "spider",
+    "level": 3,
+    "row": 26,
+    "type": "word"
+  },
+  "core.stand": {
+    "category": "verbs",
+    "col": 2,
+    "kind": "home",
+    "label": "stand",
+    "level": 2,
+    "row": 9,
+    "type": "word"
+  },
+  "core.start": {
+    "category": "verbs",
+    "col": 6,
+    "kind": "home",
+    "label": "start",
+    "level": 2,
+    "row": 12,
+    "type": "word"
+  },
+  "core.stay": {
+    "category": "verbs",
+    "col": 1,
+    "kind": "home",
+    "label": "stay",
+    "level": 2,
+    "row": 33,
+    "type": "word"
+  },
+  "core.stop": {
+    "category": "verbs",
+    "col": 6,
+    "kind": "home",
+    "label": "stop",
+    "level": 1,
+    "row": 1,
+    "type": "word"
+  },
+  "core.store": {
+    "category": "places",
+    "col": 0,
+    "kind": "home",
+    "label": "store",
+    "level": 3,
+    "row": 22,
+    "type": "word"
+  },
+  "core.strawberry": {
+    "category": "food",
+    "col": 5,
+    "kind": "home",
+    "label": "strawberry",
+    "level": 3,
+    "row": 30,
+    "type": "word"
+  },
+  "core.strong": {
+    "category": "descriptors",
+    "col": 5,
+    "kind": "home",
+    "label": "strong",
+    "level": 3,
+    "row": 18,
+    "type": "word"
+  },
+  "core.student": {
+    "category": "school",
+    "col": 6,
+    "kind": "home",
+    "label": "student",
+    "level": 3,
+    "row": 36,
+    "type": "word"
+  },
+  "core.surprised": {
+    "category": "descriptors",
+    "col": 5,
+    "kind": "home",
+    "label": "surprised",
+    "level": 3,
+    "row": 35,
+    "type": "word"
+  },
+  "core.sweet": {
+    "category": "descriptors",
+    "col": 2,
+    "kind": "home",
+    "label": "sweet",
+    "level": 3,
+    "row": 19,
+    "type": "word"
+  },
+  "core.take": {
+    "category": "actions",
+    "col": 3,
+    "kind": "home",
+    "label": "take",
+    "level": 2,
+    "row": 3,
+    "type": "word"
+  },
+  "core.talk": {
+    "category": "verbs",
+    "col": 4,
+    "kind": "home",
+    "label": "talk",
+    "level": 2,
+    "row": 32,
+    "type": "word"
+  },
+  "core.tall": {
+    "category": "descriptors",
+    "col": 1,
+    "kind": "home",
+    "label": "tall",
+    "level": 2,
+    "row": 35,
+    "type": "word"
+  },
+  "core.taste": {
+    "category": "verbs",
+    "col": 1,
+    "kind": "home",
+    "label": "taste",
+    "level": 2,
+    "row": 32,
+    "type": "word"
+  },
+  "core.tell": {
+    "category": "verbs",
+    "col": 4,
+    "kind": "home",
+    "label": "tell",
+    "level": 2,
+    "row": 8,
+    "type": "word"
+  },
+  "core.ten": {
+    "category": "descriptors",
+    "col": 3,
+    "kind": "home",
+    "label": "ten",
+    "level": 2,
+    "row": 29,
+    "type": "word"
+  },
+  "core.thanks": {
+    "category": "social",
+    "col": 6,
+    "kind": "home",
+    "label": "thanks",
+    "level": 1,
+    "row": 2,
+    "type": "word"
+  },
+  "core.the": {
+    "category": "little",
+    "col": 1,
+    "kind": "home",
+    "label": "the",
+    "level": 2,
+    "row": 23,
+    "type": "word"
+  },
+  "core.their": {
+    "category": "pronouns",
+    "col": 5,
+    "kind": "home",
+    "label": "their",
+    "level": 3,
+    "row": 7,
+    "type": "word"
+  },
+  "core.there": {
+    "category": "places",
+    "col": 1,
+    "kind": "home",
+    "label": "there",
+    "level": 1,
+    "row": 4,
+    "type": "word"
+  },
+  "core.they": {
+    "category": "pronouns",
+    "col": 5,
+    "kind": "home",
+    "label": "they",
+    "level": 2,
+    "row": 0,
+    "type": "word"
+  },
+  "core.think": {
+    "category": "verbs",
+    "col": 7,
+    "kind": "home",
+    "label": "think",
+    "level": 2,
+    "row": 12,
+    "type": "word"
+  },
+  "core.three": {
+    "category": "descriptors",
+    "col": 4,
+    "kind": "home",
+    "label": "three",
+    "level": 2,
+    "row": 28,
+    "type": "word"
+  },
+  "core.throw": {
+    "category": "verbs",
+    "col": 3,
+    "kind": "home",
+    "label": "throw",
+    "level": 2,
+    "row": 33,
+    "type": "word"
+  },
+  "core.tired": {
+    "category": "descriptors",
+    "col": 3,
+    "kind": "home",
+    "label": "tired",
+    "level": 2,
+    "row": 19,
+    "type": "word"
+  },
+  "core.to": {
+    "category": "little",
+    "col": 0,
+    "kind": "home",
+    "label": "to",
+    "level": 2,
+    "row": 24,
+    "type": "word"
+  },
+  "core.toast": {
+    "category": "food",
+    "col": 3,
+    "kind": "home",
+    "label": "toast",
+    "level": 2,
+    "row": 31,
+    "type": "word"
+  },
+  "core.today": {
+    "category": "questions",
+    "col": 5,
+    "kind": "home",
+    "label": "today",
+    "level": 2,
+    "row": 20,
+    "type": "word"
+  },
+  "core.tomorrow": {
+    "category": "questions",
+    "col": 6,
+    "kind": "home",
+    "label": "tomorrow",
+    "level": 3,
+    "row": 20,
+    "type": "word"
+  },
+  "core.too": {
+    "category": "little",
+    "col": 3,
+    "kind": "home",
+    "label": "too",
+    "level": 3,
+    "row": 24,
+    "type": "word"
+  },
+  "core.touch": {
+    "category": "verbs",
+    "col": 0,
+    "kind": "home",
+    "label": "touch",
+    "level": 2,
+    "row": 32,
+    "type": "word"
+  },
+  "core.try": {
+    "category": "verbs",
+    "col": 5,
+    "kind": "home",
+    "label": "try",
+    "level": 2,
+    "row": 12,
+    "type": "word"
+  },
+  "core.turn": {
+    "category": "verbs",
+    "col": 6,
+    "kind": "home",
+    "label": "turn",
+    "level": 2,
+    "row": 9,
+    "type": "word"
+  },
+  "core.two": {
+    "category": "descriptors",
+    "col": 3,
+    "kind": "home",
+    "label": "two",
+    "level": 2,
+    "row": 28,
+    "type": "word"
+  },
+  "core.uhoh": {
+    "category": "social",
+    "col": 5,
+    "kind": "home",
+    "label": "uh-oh",
+    "level": 2,
+    "row": 14,
+    "type": "word"
+  },
+  "core.up": {
+    "category": "places",
+    "col": 2,
+    "kind": "home",
+    "label": "up",
+    "level": 1,
+    "row": 4,
+    "type": "word"
+  },
+  "core.very": {
+    "category": "little",
+    "col": 2,
+    "kind": "home",
+    "label": "very",
+    "level": 2,
+    "row": 24,
+    "type": "word"
+  },
+  "core.visit": {
+    "category": "verbs",
+    "col": 3,
+    "kind": "home",
+    "label": "visit",
+    "level": 2,
+    "row": 34,
+    "type": "word"
+  },
+  "core.wait": {
+    "category": "verbs",
+    "col": 4,
+    "kind": "home",
+    "label": "wait",
+    "level": 2,
+    "row": 12,
+    "type": "word"
+  },
+  "core.walk": {
+    "category": "verbs",
+    "col": 3,
+    "kind": "home",
+    "label": "walk",
+    "level": 2,
+    "row": 9,
+    "type": "word"
+  },
+  "core.want": {
+    "category": "verbs",
+    "col": 0,
+    "kind": "home",
+    "label": "want",
+    "level": 1,
+    "row": 1,
+    "type": "word"
+  },
+  "core.wash": {
+    "category": "verbs",
+    "col": 4,
+    "kind": "home",
+    "label": "wash",
+    "level": 2,
+    "row": 33,
+    "type": "word"
+  },
+  "core.wave": {
+    "category": "verbs",
+    "col": 1,
+    "kind": "home",
+    "label": "wave",
+    "level": 2,
+    "row": 34,
+    "type": "word"
+  },
+  "core.we": {
+    "category": "pronouns",
+    "col": 4,
+    "kind": "home",
+    "label": "we",
+    "level": 2,
+    "row": 0,
+    "type": "word"
+  },
+  "core.welcome": {
+    "category": "social",
+    "col": 0,
+    "kind": "home",
+    "label": "welcome",
+    "level": 3,
+    "row": 15,
+    "type": "word"
+  },
+  "core.wet": {
+    "category": "descriptors",
+    "col": 1,
+    "kind": "home",
+    "label": "wet",
+    "level": 2,
+    "row": 17,
+    "type": "word"
+  },
+  "core.what": {
+    "category": "questions",
+    "col": 0,
+    "kind": "home",
+    "label": "what",
+    "level": 1,
+    "row": 5,
+    "type": "word"
+  },
+  "core.when": {
+    "category": "questions",
+    "col": 3,
+    "kind": "home",
+    "label": "when",
+    "level": 2,
+    "row": 5,
+    "type": "word"
+  },
+  "core.where": {
+    "category": "questions",
+    "col": 1,
+    "kind": "home",
+    "label": "where",
+    "level": 1,
+    "row": 5,
+    "type": "word"
+  },
+  "core.which": {
+    "category": "questions",
+    "col": 1,
+    "kind": "home",
+    "label": "which",
+    "level": 3,
+    "row": 20,
+    "type": "word"
+  },
+  "core.white": {
+    "category": "descriptors",
+    "col": 0,
+    "kind": "home",
+    "label": "white",
+    "level": 2,
+    "row": 28,
+    "type": "word"
+  },
+  "core.who": {
+    "category": "questions",
+    "col": 2,
+    "kind": "home",
+    "label": "who",
+    "level": 1,
+    "row": 5,
+    "type": "word"
+  },
+  "core.whose": {
+    "category": "questions",
+    "col": 2,
+    "kind": "home",
+    "label": "whose",
+    "level": 3,
+    "row": 20,
+    "type": "word"
+  },
+  "core.why": {
+    "category": "questions",
+    "col": 0,
+    "kind": "home",
+    "label": "why",
+    "level": 2,
+    "row": 20,
+    "type": "word"
+  },
+  "core.with": {
+    "category": "little",
+    "col": 6,
+    "kind": "home",
+    "label": "with",
+    "level": 2,
+    "row": 23,
+    "type": "word"
+  },
+  "core.work": {
+    "category": "verbs",
+    "col": 7,
+    "kind": "home",
+    "label": "work",
+    "level": 2,
+    "row": 8,
+    "type": "word"
+  },
+  "core.wow": {
+    "category": "social",
+    "col": 4,
+    "kind": "home",
+    "label": "wow",
+    "level": 2,
+    "row": 14,
+    "type": "word"
+  },
+  "core.write": {
+    "category": "verbs",
+    "col": 0,
+    "kind": "home",
+    "label": "write",
+    "level": 2,
+    "row": 11,
+    "type": "word"
+  },
+  "core.yellow": {
+    "category": "descriptors",
+    "col": 2,
+    "kind": "home",
+    "label": "yellow",
+    "level": 2,
+    "row": 27,
+    "type": "word"
+  },
+  "core.yes": {
+    "category": "social",
+    "col": 3,
+    "kind": "home",
+    "label": "yes",
+    "level": 1,
+    "row": 2,
+    "type": "word"
+  },
+  "core.yesterday": {
+    "category": "questions",
+    "col": 7,
+    "kind": "home",
+    "label": "yesterday",
+    "level": 3,
+    "row": 20,
+    "type": "word"
+  },
+  "core.you": {
+    "category": "pronouns",
+    "col": 1,
+    "kind": "home",
+    "label": "you",
+    "level": 1,
+    "row": 0,
+    "type": "word"
+  },
+  "core.your": {
+    "category": "pronouns",
+    "col": 1,
+    "kind": "home",
+    "label": "your",
+    "level": 2,
+    "row": 7,
+    "type": "word"
+  },
+  "core.yours": {
+    "category": "pronouns",
+    "col": 7,
+    "kind": "home",
+    "label": "yours",
+    "level": 2,
+    "row": 7,
+    "type": "word"
+  },
+  "core.yourturn": {
+    "category": "social",
+    "col": 2,
+    "kind": "home",
+    "label": "your turn",
+    "level": 2,
+    "row": 15,
+    "type": "word"
+  },
+  "core.zoo": {
+    "category": "places",
+    "col": 6,
+    "kind": "home",
+    "label": "zoo",
+    "level": 3,
+    "row": 22,
+    "type": "word"
+  },
+  "feel.angry": {
+    "emoji": "\ud83d\ude20",
+    "folder": "folder.feelings",
+    "kind": "folder-word",
+    "label": "angry",
+    "level": 1,
+    "type": "word"
+  },
+  "feel.bored": {
+    "emoji": "\ud83e\udd71",
+    "folder": "folder.feelings",
+    "kind": "folder-word",
+    "label": "bored",
+    "level": 2,
+    "type": "word"
+  },
+  "feel.brave": {
+    "emoji": "\ud83e\udd81",
+    "folder": "folder.feelings",
+    "kind": "folder-word",
+    "label": "brave",
+    "level": 3,
+    "type": "word"
+  },
+  "feel.calm": {
+    "emoji": "\ud83d\ude0c",
+    "folder": "folder.feelings",
+    "kind": "folder-word",
+    "label": "calm",
+    "level": 2,
+    "type": "word"
+  },
+  "feel.excited": {
+    "emoji": "\ud83e\udd29",
+    "folder": "folder.feelings",
+    "kind": "folder-word",
+    "label": "excited",
+    "level": 1,
+    "type": "word"
+  },
+  "feel.hurt": {
+    "emoji": "\ud83e\udd15",
+    "folder": "folder.feelings",
+    "kind": "folder-word",
+    "label": "hurt",
+    "level": 1,
+    "type": "word"
+  },
+  "feel.love": {
+    "emoji": "\u2764\ufe0f",
+    "folder": "folder.feelings",
+    "kind": "folder-word",
+    "label": "love",
+    "level": 2,
+    "type": "word"
+  },
+  "feel.proud": {
+    "emoji": "\ud83d\ude04",
+    "folder": "folder.feelings",
+    "kind": "folder-word",
+    "label": "proud",
+    "level": 2,
+    "type": "word"
+  },
+  "feel.scared": {
+    "emoji": "\ud83d\ude28",
+    "folder": "folder.feelings",
+    "kind": "folder-word",
+    "label": "scared",
+    "level": 1,
+    "type": "word"
+  },
+  "feel.sick": {
+    "emoji": "\ud83e\udd12",
+    "folder": "folder.feelings",
+    "kind": "folder-word",
+    "label": "sick",
+    "level": 1,
+    "type": "word"
+  },
+  "feel.silly": {
+    "emoji": "\ud83e\udd2a",
+    "folder": "folder.feelings",
+    "kind": "folder-word",
+    "label": "silly",
+    "level": 3,
+    "type": "word"
+  },
+  "feel.tired": {
+    "emoji": "\ud83d\ude34",
+    "folder": "folder.feelings",
+    "kind": "folder-word",
+    "label": "tired",
+    "level": 1,
+    "type": "word"
+  },
+  "feelings.confused": {
+    "emoji": "\ud83d\ude15",
+    "folder": "folder.feelings",
+    "kind": "folder-word",
+    "label": "confused",
+    "level": 3,
+    "type": "word"
+  },
+  "feelings.grumpy": {
+    "emoji": "\ud83d\ude20",
+    "folder": "folder.feelings",
+    "kind": "folder-word",
+    "label": "grumpy",
+    "level": 2,
+    "type": "word"
+  },
+  "feelings.happy": {
+    "emoji": "\ud83d\ude0a",
+    "folder": "folder.feelings",
+    "kind": "folder-word",
+    "label": "happy",
+    "level": 1,
+    "type": "word"
+  },
+  "feelings.jealous": {
+    "emoji": "\ud83d\ude12",
+    "folder": "folder.feelings",
+    "kind": "folder-word",
+    "label": "jealous",
+    "level": 3,
+    "type": "word"
+  },
+  "feelings.lonely": {
+    "emoji": "\ud83e\udd7a",
+    "folder": "folder.feelings",
+    "kind": "folder-word",
+    "label": "lonely",
+    "level": 3,
+    "type": "word"
+  },
+  "feelings.nervous": {
+    "emoji": "\ud83d\ude2c",
+    "folder": "folder.feelings",
+    "kind": "folder-word",
+    "label": "nervous",
+    "level": 2,
+    "type": "word"
+  },
+  "feelings.sad": {
+    "emoji": "\ud83d\ude22",
+    "folder": "folder.feelings",
+    "kind": "folder-word",
+    "label": "sad",
+    "level": 1,
+    "type": "word"
+  },
+  "feelings.worried": {
+    "emoji": "\ud83d\ude1f",
+    "folder": "folder.feelings",
+    "kind": "folder-word",
+    "label": "worried",
+    "level": 2,
+    "type": "word"
+  },
+  "folder.feelings": {
+    "category": "folder",
+    "col": 1,
+    "kind": "tile",
+    "label": "Feelings",
+    "level": 1,
+    "row": 6,
+    "type": "folder"
+  },
+  "folder.food": {
+    "category": "folder",
+    "col": 0,
+    "kind": "tile",
+    "label": "Food",
+    "level": 1,
+    "row": 6,
+    "type": "folder"
+  },
+  "folder.people": {
+    "category": "folder",
+    "col": 2,
+    "kind": "tile",
+    "label": "People",
+    "level": 1,
+    "row": 6,
+    "type": "folder"
+  },
+  "folder.phrases": {
+    "category": "folder",
+    "col": 4,
+    "kind": "tile",
+    "label": "Phrases",
+    "level": 1,
+    "row": 6,
+    "type": "folder"
+  },
+  "folder.play": {
+    "category": "folder",
+    "col": 3,
+    "kind": "tile",
+    "label": "Play",
+    "level": 1,
+    "row": 6,
+    "type": "folder"
+  },
+  "folder.school": {
+    "category": "folder",
+    "col": 5,
+    "kind": "tile",
+    "label": "School",
+    "level": 1,
+    "row": 6,
+    "type": "folder"
+  },
+  "food.apple": {
+    "emoji": "\ud83c\udf4e",
+    "folder": "folder.food",
+    "kind": "folder-word",
+    "label": "apple",
+    "level": 1,
+    "type": "word"
+  },
+  "food.banana": {
+    "emoji": "\ud83c\udf4c",
+    "folder": "folder.food",
+    "kind": "folder-word",
+    "label": "banana",
+    "level": 2,
+    "type": "word"
+  },
+  "food.bread": {
+    "emoji": "\ud83c\udf5e",
+    "folder": "folder.food",
+    "kind": "folder-word",
+    "label": "bread",
+    "level": 2,
+    "type": "word"
+  },
+  "food.cheese": {
+    "emoji": "\ud83e\uddc0",
+    "folder": "folder.food",
+    "kind": "folder-word",
+    "label": "cheese",
+    "level": 2,
+    "type": "word"
+  },
+  "food.chicken": {
+    "emoji": "\ud83c\udf57",
+    "folder": "folder.food",
+    "kind": "folder-word",
+    "label": "chicken",
+    "level": 2,
+    "type": "word"
+  },
+  "food.cookie": {
+    "emoji": "\ud83c\udf6a",
+    "folder": "folder.food",
+    "kind": "folder-word",
+    "label": "cookie",
+    "level": 1,
+    "type": "word"
+  },
+  "food.cracker": {
+    "emoji": "\ud83c\udf58",
+    "folder": "folder.food",
+    "kind": "folder-word",
+    "label": "cracker",
+    "level": 3,
+    "type": "word"
+  },
+  "food.egg": {
+    "emoji": "\ud83c\udf73",
+    "folder": "folder.food",
+    "kind": "folder-word",
+    "label": "egg",
+    "level": 2,
+    "type": "word"
+  },
+  "food.hungry": {
+    "emoji": "\ud83d\ude0b",
+    "folder": "folder.food",
+    "kind": "folder-word",
+    "label": "hungry",
+    "level": 1,
+    "type": "word"
+  },
+  "food.juice": {
+    "emoji": "\ud83e\uddc3",
+    "folder": "folder.food",
+    "kind": "folder-word",
+    "label": "juice",
+    "level": 1,
+    "type": "word"
+  },
+  "food.milk": {
+    "emoji": "\ud83e\udd5b",
+    "folder": "folder.food",
+    "kind": "folder-word",
+    "label": "milk",
+    "level": 1,
+    "type": "word"
+  },
+  "food.noodles": {
+    "emoji": "\ud83c\udf5c",
+    "folder": "folder.food",
+    "kind": "folder-word",
+    "label": "noodles",
+    "level": 3,
+    "type": "word"
+  },
+  "food.pizza": {
+    "emoji": "\ud83c\udf55",
+    "folder": "folder.food",
+    "kind": "folder-word",
+    "label": "pizza",
+    "level": 2,
+    "type": "word"
+  },
+  "food.popcorn": {
+    "emoji": "\ud83c\udf7f",
+    "folder": "folder.food",
+    "kind": "folder-word",
+    "label": "popcorn",
+    "level": 2,
+    "type": "word"
+  },
+  "food.rice": {
+    "emoji": "\ud83c\udf5a",
+    "folder": "folder.food",
+    "kind": "folder-word",
+    "label": "rice",
+    "level": 2,
+    "type": "word"
+  },
+  "food.salad": {
+    "emoji": "\ud83e\udd57",
+    "folder": "folder.food",
+    "kind": "folder-word",
+    "label": "salad",
+    "level": 3,
+    "type": "word"
+  },
+  "food.soup": {
+    "emoji": "\ud83c\udf72",
+    "folder": "folder.food",
+    "kind": "folder-word",
+    "label": "soup",
+    "level": 2,
+    "type": "word"
+  },
+  "food.spaghetti": {
+    "emoji": "\ud83c\udf5d",
+    "folder": "folder.food",
+    "kind": "folder-word",
+    "label": "spaghetti",
+    "level": 3,
+    "type": "word"
+  },
+  "food.taco": {
+    "emoji": "\ud83c\udf2e",
+    "folder": "folder.food",
+    "kind": "folder-word",
+    "label": "taco",
+    "level": 2,
+    "type": "word"
+  },
+  "food.thirsty": {
+    "emoji": "\ud83e\udd64",
+    "folder": "folder.food",
+    "kind": "folder-word",
+    "label": "thirsty",
+    "level": 1,
+    "type": "word"
+  },
+  "food.water": {
+    "emoji": "\ud83d\udca7",
+    "folder": "folder.food",
+    "kind": "folder-word",
+    "label": "water",
+    "level": 1,
+    "type": "word"
+  },
+  "food.watermelon": {
+    "emoji": "\ud83c\udf49",
+    "folder": "folder.food",
+    "kind": "folder-word",
+    "label": "watermelon",
+    "level": 2,
+    "type": "word"
+  },
+  "food.yogurt": {
+    "emoji": "\ud83e\udd5b",
+    "folder": "folder.food",
+    "kind": "folder-word",
+    "label": "yogurt",
+    "level": 2,
+    "type": "word"
+  },
+  "food.yucky": {
+    "emoji": "\ud83e\udd22",
+    "folder": "folder.food",
+    "kind": "folder-word",
+    "label": "yucky",
+    "level": 2,
+    "type": "word"
+  },
+  "people.aunt": {
+    "emoji": "\ud83d\udc69\u200d\ud83e\uddb3",
+    "folder": "folder.people",
+    "kind": "folder-word",
+    "label": "aunt",
+    "level": 3,
+    "type": "word"
+  },
+  "people.baby": {
+    "emoji": "\ud83d\udc76",
+    "folder": "folder.people",
+    "kind": "folder-word",
+    "label": "baby",
+    "level": 1,
+    "type": "word"
+  },
+  "people.boy": {
+    "emoji": "\ud83d\udc66",
+    "folder": "folder.people",
+    "kind": "folder-word",
+    "label": "boy",
+    "level": 2,
+    "type": "word"
+  },
+  "people.brother": {
+    "emoji": "\ud83d\udc66",
+    "folder": "folder.people",
+    "kind": "folder-word",
+    "label": "brother",
+    "level": 2,
+    "type": "word"
+  },
+  "people.classmate": {
+    "emoji": "\ud83e\uddd1\u200d\ud83c\udf93",
+    "folder": "folder.people",
+    "kind": "folder-word",
+    "label": "classmate",
+    "level": 3,
+    "type": "word"
+  },
+  "people.cousin": {
+    "emoji": "\ud83e\uddd2",
+    "folder": "folder.people",
+    "kind": "folder-word",
+    "label": "cousin",
+    "level": 3,
+    "type": "word"
+  },
+  "people.dad": {
+    "emoji": "\ud83d\udc68",
+    "folder": "folder.people",
+    "kind": "folder-word",
+    "label": "dad",
+    "level": 1,
+    "type": "word"
+  },
+  "people.dentist": {
+    "emoji": "\ud83e\uddb7",
+    "folder": "folder.people",
+    "kind": "folder-word",
+    "label": "dentist",
+    "level": 3,
+    "type": "word"
+  },
+  "people.doctor": {
+    "emoji": "\ud83e\uddd1\u200d\u2695\ufe0f",
+    "folder": "folder.people",
+    "kind": "folder-word",
+    "label": "doctor",
+    "level": 3,
+    "type": "word"
+  },
+  "people.family": {
+    "emoji": "\ud83d\udc6a",
+    "folder": "folder.people",
+    "kind": "folder-word",
+    "label": "family",
+    "level": 2,
+    "type": "word"
+  },
+  "people.friend": {
+    "emoji": "\ud83e\uddd1\u200d\ud83e\udd1d\u200d\ud83e\uddd1",
+    "folder": "folder.people",
+    "kind": "folder-word",
+    "label": "friend",
+    "level": 2,
+    "type": "word"
+  },
+  "people.girl": {
+    "emoji": "\ud83d\udc67",
+    "folder": "folder.people",
+    "kind": "folder-word",
+    "label": "girl",
+    "level": 2,
+    "type": "word"
+  },
+  "people.grandma": {
+    "emoji": "\ud83d\udc75",
+    "folder": "folder.people",
+    "kind": "folder-word",
+    "label": "grandma",
+    "level": 2,
+    "type": "word"
+  },
+  "people.grandpa": {
+    "emoji": "\ud83d\udc74",
+    "folder": "folder.people",
+    "kind": "folder-word",
+    "label": "grandpa",
+    "level": 2,
+    "type": "word"
+  },
+  "people.mom": {
+    "emoji": "\ud83d\udc69",
+    "folder": "folder.people",
+    "kind": "folder-word",
+    "label": "mom",
+    "level": 1,
+    "type": "word"
+  },
+  "people.neighbor": {
+    "emoji": "\ud83c\udfd8\ufe0f",
+    "folder": "folder.people",
+    "kind": "folder-word",
+    "label": "neighbor",
+    "level": 3,
+    "type": "word"
+  },
+  "people.nurse": {
+    "emoji": "\ud83d\udc69\u200d\u2695\ufe0f",
+    "folder": "folder.people",
+    "kind": "folder-word",
+    "label": "nurse",
+    "level": 3,
+    "type": "word"
+  },
+  "people.sister": {
+    "emoji": "\ud83d\udc67",
+    "folder": "folder.people",
+    "kind": "folder-word",
+    "label": "sister",
+    "level": 2,
+    "type": "word"
+  },
+  "people.teacher": {
+    "emoji": "\ud83e\uddd1\u200d\ud83c\udfeb",
+    "folder": "folder.people",
+    "kind": "folder-word",
+    "label": "teacher",
+    "level": 2,
+    "type": "word"
+  },
+  "people.uncle": {
+    "emoji": "\ud83e\uddd4",
+    "folder": "folder.people",
+    "kind": "folder-word",
+    "label": "uncle",
+    "level": 3,
+    "type": "word"
+  },
+  "phrase.alldone": {
+    "emoji": "\u2705",
+    "folder": "folder.phrases",
+    "kind": "folder-word",
+    "label": "All done",
+    "level": 1,
+    "type": "phrase"
+  },
+  "phrase.bathroomplease": {
+    "emoji": "\ud83d\udebb",
+    "folder": "folder.phrases",
+    "kind": "folder-word",
+    "label": "Bathroom please",
+    "level": 1,
+    "type": "phrase"
+  },
+  "phrase.excuseme": {
+    "emoji": "\ud83d\ude4b",
+    "folder": "folder.phrases",
+    "kind": "folder-word",
+    "label": "Excuse me",
+    "level": 1,
+    "type": "phrase"
+  },
+  "phrase.goodmorning": {
+    "emoji": "\ud83c\udf05",
+    "folder": "folder.phrases",
+    "kind": "folder-word",
+    "label": "Good morning",
+    "level": 1,
+    "type": "phrase"
+  },
+  "phrase.goodnight": {
+    "emoji": "\ud83c\udf19",
+    "folder": "folder.phrases",
+    "kind": "folder-word",
+    "label": "Good night",
+    "level": 1,
+    "type": "phrase"
+  },
+  "phrase.idontunderstand": {
+    "emoji": "\u2753",
+    "folder": "folder.phrases",
+    "kind": "folder-word",
+    "label": "I don't understand",
+    "level": 1,
+    "type": "phrase"
+  },
+  "phrase.iloveyou": {
+    "emoji": "\u2764\ufe0f",
+    "folder": "folder.phrases",
+    "kind": "folder-word",
+    "label": "I love you",
+    "level": 1,
+    "type": "phrase"
+  },
+  "phrase.ineedhelp": {
+    "emoji": "\ud83c\udd98",
+    "folder": "folder.phrases",
+    "kind": "folder-word",
+    "label": "I need help",
+    "level": 1,
+    "type": "phrase"
+  },
+  "phrase.iwanttogohome": {
+    "emoji": "\ud83c\udfe0",
+    "folder": "folder.phrases",
+    "kind": "folder-word",
+    "label": "I want to go home",
+    "level": 1,
+    "type": "phrase"
+  },
+  "phrase.lookatme": {
+    "emoji": "\ud83d\udc40",
+    "folder": "folder.phrases",
+    "kind": "folder-word",
+    "label": "Look at me",
+    "level": 1,
+    "type": "phrase"
+  },
+  "phrase.nothankyou": {
+    "emoji": "\ud83d\ude45",
+    "folder": "folder.phrases",
+    "kind": "folder-word",
+    "label": "No thank you",
+    "level": 1,
+    "type": "phrase"
+  },
+  "phrase.thankyou": {
+    "emoji": "\ud83d\ude4f",
+    "folder": "folder.phrases",
+    "kind": "folder-word",
+    "label": "Thank you",
+    "level": 1,
+    "type": "phrase"
+  },
+  "phrase.waitaminute": {
+    "emoji": "\u23f3",
+    "folder": "folder.phrases",
+    "kind": "folder-word",
+    "label": "Wait a minute",
+    "level": 1,
+    "type": "phrase"
+  },
+  "phrase.yesplease": {
+    "emoji": "\ud83d\udc4d",
+    "folder": "folder.phrases",
+    "kind": "folder-word",
+    "label": "Yes please",
+    "level": 1,
+    "type": "phrase"
+  },
+  "play.ball": {
+    "emoji": "\u26bd",
+    "folder": "folder.play",
+    "kind": "folder-word",
+    "label": "ball",
+    "level": 1,
+    "type": "word"
+  },
+  "play.bike": {
+    "emoji": "\ud83d\udeb2",
+    "folder": "folder.play",
+    "kind": "folder-word",
+    "label": "bike",
+    "level": 2,
+    "type": "word"
+  },
+  "play.blocks": {
+    "emoji": "\ud83e\uddf1",
+    "folder": "folder.play",
+    "kind": "folder-word",
+    "label": "blocks",
+    "level": 2,
+    "type": "word"
+  },
+  "play.book": {
+    "emoji": "\ud83d\udcd6",
+    "folder": "folder.play",
+    "kind": "folder-word",
+    "label": "book",
+    "level": 1,
+    "type": "word"
+  },
+  "play.bubbles": {
+    "emoji": "\ud83e\udee7",
+    "folder": "folder.play",
+    "kind": "folder-word",
+    "label": "bubbles",
+    "level": 1,
+    "type": "word"
+  },
+  "play.cars": {
+    "emoji": "\ud83d\ude97",
+    "folder": "folder.play",
+    "kind": "folder-word",
+    "label": "cars",
+    "level": 2,
+    "type": "word"
+  },
+  "play.coloring": {
+    "emoji": "\ud83d\udd8c\ufe0f",
+    "folder": "folder.play",
+    "kind": "folder-word",
+    "label": "coloring",
+    "level": 2,
+    "type": "word"
+  },
+  "play.doll": {
+    "emoji": "\ud83e\ude86",
+    "folder": "folder.play",
+    "kind": "folder-word",
+    "label": "doll",
+    "level": 2,
+    "type": "word"
+  },
+  "play.draw": {
+    "emoji": "\ud83c\udfa8",
+    "folder": "folder.play",
+    "kind": "folder-word",
+    "label": "draw",
+    "level": 2,
+    "type": "word"
+  },
+  "play.game": {
+    "emoji": "\ud83c\udfae",
+    "folder": "folder.play",
+    "kind": "folder-word",
+    "label": "game",
+    "level": 2,
+    "type": "word"
+  },
+  "play.music": {
+    "emoji": "\ud83c\udfb5",
+    "folder": "folder.play",
+    "kind": "folder-word",
+    "label": "music",
+    "level": 2,
+    "type": "word"
+  },
+  "play.outside": {
+    "emoji": "\ud83c\udf33",
+    "folder": "folder.play",
+    "kind": "folder-word",
+    "label": "outside",
+    "level": 1,
+    "type": "word"
+  },
+  "play.park": {
+    "emoji": "\ud83c\udfde\ufe0f",
+    "folder": "folder.play",
+    "kind": "folder-word",
+    "label": "park",
+    "level": 2,
+    "type": "word"
+  },
+  "play.puzzle": {
+    "emoji": "\ud83e\udde9",
+    "folder": "folder.play",
+    "kind": "folder-word",
+    "label": "puzzle",
+    "level": 3,
+    "type": "word"
+  },
+  "play.slide": {
+    "emoji": "\ud83d\udedd",
+    "folder": "folder.play",
+    "kind": "folder-word",
+    "label": "slide",
+    "level": 3,
+    "type": "word"
+  },
+  "play.soccer": {
+    "emoji": "\u26bd",
+    "folder": "folder.play",
+    "kind": "folder-word",
+    "label": "soccer",
+    "level": 3,
+    "type": "word"
+  },
+  "play.story": {
+    "emoji": "\ud83d\udcd6",
+    "folder": "folder.play",
+    "kind": "folder-word",
+    "label": "story",
+    "level": 2,
+    "type": "word"
+  },
+  "play.swim": {
+    "emoji": "\ud83c\udfca",
+    "folder": "folder.play",
+    "kind": "folder-word",
+    "label": "swim",
+    "level": 2,
+    "type": "word"
+  },
+  "play.swing": {
+    "emoji": "\ud83d\udedd",
+    "folder": "folder.play",
+    "kind": "folder-word",
+    "label": "swing",
+    "level": 2,
+    "type": "word"
+  },
+  "play.toy": {
+    "emoji": "\ud83e\uddf8",
+    "folder": "folder.play",
+    "kind": "folder-word",
+    "label": "toy",
+    "level": 1,
+    "type": "word"
+  },
+  "play.trampoline": {
+    "emoji": "\ud83e\udd38",
+    "folder": "folder.play",
+    "kind": "folder-word",
+    "label": "trampoline",
+    "level": 3,
+    "type": "word"
+  },
+  "play.tv": {
+    "emoji": "\ud83d\udcfa",
+    "folder": "folder.play",
+    "kind": "folder-word",
+    "label": "tv",
+    "level": 2,
+    "type": "word"
+  },
+  "school.backpack": {
+    "emoji": "\ud83c\udf92",
+    "folder": "folder.school",
+    "kind": "folder-word",
+    "label": "backpack",
+    "level": 1,
+    "type": "word"
+  },
+  "school.crayon": {
+    "emoji": "\ud83d\udd8d\ufe0f",
+    "folder": "folder.school",
+    "kind": "folder-word",
+    "label": "crayon",
+    "level": 1,
+    "type": "word"
+  },
+  "school.glue": {
+    "emoji": "\ud83e\uddf4",
+    "folder": "folder.school",
+    "kind": "folder-word",
+    "label": "glue",
+    "level": 2,
+    "type": "word"
+  },
+  "school.lunchbox": {
+    "emoji": "\ud83c\udf71",
+    "folder": "folder.school",
+    "kind": "folder-word",
+    "label": "lunch box",
+    "level": 2,
+    "type": "word"
+  },
+  "school.paint": {
+    "emoji": "\ud83c\udfa8",
+    "folder": "folder.school",
+    "kind": "folder-word",
+    "label": "paint",
+    "level": 2,
+    "type": "word"
+  },
+  "school.recess": {
+    "emoji": "\u26f9\ufe0f",
+    "folder": "folder.school",
+    "kind": "folder-word",
+    "label": "recess",
+    "level": 2,
+    "type": "word"
+  },
+  "school.ruler": {
+    "emoji": "\ud83d\udccf",
+    "folder": "folder.school",
+    "kind": "folder-word",
+    "label": "ruler",
+    "level": 3,
+    "type": "word"
+  },
+  "school.scissors": {
+    "emoji": "\u2702\ufe0f",
+    "folder": "folder.school",
+    "kind": "folder-word",
+    "label": "scissors",
+    "level": 2,
+    "type": "word"
+  }
+}

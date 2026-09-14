@@ -10,7 +10,7 @@ import 'caregiver_screen.dart';
 import 'category_screen.dart';
 import 'settings_screen.dart';
 
-/// The home board: 192 core words in FIXED positions (see en.json — motor
+/// The home board: 242 core words in FIXED positions (see en.json — motor
 /// planning is sacred) plus 4 folder tiles. Max 2 taps to any word.
 class HomeBoardScreen extends StatelessWidget {
   const HomeBoardScreen({super.key});

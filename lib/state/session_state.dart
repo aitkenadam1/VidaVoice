@@ -15,7 +15,15 @@ enum BootStatus { loading, ready, error }
 /// App-wide session state: current language pack, sentence under
 /// construction, TTS voice settings, symbols, profiles, onboarding flag.
 class SessionState extends ChangeNotifier {
-  final TtsService tts = TtsService();
+  /// Test seam: inject fakes so widget tests can boot a [SessionState]
+  /// without touching platform channels (SharedPreferences / flutter_tts).
+  /// Production always uses the default — no behavior change.
+  SessionState({Future<SharedPreferences> Function()? prefsFactory, TtsService? tts})
+    : _prefsFactory = prefsFactory ?? SharedPreferences.getInstance,
+      tts = tts ?? TtsService();
+
+  final Future<SharedPreferences> Function() _prefsFactory;
+  final TtsService tts;
   final SymbolService symbols = SymbolService();
   final ProfileService profiles = ProfileService();
   final UsageService usage = UsageService();
@@ -47,7 +55,7 @@ class SessionState extends ChangeNotifier {
     status = BootStatus.loading;
     notifyListeners();
     try {
-      _prefs = await SharedPreferences.getInstance();
+      _prefs = await _prefsFactory();
       final savedLocale = _prefs!.getString('vidavoice.locale');
       currentLocale =
           (savedLocale != null &&

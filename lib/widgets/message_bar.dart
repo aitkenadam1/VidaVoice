@@ -5,7 +5,8 @@ import '../state/session_state.dart';
 import 'history_sheet.dart';
 
 /// Pinned bottom bar: the accumulated sentence plus Speak / Clear / Undo.
-/// Visible on the home board and inside category folders.
+/// Long-pressing Undo clears the whole sentence. Visible on the home board
+/// and inside category folders.
 class MessageBar extends StatelessWidget {
   const MessageBar({super.key});
 
@@ -51,10 +52,21 @@ class MessageBar extends StatelessWidget {
                 builder: (_) => const HistorySheet(),
               ),
             ),
-            IconButton(
-              tooltip: 'Undo last word',
-              icon: const Icon(Icons.backspace_outlined),
-              onPressed: hasWords ? session.undoLast : null,
+            // NOTE: no IconButton tooltip here on purpose. A tooltip installs
+            // its own long-press recognizer, which would compete with the
+            // GestureDetector below and make long-press-to-clear flaky.
+            // The Semantics label keeps screen-reader access equivalent.
+            Semantics(
+              label: 'Undo last word. Long-press clears the sentence.',
+              button: true,
+              enabled: hasWords,
+              child: GestureDetector(
+                onLongPress: hasWords ? session.clearSentence : null,
+                child: IconButton(
+                  icon: const Icon(Icons.backspace_outlined),
+                  onPressed: hasWords ? session.undoLast : null,
+                ),
+              ),
             ),
             TextButton(
               onPressed: hasWords ? session.clearSentence : null,

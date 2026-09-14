@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_tts/flutter_tts.dart';
 
 import '../app_config.dart';
@@ -32,6 +33,12 @@ class TtsService {
     this.pitch = pitch;
     try {
       await _engine.setSharedInstance(true);
+      // Web quirk: speechSynthesis.getVoices() returns an empty list until
+      // the browser fires voiceschanged (async, after page load). Without
+      // this wait, the language binding below sees no voices and the probe
+      // below misreads "not loaded yet" as "no TTS" — the app would go
+      // permanently silent on web.
+      if (kIsWeb) await _waitForWebVoices();
       await _engine.setLanguage(language);
       await _engine.setSpeechRate(rate);
       await _engine.setPitch(pitch);
@@ -45,6 +52,18 @@ class TtsService {
       _ready = false;
     }
     return _ready;
+  }
+
+  /// Polls for the browser's asynchronously-loading voice list (web only).
+  /// Returns as soon as voices appear, or after ~3s when the browser
+  /// genuinely has none. Native platforms answer immediately, so this is
+  /// skipped there — no added boot latency on devices without TTS.
+  Future<void> _waitForWebVoices() async {
+    for (var i = 0; i < 15; i++) {
+      final voices = await _engine.getVoices;
+      if (voices is List && voices.isNotEmpty) return;
+      await Future.delayed(const Duration(milliseconds: 200));
+    }
   }
 
   Future<void> setLanguage(String language) async {

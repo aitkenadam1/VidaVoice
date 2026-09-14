@@ -268,11 +268,32 @@ class SessionState extends ChangeNotifier {
 
   void tapWord(BoardItem item) {
     if (item.type == BoardItemType.folder) return;
+    if (item.type == BoardItemType.phrase) {
+      speakPhrase(item);
+      return;
+    }
     tts.speak(item.label);
     _sentenceIds.add(item.id);
     // Fire-and-forget: usage counts must never block a tap.
     unawaited(usage.recordTap(item.id));
     notifyListeners();
+  }
+
+  /// Phrases are atomic utterances: spoken whole immediately and logged to
+  /// history and usage, without touching the sentence bar. Caregivers see
+  /// them in activity; replay speaks them again via [replayHistory].
+  void speakPhrase(BoardItem item) {
+    tts.speak(item.label);
+    // Fire-and-forget: logging must never block or delay speech.
+    unawaited(usage.recordTap(item.id));
+    unawaited(
+      history.record(
+        profiles.active?.id ?? '',
+        [item.id],
+        item.label,
+        currentLocale,
+      ),
+    );
   }
 
   Future<void> speakText(String text) => tts.speak(text);

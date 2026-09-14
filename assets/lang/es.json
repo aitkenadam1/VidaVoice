@@ -1,7 +1,8 @@
 {
   "locale": "es",
   "displayName": "Español",
-  "ttsLocale": "es-ES", "ttsUnavailableBanner": "Voz no disponible — instala un motor de texto a voz para escuchar las palabras.",
+  "ttsLocale": "es-ES",
+  "ttsUnavailableBanner": "Voz no disponible — instala un motor de texto a voz para escuchar las palabras.",
   "version": 1,
   "gridColumns": 8,
   "items": [
@@ -521,6 +522,16 @@
       "emoji": "🧸",
       "id": "folder.play",
       "label": "jugar",
+      "row": 6,
+      "type": "folder",
+      "level": 1
+    },
+    {
+      "category": "folder",
+      "col": 4,
+      "emoji": "💬",
+      "id": "folder.phrases",
+      "label": "Frases",
       "row": 6,
       "type": "folder",
       "level": 1
@@ -3188,6 +3199,110 @@
           "label": "resbaladilla",
           "emoji": "🛝",
           "level": 3
+        }
+      ]
+    },
+    "folder.phrases": {
+      "label": "Frases",
+      "emoji": "💬",
+      "words": [
+        {
+          "emoji": "🆘",
+          "id": "phrase.ineedhelp",
+          "label": "Necesito ayuda",
+          "type": "phrase",
+          "level": 1
+        },
+        {
+          "emoji": "🚻",
+          "id": "phrase.bathroomplease",
+          "label": "Al baño, por favor",
+          "type": "phrase",
+          "level": 1
+        },
+        {
+          "emoji": "🏠",
+          "id": "phrase.iwanttogohome",
+          "label": "Quiero ir a casa",
+          "type": "phrase",
+          "level": 1
+        },
+        {
+          "emoji": "🙏",
+          "id": "phrase.thankyou",
+          "label": "Gracias",
+          "type": "phrase",
+          "level": 1
+        },
+        {
+          "emoji": "👍",
+          "id": "phrase.yesplease",
+          "label": "Sí, por favor",
+          "type": "phrase",
+          "level": 1
+        },
+        {
+          "emoji": "🙅",
+          "id": "phrase.nothankyou",
+          "label": "No, gracias",
+          "type": "phrase",
+          "level": 1
+        },
+        {
+          "emoji": "🙋",
+          "id": "phrase.excuseme",
+          "label": "Disculpe",
+          "type": "phrase",
+          "level": 1
+        },
+        {
+          "emoji": "🌅",
+          "id": "phrase.goodmorning",
+          "label": "Buenos días",
+          "type": "phrase",
+          "level": 1
+        },
+        {
+          "emoji": "🌙",
+          "id": "phrase.goodnight",
+          "label": "Buenas noches",
+          "type": "phrase",
+          "level": 1
+        },
+        {
+          "emoji": "❤️",
+          "id": "phrase.iloveyou",
+          "label": "Te quiero",
+          "type": "phrase",
+          "level": 1
+        },
+        {
+          "emoji": "⏳",
+          "id": "phrase.waitaminute",
+          "label": "Espera un momento",
+          "type": "phrase",
+          "level": 1
+        },
+        {
+          "emoji": "✅",
+          "id": "phrase.alldone",
+          "label": "Ya terminé",
+          "type": "phrase",
+          "level": 1
+        },
+        {
+          "emoji": "👀",
+          "id": "phrase.lookatme",
+          "label": "Mírame",
+          "type": "phrase",
+          "level": 1
+        },
+        {
+          "emoji": "❓",
+          "id": "phrase.idontunderstand",
+          "label": "No entiendo",
+          "type": "phrase",
+          "level": 1
         }
       ]
     }

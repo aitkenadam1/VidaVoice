@@ -325,6 +325,110 @@
           "level": 3
         }
       ]
+    },
+    "folder.phrases": {
+      "label": "Phrases",
+      "emoji": "💬",
+      "words": [
+        {
+          "emoji": "🆘",
+          "id": "phrase.ineedhelp",
+          "label": "J'ai besoin d'aide",
+          "type": "phrase",
+          "level": 1
+        },
+        {
+          "emoji": "🚻",
+          "id": "phrase.bathroomplease",
+          "label": "Aux toilettes, s'il vous plaît",
+          "type": "phrase",
+          "level": 1
+        },
+        {
+          "emoji": "🏠",
+          "id": "phrase.iwanttogohome",
+          "label": "Je veux rentrer à la maison",
+          "type": "phrase",
+          "level": 1
+        },
+        {
+          "emoji": "🙏",
+          "id": "phrase.thankyou",
+          "label": "Merci",
+          "type": "phrase",
+          "level": 1
+        },
+        {
+          "emoji": "👍",
+          "id": "phrase.yesplease",
+          "label": "Oui, s'il vous plaît",
+          "type": "phrase",
+          "level": 1
+        },
+        {
+          "emoji": "🙅",
+          "id": "phrase.nothankyou",
+          "label": "Non merci",
+          "type": "phrase",
+          "level": 1
+        },
+        {
+          "emoji": "🙋",
+          "id": "phrase.excuseme",
+          "label": "Excusez-moi",
+          "type": "phrase",
+          "level": 1
+        },
+        {
+          "emoji": "🌅",
+          "id": "phrase.goodmorning",
+          "label": "Bonjour",
+          "type": "phrase",
+          "level": 1
+        },
+        {
+          "emoji": "🌙",
+          "id": "phrase.goodnight",
+          "label": "Bonne nuit",
+          "type": "phrase",
+          "level": 1
+        },
+        {
+          "emoji": "❤️",
+          "id": "phrase.iloveyou",
+          "label": "Je t'aime",
+          "type": "phrase",
+          "level": 1
+        },
+        {
+          "emoji": "⏳",
+          "id": "phrase.waitaminute",
+          "label": "Attends un moment",
+          "type": "phrase",
+          "level": 1
+        },
+        {
+          "emoji": "✅",
+          "id": "phrase.alldone",
+          "label": "C'est fini",
+          "type": "phrase",
+          "level": 1
+        },
+        {
+          "emoji": "👀",
+          "id": "phrase.lookatme",
+          "label": "Regarde-moi",
+          "type": "phrase",
+          "level": 1
+        },
+        {
+          "emoji": "❓",
+          "id": "phrase.idontunderstand",
+          "label": "Je ne comprends pas",
+          "type": "phrase",
+          "level": 1
+        }
+      ]
     }
   },
   "gridColumns": 8,
@@ -845,6 +949,16 @@
       "emoji": "🧸",
       "id": "folder.play",
       "label": "Jeux",
+      "row": 6,
+      "type": "folder",
+      "level": 1
+    },
+    {
+      "category": "folder",
+      "col": 4,
+      "emoji": "💬",
+      "id": "folder.phrases",
+      "label": "Phrases",
       "row": 6,
       "type": "folder",
       "level": 1
@@ -3191,6 +3305,7 @@
     }
   ],
   "locale": "fr",
-  "ttsLocale": "fr-FR", "ttsUnavailableBanner": "Voix indisponible — installez un moteur de synthèse vocale pour entendre les mots.",
+  "ttsLocale": "fr-FR",
+  "ttsUnavailableBanner": "Voix indisponible — installez un moteur de synthèse vocale pour entendre les mots.",
   "version": 2
 }

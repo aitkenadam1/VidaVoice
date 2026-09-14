@@ -215,6 +215,28 @@ Not visually QA-reviewed — same caveat as the first 50-word batch.
 - core.student ("student" via "student"): arasaac_id=5899 keyword="student"
 - core.count ("count" via "count"): arasaac_id=2714 keyword="count"
 
+## Quick phrases (atlas/overnight-features): 14 phrase pictograms
+
+First-search-hit pictograms for the new Phrases folder. Several needed
+hand-picked search terms: the ARASAAC API returns unrelated hits for
+multi-word queries like "Yes please" (New Year's Eve) and "All done", so
+those were searched as "yes", "no", "finished", "look", "sorry", "toilet",
+"wait", and "house". All need SLP review like the rest of the set.
+- phrase.ineedhelp ("I need help" via "I need help"): arasaac_id=7171 keyword="I need help"
+- phrase.bathroomplease ("Bathroom please" via "toilet"): arasaac_id=2430 keyword="toilet"
+- phrase.iwanttogohome ("I want to go home" via "house"): arasaac_id=2317 keyword="house"
+- phrase.thankyou ("Thank you" via "Thank you"): arasaac_id=8129 keyword="thanks"
+- phrase.yesplease ("Yes please" via "yes"): arasaac_id=5584 keyword="yes"
+- phrase.nothankyou ("No thank you" via "no"): arasaac_id=5526 keyword="no"
+- phrase.excuseme ("Excuse me" via "sorry"): arasaac_id=11625 keyword="sorry"
+- phrase.goodmorning ("Good morning" via "Good morning"): arasaac_id=6944 keyword="good morning"
+- phrase.goodnight ("Good night" via "Good night"): arasaac_id=6942 keyword="good night"
+- phrase.iloveyou ("I love you" via "I love you"): arasaac_id=11519 keyword="love"
+- phrase.waitaminute ("Wait a minute" via "wait"): arasaac_id=36914 keyword="wait"
+- phrase.alldone ("All done" via "finished"): arasaac_id=28429 keyword="finish"
+- phrase.lookatme ("Look at me" via "look"): arasaac_id=6564 keyword="see"
+- phrase.idontunderstand ("I don't understand" via "I don't understand"): arasaac_id=27363 keyword="I do not understand"
+
 ## Visual QA review 2026-09-14 (atlas/overnight-features) — batch-1 + batch-2 new symbols
 
 REVIEW ONLY. No image files or JSON packs were changed. All 90 first-search-hit

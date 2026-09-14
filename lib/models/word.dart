@@ -16,7 +16,7 @@ class PackValidationError extends Error {
   String toString() => 'PackValidationError: $message';
 }
 
-enum BoardItemType { word, folder }
+enum BoardItemType { word, folder, phrase }
 
 /// One tappable cell on the home grid.
 class BoardItem {
@@ -54,6 +54,11 @@ class BoardItem {
   /// cell empty, so every visible word keeps the position it always had.
   final int level;
 
+  /// A phrase is an atomic multi-word utterance ("I need help") that lives
+  /// in the Phrases folder and is spoken whole on tap — it is never added
+  /// to the sentence bar and never sits on the motor-planning home grid.
+  bool get isPhrase => type == BoardItemType.phrase;
+
   bool get isFolder => type == BoardItemType.folder;
 
   /// Whether this item is revealed when the caregiver has unlocked
@@ -62,11 +67,15 @@ class BoardItem {
   bool visibleAt(int unlockedLevel) => isFolder || level <= unlockedLevel;
 
   factory BoardItem.fromJson(Map<String, dynamic> json) {
-    final typeStr = json['type'] as String;
+    final typeStr = (json['type'] as String?) ?? 'word';
     return BoardItem(
       id: json['id'] as String,
       label: json['label'] as String,
-      type: typeStr == 'folder' ? BoardItemType.folder : BoardItemType.word,
+      type: switch (typeStr) {
+        'folder' => BoardItemType.folder,
+        'phrase' => BoardItemType.phrase,
+        _ => BoardItemType.word,
+      },
       category: (json['category'] as String?) ?? 'core',
       row: (json['row'] as num?)?.toInt() ?? -1,
       col: (json['col'] as num?)?.toInt() ?? -1,
@@ -99,7 +108,13 @@ class FolderPack {
       emoji: (json['emoji'] as String?) ?? '📁',
       words: wordsJson.map((w) {
         final m = Map<String, dynamic>.from(w as Map);
-        return BoardItem.fromJson({...m, 'type': 'word', 'category': 'folder'});
+        // Folder words default to plain words; a word may declare
+        // "type": "phrase" for an atomic multi-word utterance.
+        return BoardItem.fromJson({
+          ...m,
+          'type': m['type'] ?? 'word',
+          'category': 'folder',
+        });
       }).toList(),
     );
   }
@@ -226,6 +241,7 @@ class LanguagePack {
   }
 
   /// Enforces the fixed-position invariant and the 2-tap navigation budget.
+  /// Phrases are folder-only: they never sit on the motor-planning home grid.
   /// Throws [PackValidationError] on any violation — callers should fail fast.
   void validate() {
     final seenCells = <String>{};
@@ -249,6 +265,12 @@ class LanguagePack {
         throw PackValidationError('Duplicate item id ${item.id}.');
       }
       _checkLevel(item);
+      if (item.type == BoardItemType.phrase) {
+        throw PackValidationError(
+          'Phrase ${item.id} on the home grid — phrases live in the Phrases '
+          'folder, never on the motor-planning grid.',
+        );
+      }
       if (item.isFolder) {
         if (item.level != minSupportedLevel) {
           throw PackValidationError(

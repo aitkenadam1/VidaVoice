@@ -286,3 +286,76 @@ words. 79 keep, 11 flagged below. Verdicts:
 - core.try still depicts a courtroom "trial"; core.just still uses justice
   scales; core.about still uses a roundabout sign. No satisfactory ARASAAC
   replacements found yet.
+
+## Batch 3 expansion (atlas/overnight-features): 50 new words + School folder, first-search-hit pictograms
+
+Appends only — no existing word moved. Folder words appended to folder.food
+(+10), folder.feelings (+8), folder.people (+8), folder.play (+10); new
+folder.school (+8 words, tile at home row 6 col 5); 6 new food words on the
+home grid at row 31 cols 2-7. Total: 351 -> 402 unique ids.
+
+Hand-picked search terms where the API fumbled: "toy car" (cars), "bicycle"
+(bike), "football" (soccer, kw=soccer), "french fries" (fries), "hot dog"
+(hot dog), "neighbour" (neighbor), "wax crayon" (crayon), "lunch box"
+(lunchbox), "paintbrush" (coloring — no "coloring" pictogram exists),
+"colouring"/"coloring" returned nothing. Corrections applied: food.cracker
+first hit was a firecracker (16851) -> 8312 "biscuit, cookie";
+school.recess first hit via "break time" had keyword "never" -> 27339
+"playtime, recess, break". feelings.grumpy has no ARASAAC hit; used 32192
+"bad, wicked, evil" (frowning face) — flag for visual review.
+
+- food.chicken ("chicken" via "chicken"): arasaac_id=4952 keyword="chicken"
+- food.taco ("taco" via "taco"): arasaac_id=39698 keyword="taco"
+- food.rice ("rice" via "rice"): arasaac_id=6911 keyword="rice"
+- food.soup ("soup" via "soup"): arasaac_id=2573 keyword="soup"
+- food.yogurt ("yogurt" via "yogurt"): arasaac_id=2618 keyword="yogurt"
+- food.popcorn ("popcorn" via "popcorn"): arasaac_id=5534 keyword="popcorn"
+- food.cracker ("cracker" via "biscuit"): arasaac_id=8312 keyword="biscuit, cookie"
+- food.noodles ("noodles" via "noodles"): arasaac_id=8584 keyword="noodles"
+- food.salad ("salad" via "salad"): arasaac_id=2377 keyword="salad"
+- food.watermelon ("watermelon" via "watermelon"): arasaac_id=2557 keyword="water melon"
+- feelings.happy ("happy" via "happy"): arasaac_id=35533 keyword="happy"
+- feelings.sad ("sad" via "sad"): arasaac_id=35545 keyword="sad"
+- feelings.worried ("worried" via "worried"): arasaac_id=26985 keyword="worried"
+- feelings.nervous ("nervous" via "nervous"): arasaac_id=30391 keyword="jitters"
+- feelings.confused ("confused" via "confused"): arasaac_id=2352 keyword="confused"
+- feelings.jealous ("jealous" via "jealous"): arasaac_id=30630 keyword="jealous"
+- feelings.grumpy ("grumpy" via "bad mood"): arasaac_id=32192 keyword="bad, wicked, evil" [NEEDS VISUAL REVIEW]
+- feelings.lonely ("lonely" via "lonely"): arasaac_id=7253 keyword="solitary"
+- people.uncle ("uncle" via "uncle"): arasaac_id=30255 keyword="uncle"
+- people.nurse ("nurse" via "nurse"): arasaac_id=6050 keyword="nurse"
+- people.dentist ("dentist" via "dentist"): arasaac_id=2733 keyword="dentist"
+- people.neighbor ("neighbor" via "neighbour"): arasaac_id=37228 keyword="neighbour"
+- people.classmate ("classmate" via "classmate"): arasaac_id=39421 keyword="classmate"
+- people.family ("family" via "family"): arasaac_id=38351 keyword="family"
+- people.girl ("girl" via "girl"): arasaac_id=27509 keyword="girl"
+- people.boy ("boy" via "boy"): arasaac_id=7176 keyword="boy"
+- play.blocks ("blocks" via "blocks"): arasaac_id=4935 keyword="construction"
+- play.doll ("doll" via "doll"): arasaac_id=26238 keyword="doll"
+- play.cars ("cars" via "toy car"): arasaac_id=2340 keyword="toy car"
+- play.bubbles ("bubbles" via "bubbles"): arasaac_id=6945 keyword="bubbles"
+- play.trampoline ("trampoline" via "trampoline"): arasaac_id=23891 keyword="trampoline"
+- play.swing ("swing" via "swing"): arasaac_id=4608 keyword="swing"
+- play.bike ("bike" via "bicycle"): arasaac_id=6935 keyword="bicycle"
+- play.soccer ("soccer" via "football"): arasaac_id=16743 keyword="soccer"
+- play.coloring ("coloring" via "paintbrush"): arasaac_id=2523 keyword="paintbrush" [NEEDS VISUAL REVIEW]
+- play.story ("story" via "story"): arasaac_id=6469 keyword="tale"
+- school.crayon ("crayon" via "wax crayon"): arasaac_id=4951 keyword="crayons, wax colors"
+- school.glue ("glue" via "glue"): arasaac_id=2709 keyword="glue"
+- school.scissors ("scissors" via "scissors"): arasaac_id=2591 keyword="scissors"
+- school.backpack ("backpack" via "backpack"): arasaac_id=2475 keyword="rucksack"
+- school.recess ("recess" via "recess"): arasaac_id=27339 keyword="playtime, recess, break"
+- school.lunchbox ("lunch box" via "lunch box"): arasaac_id=39457 keyword="lunch box, lunch container"
+- school.ruler ("ruler" via "ruler"): arasaac_id=2815 keyword="ruler"
+- school.paint ("paint" via "paint"): arasaac_id=2348 keyword="paint"
+- core.cereal ("cereal" via "cereal"): arasaac_id=34749 keyword="cereal"
+- core.toast ("toast" via "toast"): arasaac_id=17330 keyword="toast"
+- core.fries ("fries" via "french fries"): arasaac_id=2505 keyword="crisps"
+- core.pancake ("pancake" via "pancake"): arasaac_id=34233 keyword="crepe"
+- core.hotdog ("hot dog" via "hot dog"): arasaac_id=6647 keyword="sausage"
+- core.cupcake ("cupcake" via "cupcake"): arasaac_id=25211 keyword="madeleine"
+
+All batch-3 symbols are unreviewed first-search-hit (or hand-picked-term)
+picks — they need the same device/visual review as batches 1-2 before any
+claim of appropriateness. Spanish/French labels for the 50 new words are
+draft translations, not clinically reviewed.

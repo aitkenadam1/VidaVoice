@@ -77,6 +77,54 @@
           "label": "courageux",
           "emoji": "🦁",
           "level": 3
+        },
+        {
+          "emoji": "😊",
+          "id": "feelings.happy",
+          "label": "heureux",
+          "level": 1
+        },
+        {
+          "emoji": "😢",
+          "id": "feelings.sad",
+          "label": "triste",
+          "level": 1
+        },
+        {
+          "emoji": "😟",
+          "id": "feelings.worried",
+          "label": "inquiet",
+          "level": 2
+        },
+        {
+          "emoji": "😬",
+          "id": "feelings.nervous",
+          "label": "nerveux",
+          "level": 2
+        },
+        {
+          "emoji": "😕",
+          "id": "feelings.confused",
+          "label": "confus",
+          "level": 3
+        },
+        {
+          "emoji": "😒",
+          "id": "feelings.jealous",
+          "label": "jaloux",
+          "level": 3
+        },
+        {
+          "emoji": "😠",
+          "id": "feelings.grumpy",
+          "label": "grincheux",
+          "level": 2
+        },
+        {
+          "emoji": "🥺",
+          "id": "feelings.lonely",
+          "label": "seul",
+          "level": 3
         }
       ]
     },
@@ -167,6 +215,66 @@
           "label": "spaghetti",
           "emoji": "🍝",
           "level": 3
+        },
+        {
+          "emoji": "🍗",
+          "id": "food.chicken",
+          "label": "poulet",
+          "level": 2
+        },
+        {
+          "emoji": "🌮",
+          "id": "food.taco",
+          "label": "taco",
+          "level": 2
+        },
+        {
+          "emoji": "🍚",
+          "id": "food.rice",
+          "label": "riz",
+          "level": 2
+        },
+        {
+          "emoji": "🍲",
+          "id": "food.soup",
+          "label": "soupe",
+          "level": 2
+        },
+        {
+          "emoji": "🥛",
+          "id": "food.yogurt",
+          "label": "yaourt",
+          "level": 2
+        },
+        {
+          "emoji": "🍿",
+          "id": "food.popcorn",
+          "label": "pop-corn",
+          "level": 2
+        },
+        {
+          "emoji": "🍘",
+          "id": "food.cracker",
+          "label": "cracker",
+          "level": 3
+        },
+        {
+          "emoji": "🍜",
+          "id": "food.noodles",
+          "label": "nouilles",
+          "level": 3
+        },
+        {
+          "emoji": "🥗",
+          "id": "food.salad",
+          "label": "salade",
+          "level": 3
+        },
+        {
+          "emoji": "🍉",
+          "id": "food.watermelon",
+          "label": "pastèque",
+          "level": 2
         }
       ]
     },
@@ -245,6 +353,54 @@
           "label": "tante",
           "emoji": "👩‍🦳",
           "level": 3
+        },
+        {
+          "emoji": "🧔",
+          "id": "people.uncle",
+          "label": "oncle",
+          "level": 3
+        },
+        {
+          "emoji": "👩‍⚕️",
+          "id": "people.nurse",
+          "label": "infirmière",
+          "level": 3
+        },
+        {
+          "emoji": "🦷",
+          "id": "people.dentist",
+          "label": "dentiste",
+          "level": 3
+        },
+        {
+          "emoji": "🏘️",
+          "id": "people.neighbor",
+          "label": "voisin",
+          "level": 3
+        },
+        {
+          "emoji": "🧑‍🎓",
+          "id": "people.classmate",
+          "label": "camarade",
+          "level": 3
+        },
+        {
+          "emoji": "👪",
+          "id": "people.family",
+          "label": "famille",
+          "level": 2
+        },
+        {
+          "emoji": "👧",
+          "id": "people.girl",
+          "label": "fille",
+          "level": 2
+        },
+        {
+          "emoji": "👦",
+          "id": "people.boy",
+          "label": "garçon",
+          "level": 2
         }
       ]
     },
@@ -323,6 +479,66 @@
           "label": "toboggan",
           "emoji": "🛝",
           "level": 3
+        },
+        {
+          "emoji": "🧱",
+          "id": "play.blocks",
+          "label": "cubes",
+          "level": 2
+        },
+        {
+          "emoji": "🪆",
+          "id": "play.doll",
+          "label": "poupée",
+          "level": 2
+        },
+        {
+          "emoji": "🚗",
+          "id": "play.cars",
+          "label": "voitures",
+          "level": 2
+        },
+        {
+          "emoji": "🫧",
+          "id": "play.bubbles",
+          "label": "bulles",
+          "level": 1
+        },
+        {
+          "emoji": "🤸",
+          "id": "play.trampoline",
+          "label": "trampoline",
+          "level": 3
+        },
+        {
+          "emoji": "🛝",
+          "id": "play.swing",
+          "label": "balançoire",
+          "level": 2
+        },
+        {
+          "emoji": "🚲",
+          "id": "play.bike",
+          "label": "vélo",
+          "level": 2
+        },
+        {
+          "emoji": "⚽",
+          "id": "play.soccer",
+          "label": "football",
+          "level": 3
+        },
+        {
+          "emoji": "🖌️",
+          "id": "play.coloring",
+          "label": "coloriage",
+          "level": 2
+        },
+        {
+          "emoji": "📖",
+          "id": "play.story",
+          "label": "histoire",
+          "level": 2
         }
       ]
     },
@@ -427,6 +643,60 @@
           "label": "Je ne comprends pas",
           "type": "phrase",
           "level": 1
+        }
+      ]
+    },
+    "folder.school": {
+      "label": "École",
+      "emoji": "🏫",
+      "words": [
+        {
+          "emoji": "🖍️",
+          "id": "school.crayon",
+          "label": "crayon",
+          "level": 1
+        },
+        {
+          "emoji": "🧴",
+          "id": "school.glue",
+          "label": "colle",
+          "level": 2
+        },
+        {
+          "emoji": "✂️",
+          "id": "school.scissors",
+          "label": "ciseaux",
+          "level": 2
+        },
+        {
+          "emoji": "🎒",
+          "id": "school.backpack",
+          "label": "cartable",
+          "level": 1
+        },
+        {
+          "emoji": "⛹️",
+          "id": "school.recess",
+          "label": "récréation",
+          "level": 2
+        },
+        {
+          "emoji": "🍱",
+          "id": "school.lunchbox",
+          "label": "lunchbox",
+          "level": 2
+        },
+        {
+          "emoji": "📏",
+          "id": "school.ruler",
+          "label": "règle",
+          "level": 3
+        },
+        {
+          "emoji": "🎨",
+          "id": "school.paint",
+          "label": "peinture",
+          "level": 2
         }
       ]
     }
@@ -959,6 +1229,16 @@
       "emoji": "💬",
       "id": "folder.phrases",
       "label": "Phrases",
+      "row": 6,
+      "type": "folder",
+      "level": 1
+    },
+    {
+      "category": "folder",
+      "col": 5,
+      "emoji": "🏫",
+      "id": "folder.school",
+      "label": "École",
       "row": 6,
       "type": "folder",
       "level": 1
@@ -3302,10 +3582,70 @@
       "col": 7,
       "emoji": "🔢",
       "level": 3
+    },
+    {
+      "category": "food",
+      "col": 2,
+      "emoji": "🥣",
+      "id": "core.cereal",
+      "label": "céréales",
+      "row": 31,
+      "type": "word",
+      "level": 2
+    },
+    {
+      "category": "food",
+      "col": 3,
+      "emoji": "🍞",
+      "id": "core.toast",
+      "label": "toast",
+      "row": 31,
+      "type": "word",
+      "level": 2
+    },
+    {
+      "category": "food",
+      "col": 4,
+      "emoji": "🍟",
+      "id": "core.fries",
+      "label": "frites",
+      "row": 31,
+      "type": "word",
+      "level": 2
+    },
+    {
+      "category": "food",
+      "col": 5,
+      "emoji": "🥞",
+      "id": "core.pancake",
+      "label": "crêpe",
+      "row": 31,
+      "type": "word",
+      "level": 3
+    },
+    {
+      "category": "food",
+      "col": 6,
+      "emoji": "🌭",
+      "id": "core.hotdog",
+      "label": "hot-dog",
+      "row": 31,
+      "type": "word",
+      "level": 3
+    },
+    {
+      "category": "food",
+      "col": 7,
+      "emoji": "🧁",
+      "id": "core.cupcake",
+      "label": "cupcake",
+      "row": 31,
+      "type": "word",
+      "level": 3
     }
   ],
   "locale": "fr",
   "ttsLocale": "fr-FR",
   "ttsUnavailableBanner": "Voix indisponible — installez un moteur de synthèse vocale pour entendre les mots.",
-  "version": 2
+  "version": 3
 }

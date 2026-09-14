@@ -159,6 +159,33 @@ void main() {
       }
     });
 
+    test('a mid-archive zip-slip entry does not desync extraction', () async {
+      // Regression test: skipped entries must consume their data blocks AND
+      // padding, or the next header read desyncs and extraction aborts.
+      // (The round-trip test above only catches a trailing zip-slip entry,
+      // which needs no padding skip.)
+      final tmp = await makeTarball({
+        'first.txt': [1],
+        '../evil.txt': [9, 9, 9],
+        'after.txt': [2, 3],
+      });
+      try {
+        final tarball = p.join(tmp.path, 'pack.tar.bz2');
+        final staging = Directory(p.join(tmp.path, 'staging'));
+        await staging.create();
+        await extractModelPack(
+          ExtractModelPackArgs(tarballPath: tarball, stagingDir: staging.path),
+        );
+        expect(
+          await File(p.join(staging.path, 'after.txt')).readAsBytes(),
+          [2, 3],
+        );
+        expect(await File(p.join(tmp.path, 'evil.txt')).exists(), isFalse);
+      } finally {
+        await tmp.delete(recursive: true);
+      }
+    });
+
     test('rejects a corrupt tarball', () async {
       final tmp = await Directory.systemTemp.createTemp('kokoro_test');
       try {

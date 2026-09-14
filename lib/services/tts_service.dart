@@ -14,7 +14,7 @@ class TtsVoice {
   const TtsVoice({required this.name, required this.locale, this.kokoroVoiceId});
 
   /// Engine voice name, e.g. "Microsoft David - English (United States)".
-  /// Kokoro voices are named "Kokoro <Name>", e.g. "Kokoro Bella".
+  /// Kokoro voices are named "Kokoro Bella" (from the voice display name).
   final String name;
 
   /// BCP-47-ish locale tag as reported by the engine, e.g. "en-US".
@@ -202,7 +202,10 @@ class TtsService {
   /// engine as soon as one is ready.
   Future<void> setVoice(TtsVoice voice) async {
     currentVoice = voice;
-    if (_ready) {
+    // Kokoro voices are not system-engine voices: poking flutter_tts with
+    // a nonexistent voice name would be pointless at best, and that engine
+    // is exactly the fallback used when Kokoro fails, so leave it alone.
+    if (_ready && !voice.isKokoro) {
       try {
         await _engine.setVoice({'name': voice.name, 'locale': voice.locale});
       } catch (_) {

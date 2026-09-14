@@ -47,6 +47,10 @@ dependencies:
   audioplayers: ^6.8.1
   http: ^1.6.0
   archive: ^4.3.0
+  # Directly imported by kokoro_tts_service.dart (and its test); declared
+  # explicitly rather than relying on transitive resolution.
+  path: ^1.9.0
+  crypto: ^3.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

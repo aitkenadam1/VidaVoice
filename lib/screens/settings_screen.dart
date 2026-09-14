@@ -370,9 +370,9 @@ class _KokoroSection extends StatefulWidget {
 
 class _KokoroSectionState extends State<_KokoroSection> {
   bool? _ready;
-  double _progress = 0;
-  bool _downloading = false;
   String? _error;
+
+  KokoroTtsService get _kokoro => context.read<SessionState>().kokoro;
 
   @override
   void initState() {
@@ -385,37 +385,26 @@ class _KokoroSectionState extends State<_KokoroSection> {
       if (mounted) setState(() => _ready = null);
       return;
     }
-    final ready = await context.read<SessionState>().kokoro.isModelReady();
+    final ready = await _kokoro.isModelReady();
     if (mounted) setState(() => _ready = ready);
   }
 
   Future<void> _download() async {
-    if (_downloading) return;
-    setState(() {
-      _downloading = true;
-      _progress = 0;
-      _error = null;
-    });
+    final kokoro = _kokoro;
+    if (kokoro.isDownloading.value) return;
+    setState(() => _error = null);
     try {
-      final session = context.read<SessionState>();
-      await session.kokoro.downloadModel(
-        onProgress: (p) {
-          if (mounted) setState(() => _progress = p);
-        },
-      );
-      if (mounted) {
-        setState(() {
-          _ready = true;
-          _downloading = false;
-        });
-      }
+      // Progress is broadcast by the service itself (see
+      // KokoroTtsService.downloadProgress): the UI below subscribes to it,
+      // so navigating away and back mid-download still shows a live bar.
+      await kokoro.downloadModel();
+      if (mounted) setState(() => _ready = true);
       widget.onVoicesChanged();
       // Pre-load the engine so the first utterance isn't slow.
-      unawaited(session.kokoro.warmup());
+      unawaited(kokoro.warmup());
     } catch (e) {
       if (mounted) {
         setState(() {
-          _downloading = false;
           _error = 'Download failed. Check your connection and try again.';
         });
       }
@@ -425,6 +414,15 @@ class _KokoroSectionState extends State<_KokoroSection> {
   @override
   Widget build(BuildContext context) {
     if (!KokoroTtsService.isSupported) return const SizedBox.shrink();
+    // Rebuilds whenever the service's download state changes — even when
+    // this widget was created mid-download.
+    return ValueListenableBuilder<bool>(
+      valueListenable: _kokoro.isDownloading,
+      builder: (context, downloading, _) => _buildCard(downloading),
+    );
+  }
+
+  Widget _buildCard(bool downloading) {
     final ready = _ready;
     return Card(
       child: Padding(
@@ -457,29 +455,43 @@ class _KokoroSectionState extends State<_KokoroSection> {
                   child: CircularProgressIndicator(),
                 ),
               )
-            else if (_downloading) ...[
-              if (_progress < 1) ...[
-                LinearProgressIndicator(value: _progress),
-                const SizedBox(height: 8),
-                Text(
-                  'Downloading… ${(_progress * 100).toStringAsFixed(0)}% '
-                  '(${(_progress * 126).toStringAsFixed(0)} of ~126 MB)',
-                  style: const TextStyle(fontSize: 12),
-                ),
-              ] else ...[
-                const LinearProgressIndicator(),
-                const SizedBox(height: 8),
-                const Text(
-                  'Extracting voices… this takes a minute on older tablets.',
-                  style: TextStyle(fontSize: 12),
-                ),
-              ],
-              const SizedBox(height: 4),
-              const Text(
-                'Keep the app open until it finishes.',
-                style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
-              ),
-            ] else if (ready) ...[
+            else if (downloading)
+              ValueListenableBuilder<double?>(
+                valueListenable: _kokoro.downloadProgress,
+                builder: (context, progress, _) {
+                  final p = progress ?? 0;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (p < 1) ...[
+                        LinearProgressIndicator(value: p),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Downloading… ${(p * 100).toStringAsFixed(0)}% '
+                          '(${(p * 126).toStringAsFixed(0)} of ~126 MB)',
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ] else ...[
+                        const LinearProgressIndicator(),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Extracting voices… this takes a minute on older tablets.',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      ],
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Keep the app open until it finishes.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              )
+            else if (ready) ...[
               const Row(
                 children: [
                   Icon(Icons.check_circle, color: Colors.green, size: 18),

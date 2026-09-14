@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../models/word.dart';
 import '../state/session_state.dart';
+import '../widgets/activity_summary_section.dart';
 import '../widgets/first_week_plan_section.dart';
 import '../widgets/word_finder_section.dart';
 
@@ -77,7 +78,6 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
 
   static const _planned = [
     'Custom words and personal folders (photos from the camera)',
-    'Weekly progress view (usage trends over time)',
     'Backup & sync across devices',
   ];
 
@@ -147,6 +147,9 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
               );
             },
           ),
+          const SizedBox(height: 16),
+          _sectionTitle(context, 'Activity summary'),
+          const ActivitySummarySection(),
           const SizedBox(height: 16),
           _sectionTitle(context, 'Most used words'),
           _mostUsedWordsCard(session),

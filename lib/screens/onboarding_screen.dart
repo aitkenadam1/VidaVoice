@@ -85,7 +85,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ],
             ),
             Padding(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 8),
               child: SizedBox(
                 width: double.infinity,
                 child: FilledButton(
@@ -100,6 +100,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
               ),
             ),
+            TextButton(onPressed: _finish, child: const Text('Skip for now')),
+            const SizedBox(height: 8),
           ],
         ),
       ),

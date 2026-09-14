@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../models/modeling_plan.dart';
 import '../models/word.dart';
 import '../state/session_state.dart';
 
@@ -15,44 +16,6 @@ class CaregiverScreen extends StatefulWidget {
 }
 
 class _CaregiverScreenState extends State<CaregiverScreen> {
-  static const _tips = [
-    (
-      'Model, don\u2019t quiz',
-      'Use VidaVoice to talk WITH them, not test them. When you hand them '
-          'juice, tap \u201cI want juice\u201d yourself. They learn by watching you use it.',
-    ),
-    (
-      'Follow their lead',
-      'Talk about whatever has their attention right now — not what you wish '
-          'they\u2019d notice. If they\u2019re staring at the dog, model \u201cI see dog\u201d.',
-    ),
-    (
-      'One step ahead',
-      'If they use one word, you model two. They tap \u201cjuice\u201d — you tap '
-          '\u201cwant juice\u201d. Always just one step beyond where they are.',
-    ),
-    (
-      'Presume competence',
-      'Talk about everything, all day — feelings, jokes, plans — exactly like '
-          'you would with any child. Don\u2019t limit topics to needs and wants.',
-    ),
-    (
-      'Give wait time',
-      'After you model, silently count to 10. Processing takes time — don\u2019t '
-          'rush to fill the silence or answer for them.',
-    ),
-    (
-      'Never force repetition',
-      'Don\u2019t demand \u201csay it on the app\u201d. If they don\u2019t respond, just model '
-          'the word once more yourself and move on.',
-    ),
-    (
-      'Keep it within reach, all day',
-      'The voice should be available everywhere — not just at the therapy '
-          'table. Communication doesn\u2019t keep office hours.',
-    ),
-  ];
-
   /// What each vocabulary level adds, in caregiver language. Index 0 = level 1.
   static const _levelInfo = [
     (
@@ -74,7 +37,6 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
   ];
 
   static const _planned = [
-    'Guided onboarding wizard for new caregivers',
     'Custom words and personal folders (photos from the camera)',
     'Usage insights: most-used words, weekly progress',
     'Backup & sync across devices',
@@ -169,32 +131,8 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          _sectionTitle(context, 'Modeling tips'),
-          const Padding(
-            padding: EdgeInsets.only(bottom: 8, left: 4),
-            child: Text(
-              'The single biggest factor in AAC success is how communication '
-              'partners use the device. These are the habits that work:',
-              style: TextStyle(fontSize: 13),
-            ),
-          ),
-          for (final (title, body) in _tips)
-            Card(
-              margin: const EdgeInsets.symmetric(vertical: 4),
-              child: ExpansionTile(
-                leading: const Icon(Icons.lightbulb_outline),
-                title: Text(
-                  title,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                    child: Text(body),
-                  ),
-                ],
-              ),
-            ),
+          _sectionTitle(context, 'Your first week'),
+          _firstWeek(context, session),
           const SizedBox(height: 16),
           _sectionTitle(context, 'Setup'),
           Card(
@@ -234,6 +172,167 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  /// The guided first week: one habit per day, each with something concrete
+  /// to try before bedtime. Progress is per profile and stored locally.
+  Widget _firstWeek(BuildContext context, SessionState session) {
+    final progress = session.modelingProgress;
+    final today = progress.suggestedDay;
+    final done = progress.completedDays.length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8, left: 4),
+          child: Text(
+            progress.started
+                ? 'One habit a day for ${ModelingPlan.days} days. Miss a day '
+                      'and nothing is lost — the days stay here until you tick '
+                      'them off.'
+                : 'The single biggest factor in AAC success is how '
+                      'communication partners use the device. This is seven '
+                      'days of short, practical habits — about two minutes '
+                      'each.',
+            style: const TextStyle(fontSize: 13),
+          ),
+        ),
+        if (!progress.started)
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Text(
+                    'Start the first week with ${session.profiles.activeName}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  FilledButton.icon(
+                    icon: const Icon(Icons.play_arrow),
+                    label: const Text('Start day 1'),
+                    onPressed: session.startModelingPlan,
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
+          Card(
+            color: Theme.of(context).colorScheme.secondaryContainer,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    progress.finished
+                        ? 'All ${ModelingPlan.days} days done'
+                        : 'Today — day $today of ${ModelingPlan.days}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    progress.finished
+                        ? 'These habits are the whole method — come back to any '
+                              'day whenever you want a refresher.'
+                        : ModelingPlan.dayNumber(today).tryIt,
+                  ),
+                  const SizedBox(height: 8),
+                  LinearProgressIndicator(value: done / ModelingPlan.days),
+                  const SizedBox(height: 4),
+                  Text('$done of ${ModelingPlan.days} days done'),
+                ],
+              ),
+            ),
+          ),
+        const SizedBox(height: 8),
+        for (final day in ModelingPlan.all)
+          Card(
+            margin: const EdgeInsets.symmetric(vertical: 4),
+            child: ExpansionTile(
+              initiallyExpanded: progress.started && day.day == today,
+              leading: Icon(
+                progress.isDone(day.day)
+                    ? Icons.check_circle
+                    : Icons.lightbulb_outline,
+                color: progress.isDone(day.day) ? Colors.green : null,
+              ),
+              title: Text(
+                'Day ${day.day} — ${day.title}',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(day.body),
+                      const SizedBox(height: 12),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Try it today',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(day.tryIt),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton.icon(
+                          icon: Icon(
+                            progress.isDone(day.day)
+                                ? Icons.undo
+                                : Icons.check_circle_outline,
+                          ),
+                          label: Text(
+                            progress.isDone(day.day)
+                                ? 'Mark not done'
+                                : 'I did this',
+                          ),
+                          onPressed: () => session.setModelingDayDone(
+                            day.day,
+                            !progress.isDone(day.day),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        if (progress.started)
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              icon: const Icon(Icons.restart_alt),
+              label: const Text('Restart the week'),
+              onPressed: session.resetModelingPlan,
+            ),
+          ),
+      ],
     );
   }
 

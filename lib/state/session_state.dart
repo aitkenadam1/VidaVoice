@@ -3,7 +3,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../app_config.dart';
 import '../models/word.dart';
+import '../models/modeling_plan.dart';
 import '../services/language_pack_service.dart';
+import '../services/modeling_plan_service.dart';
 import '../services/profile_service.dart';
 import '../services/symbol_service.dart';
 import '../services/tts_service.dart';
@@ -16,6 +18,7 @@ class SessionState extends ChangeNotifier {
   final TtsService tts = TtsService();
   final SymbolService symbols = SymbolService();
   final ProfileService profiles = ProfileService();
+  final ModelingPlanService modelingPlan = ModelingPlanService();
 
   BootStatus status = BootStatus.loading;
   String bootError = '';
@@ -64,6 +67,7 @@ class SessionState extends ChangeNotifier {
       pack.validate();
       await symbols.load();
       await profiles.load();
+      await modelingPlan.load(profiles.profiles.map((p) => p.id));
       await tts.init(
         language: pack.ttsLocale,
         rate:
@@ -140,6 +144,37 @@ class SessionState extends ChangeNotifier {
   Future<void> reopenOnboarding() async {
     onboardingComplete = false;
     await _prefs?.setBool('vidavoice.onboardingComplete', false);
+    notifyListeners();
+  }
+
+  // --- Caregiver first-week modeling plan (per profile, local only) --------
+
+  String? get _activeProfileId => profiles.active?.id;
+
+  /// Progress for the profile currently selected in the Caregiver hub.
+  ModelingProgress get modelingProgress {
+    final id = _activeProfileId;
+    return id == null ? ModelingProgress() : modelingPlan.forProfile(id);
+  }
+
+  Future<void> startModelingPlan() async {
+    final id = _activeProfileId;
+    if (id == null) return;
+    await modelingPlan.start(id);
+    notifyListeners();
+  }
+
+  Future<void> setModelingDayDone(int day, bool done) async {
+    final id = _activeProfileId;
+    if (id == null) return;
+    await modelingPlan.setDayDone(id, day, done);
+    notifyListeners();
+  }
+
+  Future<void> resetModelingPlan() async {
+    final id = _activeProfileId;
+    if (id == null) return;
+    await modelingPlan.reset(id);
     notifyListeners();
   }
 

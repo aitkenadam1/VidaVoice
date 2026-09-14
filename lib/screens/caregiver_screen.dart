@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../state/session_state.dart';
+import '../widgets/first_week_plan_section.dart';
 
 /// Caregiver hub: communicator profiles, modeling tips (the core
 /// differentiator — teaching partners HOW to model), setup replay,
@@ -53,9 +54,8 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
   ];
 
   static const _planned = [
-    'Guided onboarding wizard for new caregivers',
     'Custom words and personal folders (photos from the camera)',
-    'Usage insights: most-used words, weekly progress',
+    'Weekly progress view (usage trends over time)',
     'Backup & sync across devices',
   ];
 
@@ -112,6 +112,21 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
               ],
             ),
           ),
+          const SizedBox(height: 16),
+          Builder(
+            builder: (context) {
+              final active = profiles.active;
+              if (active == null) return const SizedBox.shrink();
+              return FirstWeekPlanSection(
+                key: ValueKey(active.id),
+                profileId: active.id,
+                profileName: active.name,
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          _sectionTitle(context, 'Most used words'),
+          _mostUsedWordsCard(session),
           const SizedBox(height: 16),
           _sectionTitle(context, 'Modeling tips'),
           const Padding(
@@ -177,6 +192,51 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _mostUsedWordsCard(SessionState session) {
+    final top = session.usage.top(10);
+    if (top.isEmpty) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Text(
+            'No taps recorded yet. Words tapped on the board will show up '
+            'here, most-used first.',
+            style: TextStyle(fontSize: 13),
+          ),
+        ),
+      );
+    }
+    return Card(
+      child: Column(
+        children: [
+          for (var i = 0; i < top.length; i++)
+            _usageRow(session, i + 1, top[i].key, top[i].value),
+        ],
+      ),
+    );
+  }
+
+  Widget _usageRow(SessionState session, int rank, String id, int count) {
+    String label;
+    try {
+      label = session.pack.wordById(id).label;
+    } catch (_) {
+      label = id; // word removed from a newer pack; show the raw id
+    }
+    return ListTile(
+      dense: true,
+      leading: CircleAvatar(
+        radius: 14,
+        child: Text('$rank', style: const TextStyle(fontSize: 12)),
+      ),
+      title: Text(label),
+      trailing: Text(
+        '\u00d7$count',
+        style: const TextStyle(fontWeight: FontWeight.bold),
       ),
     );
   }

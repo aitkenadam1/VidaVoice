@@ -1,136 +1,136 @@
 {
-  "comment": "VidaVoice v0.01 English core pack. Grid positions are FIXED (motor planning is sacred): never reorder, never compute at runtime. Word ids are language-independent so bilingual users keep motor positions across languages.",
-  "displayName": "English",
+  "comment": "DRAFT: machine-assisted translation, needs native-speaker SLP review before pilot. Ids and grid positions mirror en.json exactly (motor planning is sacred).",
+  "displayName": "Français",
   "folders": {
     "folder.feelings": {
       "emoji": "💛",
-      "label": "Feelings",
+      "label": "Sentiments",
       "words": [
         {
           "emoji": "🤩",
           "id": "feel.excited",
-          "label": "excited"
+          "label": "excité"
         },
         {
           "emoji": "😨",
           "id": "feel.scared",
-          "label": "scared"
+          "label": "peur"
         },
         {
           "emoji": "😠",
           "id": "feel.angry",
-          "label": "angry"
+          "label": "fâché"
         },
         {
           "emoji": "😴",
           "id": "feel.tired",
-          "label": "tired"
+          "label": "fatigué"
         },
         {
           "emoji": "🤒",
           "id": "feel.sick",
-          "label": "sick"
+          "label": "malade"
         },
         {
           "emoji": "🤕",
           "id": "feel.hurt",
-          "label": "hurt"
+          "label": "mal"
         },
         {
           "emoji": "😌",
           "id": "feel.calm",
-          "label": "calm"
+          "label": "calme"
         },
         {
           "emoji": "🤪",
           "id": "feel.silly",
-          "label": "silly"
+          "label": "rigolo"
         },
         {
           "emoji": "❤️",
           "id": "feel.love",
-          "label": "love"
+          "label": "amour"
         },
         {
           "emoji": "😄",
           "id": "feel.proud",
-          "label": "proud"
+          "label": "fier"
         },
         {
           "id": "feel.bored",
-          "label": "bored",
+          "label": "ennuyé",
           "emoji": "🥱"
         },
         {
           "id": "feel.brave",
-          "label": "brave",
+          "label": "courageux",
           "emoji": "🦁"
         }
       ]
     },
     "folder.food": {
       "emoji": "🍎",
-      "label": "Food",
+      "label": "Nourriture",
       "words": [
         {
           "emoji": "🍎",
           "id": "food.apple",
-          "label": "apple"
+          "label": "pomme"
         },
         {
           "emoji": "🍌",
           "id": "food.banana",
-          "label": "banana"
+          "label": "banane"
         },
         {
           "emoji": "🍪",
           "id": "food.cookie",
-          "label": "cookie"
+          "label": "biscuit"
         },
         {
           "emoji": "🍞",
           "id": "food.bread",
-          "label": "bread"
+          "label": "pain"
         },
         {
           "emoji": "🧀",
           "id": "food.cheese",
-          "label": "cheese"
+          "label": "fromage"
         },
         {
           "emoji": "🍳",
           "id": "food.egg",
-          "label": "egg"
+          "label": "œuf"
         },
         {
           "emoji": "💧",
           "id": "food.water",
-          "label": "water"
+          "label": "eau"
         },
         {
           "emoji": "🥛",
           "id": "food.milk",
-          "label": "milk"
+          "label": "lait"
         },
         {
           "emoji": "🧃",
           "id": "food.juice",
-          "label": "juice"
+          "label": "jus"
         },
         {
           "emoji": "😋",
           "id": "food.hungry",
-          "label": "hungry"
+          "label": "faim"
         },
         {
           "emoji": "🥤",
           "id": "food.thirsty",
-          "label": "thirsty"
+          "label": "soif"
         },
         {
           "emoji": "🤢",
           "id": "food.yucky",
-          "label": "yucky"
+          "label": "beurk"
         },
         {
           "id": "food.pizza",
@@ -146,57 +146,57 @@
     },
     "folder.people": {
       "emoji": "👪",
-      "label": "People",
+      "label": "Personnes",
       "words": [
         {
           "emoji": "👩",
           "id": "people.mom",
-          "label": "mom"
+          "label": "maman"
         },
         {
           "emoji": "👨",
           "id": "people.dad",
-          "label": "dad"
+          "label": "papa"
         },
         {
           "emoji": "👵",
           "id": "people.grandma",
-          "label": "grandma"
+          "label": "mamie"
         },
         {
           "emoji": "👴",
           "id": "people.grandpa",
-          "label": "grandpa"
+          "label": "papi"
         },
         {
           "emoji": "👧",
           "id": "people.sister",
-          "label": "sister"
+          "label": "sœur"
         },
         {
           "emoji": "👦",
           "id": "people.brother",
-          "label": "brother"
+          "label": "frère"
         },
         {
           "emoji": "🧑‍🤝‍🧑",
           "id": "people.friend",
-          "label": "friend"
+          "label": "ami"
         },
         {
           "emoji": "🧑‍🏫",
           "id": "people.teacher",
-          "label": "teacher"
+          "label": "maîtresse"
         },
         {
           "emoji": "🧑‍⚕️",
           "id": "people.doctor",
-          "label": "doctor"
+          "label": "docteur"
         },
         {
           "emoji": "👶",
           "id": "people.baby",
-          "label": "baby"
+          "label": "bébé"
         },
         {
           "id": "people.cousin",
@@ -205,64 +205,64 @@
         },
         {
           "id": "people.aunt",
-          "label": "aunt",
+          "label": "tante",
           "emoji": "👩‍🦳"
         }
       ]
     },
     "folder.play": {
       "emoji": "🧸",
-      "label": "Play",
+      "label": "Jeux",
       "words": [
         {
           "emoji": "⚽",
           "id": "play.ball",
-          "label": "ball"
+          "label": "ballon"
         },
         {
           "emoji": "🧸",
           "id": "play.toy",
-          "label": "toy"
+          "label": "jouet"
         },
         {
           "emoji": "📖",
           "id": "play.book",
-          "label": "book"
+          "label": "livre"
         },
         {
           "emoji": "🎮",
           "id": "play.game",
-          "label": "game"
+          "label": "jeu"
         },
         {
           "emoji": "🎵",
           "id": "play.music",
-          "label": "music"
+          "label": "musique"
         },
         {
           "emoji": "🌳",
           "id": "play.outside",
-          "label": "outside"
+          "label": "jouer dehors"
         },
         {
           "emoji": "🏞️",
           "id": "play.park",
-          "label": "park"
+          "label": "parc"
         },
         {
           "emoji": "🏊",
           "id": "play.swim",
-          "label": "swim"
+          "label": "nager"
         },
         {
           "emoji": "🎨",
           "id": "play.draw",
-          "label": "draw"
+          "label": "dessiner"
         },
         {
           "emoji": "📺",
           "id": "play.tv",
-          "label": "tv"
+          "label": "télé"
         },
         {
           "id": "play.puzzle",
@@ -271,7 +271,7 @@
         },
         {
           "id": "play.slide",
-          "label": "slide",
+          "label": "toboggan",
           "emoji": "🛝"
         }
       ]
@@ -284,7 +284,7 @@
       "col": 0,
       "emoji": "🧍",
       "id": "core.i",
-      "label": "I",
+      "label": "je",
       "row": 0,
       "type": "word"
     },
@@ -293,7 +293,7 @@
       "col": 1,
       "emoji": "👆",
       "id": "core.you",
-      "label": "you",
+      "label": "tu",
       "row": 0,
       "type": "word"
     },
@@ -302,7 +302,7 @@
       "col": 2,
       "emoji": "👨",
       "id": "core.he",
-      "label": "he",
+      "label": "il",
       "row": 0,
       "type": "word"
     },
@@ -311,7 +311,7 @@
       "col": 3,
       "emoji": "👩",
       "id": "core.she",
-      "label": "she",
+      "label": "elle",
       "row": 0,
       "type": "word"
     },
@@ -320,7 +320,7 @@
       "col": 4,
       "emoji": "🧑‍🤝‍🧑",
       "id": "core.we",
-      "label": "we",
+      "label": "nous",
       "row": 0,
       "type": "word"
     },
@@ -329,7 +329,7 @@
       "col": 5,
       "emoji": "👥",
       "id": "core.they",
-      "label": "they",
+      "label": "ils",
       "row": 0,
       "type": "word"
     },
@@ -338,7 +338,7 @@
       "col": 6,
       "emoji": "🐱",
       "id": "core.it",
-      "label": "it",
+      "label": "ça",
       "row": 0,
       "type": "word"
     },
@@ -347,7 +347,7 @@
       "col": 7,
       "emoji": "🙋",
       "id": "core.me",
-      "label": "me",
+      "label": "moi",
       "row": 0,
       "type": "word"
     },
@@ -356,7 +356,7 @@
       "col": 0,
       "emoji": "🙏",
       "id": "core.want",
-      "label": "want",
+      "label": "vouloir",
       "row": 1,
       "type": "word"
     },
@@ -365,7 +365,7 @@
       "col": 1,
       "emoji": "❗",
       "id": "core.need",
-      "label": "need",
+      "label": "avoir besoin",
       "row": 1,
       "type": "word"
     },
@@ -374,7 +374,7 @@
       "col": 2,
       "emoji": "👍",
       "id": "core.like",
-      "label": "like",
+      "label": "aimer",
       "row": 1,
       "type": "word"
     },
@@ -383,7 +383,7 @@
       "col": 3,
       "emoji": "👎",
       "id": "core.dont",
-      "label": "don't",
+      "label": "ne pas",
       "row": 1,
       "type": "word"
     },
@@ -392,7 +392,7 @@
       "col": 4,
       "emoji": "➡️",
       "id": "core.go",
-      "label": "go",
+      "label": "aller",
       "row": 1,
       "type": "word"
     },
@@ -401,7 +401,7 @@
       "col": 5,
       "emoji": "⬅️",
       "id": "core.come",
-      "label": "come",
+      "label": "venir",
       "row": 1,
       "type": "word"
     },
@@ -410,7 +410,7 @@
       "col": 6,
       "emoji": "✋",
       "id": "core.stop",
-      "label": "stop",
+      "label": "arrêter",
       "row": 1,
       "type": "word"
     },
@@ -419,7 +419,7 @@
       "col": 7,
       "emoji": "🆘",
       "id": "core.help",
-      "label": "help",
+      "label": "aider",
       "row": 1,
       "type": "word"
     },
@@ -428,7 +428,7 @@
       "col": 0,
       "emoji": "➕",
       "id": "core.more",
-      "label": "more",
+      "label": "plus",
       "row": 2,
       "type": "word"
     },
@@ -437,7 +437,7 @@
       "col": 1,
       "emoji": "🔁",
       "id": "core.again",
-      "label": "again",
+      "label": "encore",
       "row": 2,
       "type": "word"
     },
@@ -446,7 +446,7 @@
       "col": 2,
       "emoji": "✅",
       "id": "core.finished",
-      "label": "finished",
+      "label": "fini",
       "row": 2,
       "type": "word"
     },
@@ -455,7 +455,7 @@
       "col": 3,
       "emoji": "✔️",
       "id": "core.yes",
-      "label": "yes",
+      "label": "oui",
       "row": 2,
       "type": "word"
     },
@@ -464,7 +464,7 @@
       "col": 4,
       "emoji": "✖️",
       "id": "core.no",
-      "label": "no",
+      "label": "non",
       "row": 2,
       "type": "word"
     },
@@ -473,7 +473,7 @@
       "col": 5,
       "emoji": "🥺",
       "id": "core.please",
-      "label": "please",
+      "label": "s'il te plaît",
       "row": 2,
       "type": "word"
     },
@@ -482,7 +482,7 @@
       "col": 6,
       "emoji": "💐",
       "id": "core.thanks",
-      "label": "thanks",
+      "label": "merci",
       "row": 2,
       "type": "word"
     },
@@ -491,7 +491,7 @@
       "col": 7,
       "emoji": "😔",
       "id": "core.sorry",
-      "label": "sorry",
+      "label": "pardon",
       "row": 2,
       "type": "word"
     },
@@ -500,7 +500,7 @@
       "col": 0,
       "emoji": "🫳",
       "id": "core.get",
-      "label": "get",
+      "label": "avoir",
       "row": 3,
       "type": "word"
     },
@@ -509,7 +509,7 @@
       "col": 1,
       "emoji": "🎁",
       "id": "core.give",
-      "label": "give",
+      "label": "donner",
       "row": 3,
       "type": "word"
     },
@@ -518,7 +518,7 @@
       "col": 2,
       "emoji": "👇",
       "id": "core.put",
-      "label": "put",
+      "label": "mettre",
       "row": 3,
       "type": "word"
     },
@@ -527,7 +527,7 @@
       "col": 3,
       "emoji": "✊",
       "id": "core.take",
-      "label": "take",
+      "label": "prendre",
       "row": 3,
       "type": "word"
     },
@@ -536,7 +536,7 @@
       "col": 4,
       "emoji": "🔨",
       "id": "core.make",
-      "label": "make",
+      "label": "fabriquer",
       "row": 3,
       "type": "word"
     },
@@ -545,7 +545,7 @@
       "col": 5,
       "emoji": "▶️",
       "id": "core.do",
-      "label": "do",
+      "label": "faire",
       "row": 3,
       "type": "word"
     },
@@ -554,7 +554,7 @@
       "col": 6,
       "emoji": "🍽️",
       "id": "core.eat",
-      "label": "eat",
+      "label": "manger",
       "row": 3,
       "type": "word"
     },
@@ -563,7 +563,7 @@
       "col": 7,
       "emoji": "🥤",
       "id": "core.drink",
-      "label": "drink",
+      "label": "boire",
       "row": 3,
       "type": "word"
     },
@@ -572,7 +572,7 @@
       "col": 0,
       "emoji": "📍",
       "id": "core.here",
-      "label": "here",
+      "label": "ici",
       "row": 4,
       "type": "word"
     },
@@ -581,7 +581,7 @@
       "col": 1,
       "emoji": "👈",
       "id": "core.there",
-      "label": "there",
+      "label": "là",
       "row": 4,
       "type": "word"
     },
@@ -590,7 +590,7 @@
       "col": 2,
       "emoji": "⬆️",
       "id": "core.up",
-      "label": "up",
+      "label": "en haut",
       "row": 4,
       "type": "word"
     },
@@ -599,7 +599,7 @@
       "col": 3,
       "emoji": "⬇️",
       "id": "core.down",
-      "label": "down",
+      "label": "en bas",
       "row": 4,
       "type": "word"
     },
@@ -608,7 +608,7 @@
       "col": 4,
       "emoji": "📥",
       "id": "core.in",
-      "label": "in",
+      "label": "dans",
       "row": 4,
       "type": "word"
     },
@@ -617,7 +617,7 @@
       "col": 5,
       "emoji": "📤",
       "id": "core.out",
-      "label": "out",
+      "label": "dehors",
       "row": 4,
       "type": "word"
     },
@@ -626,7 +626,7 @@
       "col": 6,
       "emoji": "💡",
       "id": "core.on",
-      "label": "on",
+      "label": "sur",
       "row": 4,
       "type": "word"
     },
@@ -635,7 +635,7 @@
       "col": 7,
       "emoji": "🌑",
       "id": "core.off",
-      "label": "off",
+      "label": "éteint",
       "row": 4,
       "type": "word"
     },
@@ -644,7 +644,7 @@
       "col": 0,
       "emoji": "❓",
       "id": "core.what",
-      "label": "what",
+      "label": "quoi",
       "row": 5,
       "type": "word"
     },
@@ -653,7 +653,7 @@
       "col": 1,
       "emoji": "🗺️",
       "id": "core.where",
-      "label": "where",
+      "label": "où",
       "row": 5,
       "type": "word"
     },
@@ -662,7 +662,7 @@
       "col": 2,
       "emoji": "🧑",
       "id": "core.who",
-      "label": "who",
+      "label": "qui",
       "row": 5,
       "type": "word"
     },
@@ -671,7 +671,7 @@
       "col": 3,
       "emoji": "🕐",
       "id": "core.when",
-      "label": "when",
+      "label": "quand",
       "row": 5,
       "type": "word"
     },
@@ -680,7 +680,7 @@
       "col": 4,
       "emoji": "🤔",
       "id": "core.how",
-      "label": "how",
+      "label": "comment",
       "row": 5,
       "type": "word"
     },
@@ -689,7 +689,7 @@
       "col": 5,
       "emoji": "🐘",
       "id": "core.big",
-      "label": "big",
+      "label": "grand",
       "row": 5,
       "type": "word"
     },
@@ -698,7 +698,7 @@
       "col": 6,
       "emoji": "🐭",
       "id": "core.little",
-      "label": "little",
+      "label": "petit",
       "row": 5,
       "type": "word"
     },
@@ -707,7 +707,7 @@
       "col": 7,
       "emoji": "🌈",
       "id": "core.good",
-      "label": "good",
+      "label": "bien",
       "row": 5,
       "type": "word"
     },
@@ -716,7 +716,7 @@
       "col": 0,
       "emoji": "🍎",
       "id": "folder.food",
-      "label": "Food",
+      "label": "Nourriture",
       "row": 6,
       "type": "folder"
     },
@@ -725,7 +725,7 @@
       "col": 1,
       "emoji": "💛",
       "id": "folder.feelings",
-      "label": "Feelings",
+      "label": "Sentiments",
       "row": 6,
       "type": "folder"
     },
@@ -734,7 +734,7 @@
       "col": 2,
       "emoji": "👪",
       "id": "folder.people",
-      "label": "People",
+      "label": "Personnes",
       "row": 6,
       "type": "folder"
     },
@@ -743,13 +743,13 @@
       "col": 3,
       "emoji": "🧸",
       "id": "folder.play",
-      "label": "Play",
+      "label": "Jeux",
       "row": 6,
       "type": "folder"
     },
     {
       "id": "core.my",
-      "label": "my",
+      "label": "mon/ma",
       "type": "word",
       "category": "pronouns",
       "row": 7,
@@ -758,7 +758,7 @@
     },
     {
       "id": "core.your",
-      "label": "your",
+      "label": "ton/ta",
       "type": "word",
       "category": "pronouns",
       "row": 7,
@@ -767,7 +767,7 @@
     },
     {
       "id": "core.his",
-      "label": "his",
+      "label": "à lui",
       "type": "word",
       "category": "pronouns",
       "row": 7,
@@ -776,7 +776,7 @@
     },
     {
       "id": "core.her",
-      "label": "her",
+      "label": "à elle",
       "type": "word",
       "category": "pronouns",
       "row": 7,
@@ -785,7 +785,7 @@
     },
     {
       "id": "core.our",
-      "label": "our",
+      "label": "notre/nos",
       "type": "word",
       "category": "pronouns",
       "row": 7,
@@ -794,7 +794,7 @@
     },
     {
       "id": "core.their",
-      "label": "their",
+      "label": "leur/leurs",
       "type": "word",
       "category": "pronouns",
       "row": 7,
@@ -803,7 +803,7 @@
     },
     {
       "id": "core.mine",
-      "label": "mine",
+      "label": "à moi",
       "type": "word",
       "category": "pronouns",
       "row": 7,
@@ -812,7 +812,7 @@
     },
     {
       "id": "core.yours",
-      "label": "yours",
+      "label": "à toi",
       "type": "word",
       "category": "pronouns",
       "row": 7,
@@ -821,7 +821,7 @@
     },
     {
       "id": "core.see",
-      "label": "see",
+      "label": "voir",
       "type": "word",
       "category": "verbs",
       "row": 8,
@@ -830,7 +830,7 @@
     },
     {
       "id": "core.look",
-      "label": "look",
+      "label": "regarder",
       "type": "word",
       "category": "verbs",
       "row": 8,
@@ -839,7 +839,7 @@
     },
     {
       "id": "core.listen",
-      "label": "listen",
+      "label": "écouter",
       "type": "word",
       "category": "verbs",
       "row": 8,
@@ -848,7 +848,7 @@
     },
     {
       "id": "core.say",
-      "label": "say",
+      "label": "dire",
       "type": "word",
       "category": "verbs",
       "row": 8,
@@ -857,7 +857,7 @@
     },
     {
       "id": "core.tell",
-      "label": "tell",
+      "label": "raconter",
       "type": "word",
       "category": "verbs",
       "row": 8,
@@ -866,7 +866,7 @@
     },
     {
       "id": "core.ask",
-      "label": "ask",
+      "label": "demander",
       "type": "word",
       "category": "verbs",
       "row": 8,
@@ -875,7 +875,7 @@
     },
     {
       "id": "core.playv",
-      "label": "play",
+      "label": "jouer",
       "type": "word",
       "category": "verbs",
       "row": 8,
@@ -884,7 +884,7 @@
     },
     {
       "id": "core.work",
-      "label": "work",
+      "label": "travailler",
       "type": "word",
       "category": "verbs",
       "row": 8,
@@ -893,7 +893,7 @@
     },
     {
       "id": "core.sleep",
-      "label": "sleep",
+      "label": "dormir",
       "type": "word",
       "category": "verbs",
       "row": 9,
@@ -902,7 +902,7 @@
     },
     {
       "id": "core.sit",
-      "label": "sit",
+      "label": "s'asseoir",
       "type": "word",
       "category": "verbs",
       "row": 9,
@@ -911,7 +911,7 @@
     },
     {
       "id": "core.stand",
-      "label": "stand",
+      "label": "debout",
       "type": "word",
       "category": "verbs",
       "row": 9,
@@ -920,7 +920,7 @@
     },
     {
       "id": "core.walk",
-      "label": "walk",
+      "label": "marcher",
       "type": "word",
       "category": "verbs",
       "row": 9,
@@ -929,7 +929,7 @@
     },
     {
       "id": "core.open",
-      "label": "open",
+      "label": "ouvrir",
       "type": "word",
       "category": "verbs",
       "row": 9,
@@ -938,7 +938,7 @@
     },
     {
       "id": "core.close",
-      "label": "close",
+      "label": "fermer",
       "type": "word",
       "category": "verbs",
       "row": 9,
@@ -947,7 +947,7 @@
     },
     {
       "id": "core.turn",
-      "label": "turn",
+      "label": "tourner",
       "type": "word",
       "category": "verbs",
       "row": 9,
@@ -956,7 +956,7 @@
     },
     {
       "id": "core.push",
-      "label": "push",
+      "label": "pousser",
       "type": "word",
       "category": "verbs",
       "row": 9,
@@ -965,7 +965,7 @@
     },
     {
       "id": "core.pull",
-      "label": "pull",
+      "label": "tirer",
       "type": "word",
       "category": "verbs",
       "row": 10,
@@ -974,7 +974,7 @@
     },
     {
       "id": "core.hold",
-      "label": "hold",
+      "label": "tenir",
       "type": "word",
       "category": "verbs",
       "row": 10,
@@ -983,7 +983,7 @@
     },
     {
       "id": "core.drop",
-      "label": "drop",
+      "label": "faire tomber",
       "type": "word",
       "category": "verbs",
       "row": 10,
@@ -992,7 +992,7 @@
     },
     {
       "id": "core.break",
-      "label": "break",
+      "label": "casser",
       "type": "word",
       "category": "verbs",
       "row": 10,
@@ -1001,7 +1001,7 @@
     },
     {
       "id": "core.fix",
-      "label": "fix",
+      "label": "réparer",
       "type": "word",
       "category": "verbs",
       "row": 10,
@@ -1010,7 +1010,7 @@
     },
     {
       "id": "core.cleanv",
-      "label": "clean",
+      "label": "nettoyer",
       "type": "word",
       "category": "verbs",
       "row": 10,
@@ -1019,7 +1019,7 @@
     },
     {
       "id": "core.cook",
-      "label": "cook",
+      "label": "cuisiner",
       "type": "word",
       "category": "verbs",
       "row": 10,
@@ -1028,7 +1028,7 @@
     },
     {
       "id": "core.read",
-      "label": "read",
+      "label": "lire",
       "type": "word",
       "category": "verbs",
       "row": 10,
@@ -1037,7 +1037,7 @@
     },
     {
       "id": "core.write",
-      "label": "write",
+      "label": "écrire",
       "type": "word",
       "category": "verbs",
       "row": 11,
@@ -1046,7 +1046,7 @@
     },
     {
       "id": "core.sing",
-      "label": "sing",
+      "label": "chanter",
       "type": "word",
       "category": "verbs",
       "row": 11,
@@ -1055,7 +1055,7 @@
     },
     {
       "id": "core.dance",
-      "label": "dance",
+      "label": "danser",
       "type": "word",
       "category": "verbs",
       "row": 11,
@@ -1064,7 +1064,7 @@
     },
     {
       "id": "core.run",
-      "label": "run",
+      "label": "courir",
       "type": "word",
       "category": "verbs",
       "row": 11,
@@ -1073,7 +1073,7 @@
     },
     {
       "id": "core.jump",
-      "label": "jump",
+      "label": "sauter",
       "type": "word",
       "category": "verbs",
       "row": 11,
@@ -1082,7 +1082,7 @@
     },
     {
       "id": "core.climb",
-      "label": "climb",
+      "label": "grimper",
       "type": "word",
       "category": "verbs",
       "row": 11,
@@ -1091,7 +1091,7 @@
     },
     {
       "id": "core.ride",
-      "label": "ride",
+      "label": "monter",
       "type": "word",
       "category": "verbs",
       "row": 11,
@@ -1100,7 +1100,7 @@
     },
     {
       "id": "core.buy",
-      "label": "buy",
+      "label": "acheter",
       "type": "word",
       "category": "verbs",
       "row": 11,
@@ -1109,7 +1109,7 @@
     },
     {
       "id": "core.find",
-      "label": "find",
+      "label": "trouver",
       "type": "word",
       "category": "verbs",
       "row": 12,
@@ -1118,7 +1118,7 @@
     },
     {
       "id": "core.lose",
-      "label": "lose",
+      "label": "perdre",
       "type": "word",
       "category": "verbs",
       "row": 12,
@@ -1127,7 +1127,7 @@
     },
     {
       "id": "core.hide",
-      "label": "hide",
+      "label": "cacher",
       "type": "word",
       "category": "verbs",
       "row": 12,
@@ -1136,7 +1136,7 @@
     },
     {
       "id": "core.show",
-      "label": "show",
+      "label": "montrer",
       "type": "word",
       "category": "verbs",
       "row": 12,
@@ -1145,7 +1145,7 @@
     },
     {
       "id": "core.wait",
-      "label": "wait",
+      "label": "attendre",
       "type": "word",
       "category": "verbs",
       "row": 12,
@@ -1154,7 +1154,7 @@
     },
     {
       "id": "core.try",
-      "label": "try",
+      "label": "essayer",
       "type": "word",
       "category": "verbs",
       "row": 12,
@@ -1163,7 +1163,7 @@
     },
     {
       "id": "core.start",
-      "label": "start",
+      "label": "commencer",
       "type": "word",
       "category": "verbs",
       "row": 12,
@@ -1172,7 +1172,7 @@
     },
     {
       "id": "core.think",
-      "label": "think",
+      "label": "penser",
       "type": "word",
       "category": "verbs",
       "row": 12,
@@ -1181,7 +1181,7 @@
     },
     {
       "id": "core.know",
-      "label": "know",
+      "label": "savoir",
       "type": "word",
       "category": "verbs",
       "row": 13,
@@ -1190,7 +1190,7 @@
     },
     {
       "id": "core.learn",
-      "label": "learn",
+      "label": "apprendre",
       "type": "word",
       "category": "verbs",
       "row": 13,
@@ -1199,7 +1199,7 @@
     },
     {
       "id": "core.remember",
-      "label": "remember",
+      "label": "se souvenir",
       "type": "word",
       "category": "verbs",
       "row": 13,
@@ -1208,7 +1208,7 @@
     },
     {
       "id": "core.forget",
-      "label": "forget",
+      "label": "oublier",
       "type": "word",
       "category": "verbs",
       "row": 13,
@@ -1217,7 +1217,7 @@
     },
     {
       "id": "core.dream",
-      "label": "dream",
+      "label": "rêver",
       "type": "word",
       "category": "verbs",
       "row": 13,
@@ -1226,7 +1226,7 @@
     },
     {
       "id": "core.laugh",
-      "label": "laugh",
+      "label": "rire",
       "type": "word",
       "category": "verbs",
       "row": 13,
@@ -1235,7 +1235,7 @@
     },
     {
       "id": "core.cry",
-      "label": "cry",
+      "label": "pleurer",
       "type": "word",
       "category": "verbs",
       "row": 13,
@@ -1244,7 +1244,7 @@
     },
     {
       "id": "core.fly",
-      "label": "fly",
+      "label": "voler",
       "type": "word",
       "category": "verbs",
       "row": 13,
@@ -1253,7 +1253,7 @@
     },
     {
       "id": "core.hello",
-      "label": "hello",
+      "label": "salut",
       "type": "word",
       "category": "social",
       "row": 14,
@@ -1262,7 +1262,7 @@
     },
     {
       "id": "core.goodbye",
-      "label": "goodbye",
+      "label": "au revoir",
       "type": "word",
       "category": "social",
       "row": 14,
@@ -1271,7 +1271,7 @@
     },
     {
       "id": "core.excuseme",
-      "label": "excuse me",
+      "label": "excuse-moi",
       "type": "word",
       "category": "social",
       "row": 14,
@@ -1280,7 +1280,7 @@
     },
     {
       "id": "core.okay",
-      "label": "okay",
+      "label": "d'accord",
       "type": "word",
       "category": "social",
       "row": 14,
@@ -1289,7 +1289,7 @@
     },
     {
       "id": "core.wow",
-      "label": "wow",
+      "label": "waouh",
       "type": "word",
       "category": "social",
       "row": 14,
@@ -1298,7 +1298,7 @@
     },
     {
       "id": "core.uhoh",
-      "label": "uh-oh",
+      "label": "oh oh",
       "type": "word",
       "category": "social",
       "row": 14,
@@ -1307,7 +1307,7 @@
     },
     {
       "id": "core.goodmorning",
-      "label": "good morning",
+      "label": "bonjour",
       "type": "word",
       "category": "social",
       "row": 14,
@@ -1316,7 +1316,7 @@
     },
     {
       "id": "core.goodnight",
-      "label": "good night",
+      "label": "bonne nuit",
       "type": "word",
       "category": "social",
       "row": 14,
@@ -1325,7 +1325,7 @@
     },
     {
       "id": "core.welcome",
-      "label": "welcome",
+      "label": "bienvenue",
       "type": "word",
       "category": "social",
       "row": 15,
@@ -1334,7 +1334,7 @@
     },
     {
       "id": "core.myturn",
-      "label": "my turn",
+      "label": "mon tour",
       "type": "word",
       "category": "social",
       "row": 15,
@@ -1343,7 +1343,7 @@
     },
     {
       "id": "core.yourturn",
-      "label": "your turn",
+      "label": "ton tour",
       "type": "word",
       "category": "social",
       "row": 15,
@@ -1352,7 +1352,7 @@
     },
     {
       "id": "core.careful",
-      "label": "careful",
+      "label": "attention",
       "type": "word",
       "category": "social",
       "row": 15,
@@ -1361,7 +1361,7 @@
     },
     {
       "id": "core.gentle",
-      "label": "gentle",
+      "label": "doucement",
       "type": "word",
       "category": "social",
       "row": 15,
@@ -1370,7 +1370,7 @@
     },
     {
       "id": "core.hurray",
-      "label": "hurray",
+      "label": "youpi",
       "type": "word",
       "category": "social",
       "row": 15,
@@ -1379,7 +1379,7 @@
     },
     {
       "id": "core.shhh",
-      "label": "shhh",
+      "label": "chut",
       "type": "word",
       "category": "social",
       "row": 15,
@@ -1388,7 +1388,7 @@
     },
     {
       "id": "core.oops",
-      "label": "oops",
+      "label": "oups",
       "type": "word",
       "category": "social",
       "row": 15,
@@ -1397,7 +1397,7 @@
     },
     {
       "id": "core.bad",
-      "label": "bad",
+      "label": "mauvais",
       "type": "word",
       "category": "descriptors",
       "row": 16,
@@ -1406,7 +1406,7 @@
     },
     {
       "id": "core.hot",
-      "label": "hot",
+      "label": "chaud",
       "type": "word",
       "category": "descriptors",
       "row": 16,
@@ -1415,7 +1415,7 @@
     },
     {
       "id": "core.cold",
-      "label": "cold",
+      "label": "froid",
       "type": "word",
       "category": "descriptors",
       "row": 16,
@@ -1424,7 +1424,7 @@
     },
     {
       "id": "core.fast",
-      "label": "fast",
+      "label": "vite",
       "type": "word",
       "category": "descriptors",
       "row": 16,
@@ -1433,7 +1433,7 @@
     },
     {
       "id": "core.slow",
-      "label": "slow",
+      "label": "lentement",
       "type": "word",
       "category": "descriptors",
       "row": 16,
@@ -1442,7 +1442,7 @@
     },
     {
       "id": "core.new",
-      "label": "new",
+      "label": "nouveau",
       "type": "word",
       "category": "descriptors",
       "row": 16,
@@ -1451,7 +1451,7 @@
     },
     {
       "id": "core.old",
-      "label": "old",
+      "label": "vieux",
       "type": "word",
       "category": "descriptors",
       "row": 16,
@@ -1460,7 +1460,7 @@
     },
     {
       "id": "core.cleand",
-      "label": "clean",
+      "label": "propre",
       "type": "word",
       "category": "descriptors",
       "row": 16,
@@ -1469,7 +1469,7 @@
     },
     {
       "id": "core.dirty",
-      "label": "dirty",
+      "label": "sale",
       "type": "word",
       "category": "descriptors",
       "row": 17,
@@ -1478,7 +1478,7 @@
     },
     {
       "id": "core.wet",
-      "label": "wet",
+      "label": "mouillé",
       "type": "word",
       "category": "descriptors",
       "row": 17,
@@ -1487,7 +1487,7 @@
     },
     {
       "id": "core.dry",
-      "label": "dry",
+      "label": "sec",
       "type": "word",
       "category": "descriptors",
       "row": 17,
@@ -1496,7 +1496,7 @@
     },
     {
       "id": "core.loud",
-      "label": "loud",
+      "label": "bruyant",
       "type": "word",
       "category": "descriptors",
       "row": 17,
@@ -1505,7 +1505,7 @@
     },
     {
       "id": "core.funny",
-      "label": "funny",
+      "label": "drôle",
       "type": "word",
       "category": "descriptors",
       "row": 17,
@@ -1514,7 +1514,7 @@
     },
     {
       "id": "core.easy",
-      "label": "easy",
+      "label": "facile",
       "type": "word",
       "category": "descriptors",
       "row": 17,
@@ -1523,7 +1523,7 @@
     },
     {
       "id": "core.hard",
-      "label": "hard",
+      "label": "dur",
       "type": "word",
       "category": "descriptors",
       "row": 17,
@@ -1532,7 +1532,7 @@
     },
     {
       "id": "core.same",
-      "label": "same",
+      "label": "pareil",
       "type": "word",
       "category": "descriptors",
       "row": 17,
@@ -1541,7 +1541,7 @@
     },
     {
       "id": "core.different",
-      "label": "different",
+      "label": "différent",
       "type": "word",
       "category": "descriptors",
       "row": 18,
@@ -1550,7 +1550,7 @@
     },
     {
       "id": "core.all",
-      "label": "all",
+      "label": "tout",
       "type": "word",
       "category": "descriptors",
       "row": 18,
@@ -1559,7 +1559,7 @@
     },
     {
       "id": "core.some",
-      "label": "some",
+      "label": "quelques",
       "type": "word",
       "category": "descriptors",
       "row": 18,
@@ -1568,7 +1568,7 @@
     },
     {
       "id": "core.pretty",
-      "label": "pretty",
+      "label": "joli",
       "type": "word",
       "category": "descriptors",
       "row": 18,
@@ -1577,7 +1577,7 @@
     },
     {
       "id": "core.soft",
-      "label": "soft",
+      "label": "doux",
       "type": "word",
       "category": "descriptors",
       "row": 18,
@@ -1586,7 +1586,7 @@
     },
     {
       "id": "core.strong",
-      "label": "strong",
+      "label": "fort",
       "type": "word",
       "category": "descriptors",
       "row": 18,
@@ -1595,7 +1595,7 @@
     },
     {
       "id": "core.heavy",
-      "label": "heavy",
+      "label": "lourd",
       "type": "word",
       "category": "descriptors",
       "row": 18,
@@ -1604,7 +1604,7 @@
     },
     {
       "id": "core.light",
-      "label": "light",
+      "label": "léger",
       "type": "word",
       "category": "descriptors",
       "row": 18,
@@ -1613,7 +1613,7 @@
     },
     {
       "id": "core.dark",
-      "label": "dark",
+      "label": "sombre",
       "type": "word",
       "category": "descriptors",
       "row": 19,
@@ -1622,7 +1622,7 @@
     },
     {
       "id": "core.bright",
-      "label": "bright",
+      "label": "clair",
       "type": "word",
       "category": "descriptors",
       "row": 19,
@@ -1631,7 +1631,7 @@
     },
     {
       "id": "core.sweet",
-      "label": "sweet",
+      "label": "sucré",
       "type": "word",
       "category": "descriptors",
       "row": 19,
@@ -1640,7 +1640,7 @@
     },
     {
       "id": "core.tired",
-      "label": "tired",
+      "label": "fatigué",
       "type": "word",
       "category": "descriptors",
       "row": 19,
@@ -1649,7 +1649,7 @@
     },
     {
       "id": "core.sick",
-      "label": "sick",
+      "label": "malade",
       "type": "word",
       "category": "descriptors",
       "row": 19,
@@ -1658,7 +1658,7 @@
     },
     {
       "id": "core.favorite",
-      "label": "favorite",
+      "label": "préféré",
       "type": "word",
       "category": "descriptors",
       "row": 19,
@@ -1667,7 +1667,7 @@
     },
     {
       "id": "core.scary",
-      "label": "scary",
+      "label": "effrayant",
       "type": "word",
       "category": "descriptors",
       "row": 19,
@@ -1676,7 +1676,7 @@
     },
     {
       "id": "core.hungryd",
-      "label": "hungry",
+      "label": "faim",
       "type": "word",
       "category": "descriptors",
       "row": 19,
@@ -1685,7 +1685,7 @@
     },
     {
       "id": "core.why",
-      "label": "why",
+      "label": "pourquoi",
       "type": "word",
       "category": "questions",
       "row": 20,
@@ -1694,7 +1694,7 @@
     },
     {
       "id": "core.which",
-      "label": "which",
+      "label": "lequel",
       "type": "word",
       "category": "questions",
       "row": 20,
@@ -1703,7 +1703,7 @@
     },
     {
       "id": "core.whose",
-      "label": "whose",
+      "label": "à qui",
       "type": "word",
       "category": "questions",
       "row": 20,
@@ -1712,7 +1712,7 @@
     },
     {
       "id": "core.now",
-      "label": "now",
+      "label": "maintenant",
       "type": "word",
       "category": "questions",
       "row": 20,
@@ -1721,7 +1721,7 @@
     },
     {
       "id": "core.later",
-      "label": "later",
+      "label": "plus tard",
       "type": "word",
       "category": "questions",
       "row": 20,
@@ -1730,7 +1730,7 @@
     },
     {
       "id": "core.today",
-      "label": "today",
+      "label": "aujourd'hui",
       "type": "word",
       "category": "questions",
       "row": 20,
@@ -1739,7 +1739,7 @@
     },
     {
       "id": "core.tomorrow",
-      "label": "tomorrow",
+      "label": "demain",
       "type": "word",
       "category": "questions",
       "row": 20,
@@ -1748,7 +1748,7 @@
     },
     {
       "id": "core.yesterday",
-      "label": "yesterday",
+      "label": "hier",
       "type": "word",
       "category": "questions",
       "row": 20,
@@ -1757,7 +1757,7 @@
     },
     {
       "id": "core.left",
-      "label": "left",
+      "label": "à gauche",
       "type": "word",
       "category": "places",
       "row": 21,
@@ -1766,7 +1766,7 @@
     },
     {
       "id": "core.right",
-      "label": "right",
+      "label": "à droite",
       "type": "word",
       "category": "places",
       "row": 21,
@@ -1775,7 +1775,7 @@
     },
     {
       "id": "core.front",
-      "label": "front",
+      "label": "devant",
       "type": "word",
       "category": "places",
       "row": 21,
@@ -1784,7 +1784,7 @@
     },
     {
       "id": "core.back",
-      "label": "back",
+      "label": "derrière",
       "type": "word",
       "category": "places",
       "row": 21,
@@ -1793,7 +1793,7 @@
     },
     {
       "id": "core.near",
-      "label": "near",
+      "label": "près",
       "type": "word",
       "category": "places",
       "row": 21,
@@ -1802,7 +1802,7 @@
     },
     {
       "id": "core.far",
-      "label": "far",
+      "label": "loin",
       "type": "word",
       "category": "places",
       "row": 21,
@@ -1811,7 +1811,7 @@
     },
     {
       "id": "core.home",
-      "label": "home",
+      "label": "maison",
       "type": "word",
       "category": "places",
       "row": 21,
@@ -1820,7 +1820,7 @@
     },
     {
       "id": "core.school",
-      "label": "school",
+      "label": "école",
       "type": "word",
       "category": "places",
       "row": 21,
@@ -1829,7 +1829,7 @@
     },
     {
       "id": "core.store",
-      "label": "store",
+      "label": "magasin",
       "type": "word",
       "category": "places",
       "row": 22,
@@ -1838,7 +1838,7 @@
     },
     {
       "id": "core.car",
-      "label": "car",
+      "label": "voiture",
       "type": "word",
       "category": "places",
       "row": 22,
@@ -1856,7 +1856,7 @@
     },
     {
       "id": "core.church",
-      "label": "church",
+      "label": "église",
       "type": "word",
       "category": "places",
       "row": 22,
@@ -1865,7 +1865,7 @@
     },
     {
       "id": "core.bathroom",
-      "label": "bathroom",
+      "label": "toilettes",
       "type": "word",
       "category": "places",
       "row": 22,
@@ -1874,7 +1874,7 @@
     },
     {
       "id": "core.bedroom",
-      "label": "bedroom",
+      "label": "chambre",
       "type": "word",
       "category": "places",
       "row": 22,
@@ -1892,7 +1892,7 @@
     },
     {
       "id": "core.beach",
-      "label": "beach",
+      "label": "plage",
       "type": "word",
       "category": "places",
       "row": 22,
@@ -1901,7 +1901,7 @@
     },
     {
       "id": "core.a",
-      "label": "a",
+      "label": "un/une",
       "type": "word",
       "category": "little",
       "row": 23,
@@ -1910,7 +1910,7 @@
     },
     {
       "id": "core.the",
-      "label": "the",
+      "label": "le/la",
       "type": "word",
       "category": "little",
       "row": 23,
@@ -1919,7 +1919,7 @@
     },
     {
       "id": "core.and",
-      "label": "and",
+      "label": "et",
       "type": "word",
       "category": "little",
       "row": 23,
@@ -1928,7 +1928,7 @@
     },
     {
       "id": "core.but",
-      "label": "but",
+      "label": "mais",
       "type": "word",
       "category": "little",
       "row": 23,
@@ -1937,7 +1937,7 @@
     },
     {
       "id": "core.or",
-      "label": "or",
+      "label": "ou",
       "type": "word",
       "category": "little",
       "row": 23,
@@ -1946,7 +1946,7 @@
     },
     {
       "id": "core.because",
-      "label": "because",
+      "label": "parce que",
       "type": "word",
       "category": "little",
       "row": 23,
@@ -1955,7 +1955,7 @@
     },
     {
       "id": "core.with",
-      "label": "with",
+      "label": "avec",
       "type": "word",
       "category": "little",
       "row": 23,
@@ -1964,7 +1964,7 @@
     },
     {
       "id": "core.for",
-      "label": "for",
+      "label": "pour",
       "type": "word",
       "category": "little",
       "row": 23,
@@ -1973,7 +1973,7 @@
     },
     {
       "id": "core.to",
-      "label": "to",
+      "label": "à",
       "type": "word",
       "category": "little",
       "row": 24,
@@ -1982,7 +1982,7 @@
     },
     {
       "id": "core.from",
-      "label": "from",
+      "label": "de",
       "type": "word",
       "category": "little",
       "row": 24,
@@ -1991,7 +1991,7 @@
     },
     {
       "id": "core.very",
-      "label": "very",
+      "label": "très",
       "type": "word",
       "category": "little",
       "row": 24,
@@ -2000,7 +2000,7 @@
     },
     {
       "id": "core.too",
-      "label": "too",
+      "label": "aussi",
       "type": "word",
       "category": "little",
       "row": 24,
@@ -2009,7 +2009,7 @@
     },
     {
       "id": "core.just",
-      "label": "just",
+      "label": "juste",
       "type": "word",
       "category": "little",
       "row": 24,
@@ -2018,7 +2018,7 @@
     },
     {
       "id": "core.only",
-      "label": "only",
+      "label": "seulement",
       "type": "word",
       "category": "little",
       "row": 24,
@@ -2027,7 +2027,7 @@
     },
     {
       "id": "core.about",
-      "label": "about",
+      "label": "sur",
       "type": "word",
       "category": "little",
       "row": 24,
@@ -2036,7 +2036,7 @@
     },
     {
       "id": "core.every",
-      "label": "every",
+      "label": "chaque",
       "type": "word",
       "category": "little",
       "row": 24,
@@ -2045,7 +2045,7 @@
     },
     {
       "id": "core.dog",
-      "label": "dog",
+      "label": "chien",
       "type": "word",
       "category": "animals",
       "row": 25,
@@ -2054,7 +2054,7 @@
     },
     {
       "id": "core.cat",
-      "label": "cat",
+      "label": "chat",
       "type": "word",
       "category": "animals",
       "row": 25,
@@ -2063,7 +2063,7 @@
     },
     {
       "id": "core.bird",
-      "label": "bird",
+      "label": "oiseau",
       "type": "word",
       "category": "animals",
       "row": 25,
@@ -2072,7 +2072,7 @@
     },
     {
       "id": "core.fish",
-      "label": "fish",
+      "label": "poisson",
       "type": "word",
       "category": "animals",
       "row": 25,
@@ -2081,7 +2081,7 @@
     },
     {
       "id": "core.horse",
-      "label": "horse",
+      "label": "cheval",
       "type": "word",
       "category": "animals",
       "row": 25,
@@ -2090,7 +2090,7 @@
     },
     {
       "id": "core.cow",
-      "label": "cow",
+      "label": "vache",
       "type": "word",
       "category": "animals",
       "row": 25,
@@ -2099,7 +2099,7 @@
     },
     {
       "id": "core.pig",
-      "label": "pig",
+      "label": "cochon",
       "type": "word",
       "category": "animals",
       "row": 25,
@@ -2108,7 +2108,7 @@
     },
     {
       "id": "core.duck",
-      "label": "duck",
+      "label": "canard",
       "type": "word",
       "category": "animals",
       "row": 25,
@@ -2117,7 +2117,7 @@
     },
     {
       "id": "core.frog",
-      "label": "frog",
+      "label": "grenouille",
       "type": "word",
       "category": "animals",
       "row": 26,
@@ -2126,7 +2126,7 @@
     },
     {
       "id": "core.monkey",
-      "label": "monkey",
+      "label": "singe",
       "type": "word",
       "category": "animals",
       "row": 26,
@@ -2144,7 +2144,7 @@
     },
     {
       "id": "core.bear",
-      "label": "bear",
+      "label": "ours",
       "type": "word",
       "category": "animals",
       "row": 26,
@@ -2153,7 +2153,7 @@
     },
     {
       "id": "core.butterfly",
-      "label": "butterfly",
+      "label": "papillon",
       "type": "word",
       "category": "animals",
       "row": 26,
@@ -2162,7 +2162,7 @@
     },
     {
       "id": "core.spider",
-      "label": "spider",
+      "label": "araignée",
       "type": "word",
       "category": "animals",
       "row": 26,
@@ -2171,7 +2171,7 @@
     },
     {
       "id": "core.snake",
-      "label": "snake",
+      "label": "serpent",
       "type": "word",
       "category": "animals",
       "row": 26,
@@ -2180,7 +2180,7 @@
     },
     {
       "id": "core.red",
-      "label": "red",
+      "label": "rouge",
       "type": "word",
       "category": "descriptors",
       "row": 26,
@@ -2189,7 +2189,7 @@
     },
     {
       "id": "core.blue",
-      "label": "blue",
+      "label": "bleu",
       "type": "word",
       "category": "descriptors",
       "row": 27,
@@ -2198,7 +2198,7 @@
     },
     {
       "id": "core.green",
-      "label": "green",
+      "label": "vert",
       "type": "word",
       "category": "descriptors",
       "row": 27,
@@ -2207,7 +2207,7 @@
     },
     {
       "id": "core.yellow",
-      "label": "yellow",
+      "label": "jaune",
       "type": "word",
       "category": "descriptors",
       "row": 27,
@@ -2225,7 +2225,7 @@
     },
     {
       "id": "core.purple",
-      "label": "purple",
+      "label": "violet",
       "type": "word",
       "category": "descriptors",
       "row": 27,
@@ -2234,7 +2234,7 @@
     },
     {
       "id": "core.pink",
-      "label": "pink",
+      "label": "rose",
       "type": "word",
       "category": "descriptors",
       "row": 27,
@@ -2243,7 +2243,7 @@
     },
     {
       "id": "core.brown",
-      "label": "brown",
+      "label": "marron",
       "type": "word",
       "category": "descriptors",
       "row": 27,
@@ -2252,7 +2252,7 @@
     },
     {
       "id": "core.black",
-      "label": "black",
+      "label": "noir",
       "type": "word",
       "category": "descriptors",
       "row": 27,
@@ -2261,7 +2261,7 @@
     },
     {
       "id": "core.white",
-      "label": "white",
+      "label": "blanc",
       "type": "word",
       "category": "descriptors",
       "row": 28,
@@ -2270,7 +2270,7 @@
     },
     {
       "id": "core.gray",
-      "label": "gray",
+      "label": "gris",
       "type": "word",
       "category": "descriptors",
       "row": 28,
@@ -2279,7 +2279,7 @@
     },
     {
       "id": "core.one",
-      "label": "one",
+      "label": "un",
       "type": "word",
       "category": "descriptors",
       "row": 28,
@@ -2288,7 +2288,7 @@
     },
     {
       "id": "core.two",
-      "label": "two",
+      "label": "deux",
       "type": "word",
       "category": "descriptors",
       "row": 28,
@@ -2297,7 +2297,7 @@
     },
     {
       "id": "core.three",
-      "label": "three",
+      "label": "trois",
       "type": "word",
       "category": "descriptors",
       "row": 28,
@@ -2306,7 +2306,7 @@
     },
     {
       "id": "core.four",
-      "label": "four",
+      "label": "quatre",
       "type": "word",
       "category": "descriptors",
       "row": 28,
@@ -2315,7 +2315,7 @@
     },
     {
       "id": "core.five",
-      "label": "five",
+      "label": "cinq",
       "type": "word",
       "category": "descriptors",
       "row": 28,
@@ -2333,7 +2333,7 @@
     },
     {
       "id": "core.seven",
-      "label": "seven",
+      "label": "sept",
       "type": "word",
       "category": "descriptors",
       "row": 29,
@@ -2342,7 +2342,7 @@
     },
     {
       "id": "core.eight",
-      "label": "eight",
+      "label": "huit",
       "type": "word",
       "category": "descriptors",
       "row": 29,
@@ -2351,7 +2351,7 @@
     },
     {
       "id": "core.nine",
-      "label": "nine",
+      "label": "neuf",
       "type": "word",
       "category": "descriptors",
       "row": 29,
@@ -2360,7 +2360,7 @@
     },
     {
       "id": "core.ten",
-      "label": "ten",
+      "label": "dix",
       "type": "word",
       "category": "descriptors",
       "row": 29,
@@ -2369,7 +2369,7 @@
     },
     {
       "id": "core.library",
-      "label": "library",
+      "label": "bibliothèque",
       "type": "word",
       "category": "places",
       "row": 29,
@@ -2378,7 +2378,7 @@
     },
     {
       "id": "core.playground",
-      "label": "playground",
+      "label": "aire de jeux",
       "type": "word",
       "category": "places",
       "row": 29,
@@ -2396,7 +2396,7 @@
     },
     {
       "id": "core.pool",
-      "label": "pool",
+      "label": "piscine",
       "type": "word",
       "category": "places",
       "row": 29,
@@ -2405,7 +2405,7 @@
     },
     {
       "id": "core.farm",
-      "label": "farm",
+      "label": "ferme",
       "type": "word",
       "category": "places",
       "row": 30,
@@ -2414,7 +2414,7 @@
     },
     {
       "id": "core.garden",
-      "label": "garden",
+      "label": "jardin",
       "type": "word",
       "category": "places",
       "row": 30,
@@ -2423,7 +2423,7 @@
     },
     {
       "id": "core.museum",
-      "label": "museum",
+      "label": "musée",
       "type": "word",
       "category": "places",
       "row": 30,
@@ -2432,7 +2432,7 @@
     },
     {
       "id": "core.cinema",
-      "label": "cinema",
+      "label": "cinéma",
       "type": "word",
       "category": "places",
       "row": 30,
@@ -2441,7 +2441,7 @@
     },
     {
       "id": "core.grapes",
-      "label": "grapes",
+      "label": "raisin",
       "type": "word",
       "category": "food",
       "row": 30,
@@ -2450,7 +2450,7 @@
     },
     {
       "id": "core.strawberry",
-      "label": "strawberry",
+      "label": "fraise",
       "type": "word",
       "category": "food",
       "row": 30,
@@ -2459,7 +2459,7 @@
     },
     {
       "id": "core.carrot",
-      "label": "carrot",
+      "label": "carotte",
       "type": "word",
       "category": "food",
       "row": 30,
@@ -2468,7 +2468,7 @@
     },
     {
       "id": "core.icecream",
-      "label": "ice cream",
+      "label": "glace",
       "type": "word",
       "category": "food",
       "row": 30,
@@ -2477,7 +2477,7 @@
     },
     {
       "id": "core.cake",
-      "label": "cake",
+      "label": "gâteau",
       "type": "word",
       "category": "food",
       "row": 31,
@@ -2494,7 +2494,7 @@
       "emoji": "🥪"
     }
   ],
-  "locale": "en",
-  "ttsLocale": "en-US",
+  "locale": "fr",
+  "ttsLocale": "fr-FR",
   "version": 2
 }

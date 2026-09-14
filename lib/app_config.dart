@@ -9,11 +9,12 @@ class AppConfig {
 
   /// Locale codes with a bundled pack under assets/lang/<code>.json.
   /// To add a language: drop in the JSON file and list it here.
-  static const List<String> supportedLocales = ['en', 'es'];
+  static const List<String> supportedLocales = ['en', 'es', 'fr'];
   static const String defaultLocale = 'en';
   static const Map<String, String> localeNames = {
     'en': 'English',
     'es': 'Español',
+    'fr': 'Français',
   };
 
   /// Voice defaults (persisted per device once changed).

@@ -33,7 +33,10 @@ class VidaVoiceApp extends StatelessWidget {
               case BootStatus.loading:
                 return const LoadingScreen();
               case BootStatus.error:
-                return ErrorScreen(message: s.bootError);
+                return ErrorScreen(
+                  message: s.bootError,
+                  onRetry: () => s.boot(),
+                );
               case BootStatus.ready:
                 if (!s.onboardingComplete) {
                   return const OnboardingScreen();

@@ -18,7 +18,7 @@ void main() {
     );
   }
 
-  for (final locale in ['en', 'es']) {
+  for (final locale in ['en', 'es', 'fr']) {
     group('language pack: $locale', () {
       late LanguagePack pack;
 
@@ -28,9 +28,9 @@ void main() {
         pack.validate();
       });
 
-      test('home grid holds 192 core words at unique fixed positions', () {
+      test('home grid holds 242 core words at unique fixed positions', () {
         final words = pack.homeItems.where((i) => !i.isFolder).toList();
-        expect(words.length, 192);
+        expect(words.length, 242);
         final cells = words.map((w) => '${w.row}:${w.col}').toSet();
         expect(
           cells.length,
@@ -61,20 +61,22 @@ void main() {
     });
   }
 
-  test('en and es share identical ids and grid positions', () {
+  test('en, es and fr share identical ids and grid positions', () {
     final en = loadPack('en');
-    final es = loadPack('es');
     final enCells = {
       for (final i in en.homeItems) i.id: '${i.row}:${i.col}:${i.type}',
     };
-    final esCells = {
-      for (final i in es.homeItems) i.id: '${i.row}:${i.col}:${i.type}',
-    };
-    expect(
-      esCells,
-      enCells,
-      reason:
-          'Motor positions must be identical across languages (ids drifted).',
-    );
+    for (final locale in ['es', 'fr']) {
+      final pack = loadPack(locale);
+      final cells = {
+        for (final i in pack.homeItems) i.id: '${i.row}:${i.col}:${i.type}',
+      };
+      expect(
+        cells,
+        enCells,
+        reason:
+            'Motor positions must be identical across languages (ids drifted in $locale).',
+      );
+    }
   });
 }

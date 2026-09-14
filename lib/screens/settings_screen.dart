@@ -52,11 +52,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   for (final locale in AppConfig.supportedLocales)
                     RadioListTile<String>(
                       title: Text(AppConfig.localeNames[locale] ?? locale),
-                      subtitle: locale == 'es'
-                          ? const Text(
-                              'Traducción preliminar — pendiente de revisión por un especialista.',
-                            )
-                          : null,
+                      subtitle: switch (locale) {
+                        'es' => const Text(
+                          'Traducción preliminar — pendiente de revisión por un especialista.',
+                        ),
+                        'fr' => const Text(
+                          'Traduction préliminaire — en attente de révision par un spécialiste.',
+                        ),
+                        _ => null,
+                      },
                       value: locale,
                     ),
                 ],
@@ -117,7 +121,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       icon: const Icon(Icons.play_arrow),
                       label: const Text('Hear it'),
                       onPressed: () => session.speakText(
-                        'Hello! This is my voice in ${AppConfig.localeNames[session.currentLocale]}.',
+                        _voicePreviewFor(session.currentLocale),
                       ),
                     ),
                   ),
@@ -207,6 +211,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ],
       ),
     );
+  }
+
+  /// Voice preview sentence in the currently selected language.
+  String _voicePreviewFor(String locale) {
+    return switch (locale) {
+      'es' => '¡Hola! Esta es mi voz.',
+      'fr' => 'Bonjour ! C\u2019est ma voix.',
+      _ => 'Hello! This is my voice.',
+    };
   }
 
   Widget _sectionTitle(BuildContext context, String title) {

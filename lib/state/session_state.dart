@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
 
 import '../app_config.dart';
 import '../models/word.dart';
@@ -7,6 +8,7 @@ import '../services/language_pack_service.dart';
 import '../services/profile_service.dart';
 import '../services/symbol_service.dart';
 import '../services/tts_service.dart';
+import '../services/usage_service.dart';
 
 enum BootStatus { loading, ready, error }
 
@@ -16,6 +18,7 @@ class SessionState extends ChangeNotifier {
   final TtsService tts = TtsService();
   final SymbolService symbols = SymbolService();
   final ProfileService profiles = ProfileService();
+  final UsageService usage = UsageService();
 
   BootStatus status = BootStatus.loading;
   String bootError = '';
@@ -53,6 +56,7 @@ class SessionState extends ChangeNotifier {
       pack.validate();
       await symbols.load();
       await profiles.load();
+      await usage.load();
       await tts.init(
         language: pack.ttsLocale,
         rate:
@@ -121,6 +125,8 @@ class SessionState extends ChangeNotifier {
     if (item.type == BoardItemType.folder) return;
     tts.speak(item.label);
     _sentenceIds.add(item.id);
+    // Fire-and-forget: usage counts must never block a tap.
+    unawaited(usage.recordTap(item.id));
     notifyListeners();
   }
 

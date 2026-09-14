@@ -28,6 +28,7 @@ class BoardItem {
     required this.row,
     required this.col,
     required this.emoji,
+    this.level = 1,
   });
 
   /// Language-independent id, e.g. "core.want". Bilingual users keep the
@@ -45,7 +46,20 @@ class BoardItem {
   /// the id stays the same so motor positions survive the swap.
   final String emoji;
 
+  /// Vocabulary level 1-3, declared in the pack alongside row/col.
+  ///
+  /// Level 1 is the starter set; 2 and 3 are revealed as skills grow. Like
+  /// [row] and [col] this is DATA, never computed — and it never moves a
+  /// word. A word above the unlocked level is simply not drawn, leaving its
+  /// cell empty, so every visible word keeps the position it always had.
+  final int level;
+
   bool get isFolder => type == BoardItemType.folder;
+
+  /// Whether this item is revealed when the caregiver has unlocked
+  /// [unlockedLevel]. Folder tiles are always visible: locking navigation
+  /// would strand the level-1 words behind them.
+  bool visibleAt(int unlockedLevel) => isFolder || level <= unlockedLevel;
 
   factory BoardItem.fromJson(Map<String, dynamic> json) {
     final typeStr = json['type'] as String;
@@ -57,6 +71,7 @@ class BoardItem {
       row: (json['row'] as num?)?.toInt() ?? -1,
       col: (json['col'] as num?)?.toInt() ?? -1,
       emoji: (json['emoji'] as String?) ?? '🔤',
+      level: (json['level'] as num?)?.toInt() ?? 1,
     );
   }
 }
@@ -92,6 +107,10 @@ class FolderPack {
 
 /// A versioned language pack: vocabulary + grid + TTS config for one locale.
 class LanguagePack {
+  /// Levels run 1..3. Level 1 is the starter set every communicator sees.
+  static const int minSupportedLevel = 1;
+  static const int maxSupportedLevel = 3;
+
   const LanguagePack({
     required this.locale,
     required this.displayName,
@@ -119,10 +138,31 @@ class LanguagePack {
     return max;
   }
 
-  /// The item at a fixed grid position, or null for an empty cell.
-  BoardItem? itemAt(int row, int col) {
+  /// The highest level declared anywhere in the pack.
+  int get maxLevel {
+    var max = 1;
     for (final item in homeItems) {
-      if (item.row == row && item.col == col) return item;
+      if (item.level > max) max = item.level;
+    }
+    for (final folder in folders.values) {
+      for (final word in folder.words) {
+        if (word.level > max) max = word.level;
+      }
+    }
+    return max;
+  }
+
+  /// The item at a fixed grid position, or null for an empty cell.
+  ///
+  /// Pass [unlockedLevel] to apply progressive reveal: a word above the
+  /// unlocked level reads as an empty cell, exactly like a position that was
+  /// never filled. Positions of visible words are unaffected — that is the
+  /// whole point.
+  BoardItem? itemAt(int row, int col, {int unlockedLevel = maxSupportedLevel}) {
+    for (final item in homeItems) {
+      if (item.row == row && item.col == col) {
+        return item.visibleAt(unlockedLevel) ? item : null;
+      }
     }
     return null;
   }
@@ -163,6 +203,15 @@ class LanguagePack {
     );
   }
 
+  static void _checkLevel(BoardItem item) {
+    if (item.level < minSupportedLevel || item.level > maxSupportedLevel) {
+      throw PackValidationError(
+        'Item ${item.id} has level ${item.level}; expected '
+        '$minSupportedLevel..$maxSupportedLevel.',
+      );
+    }
+  }
+
   /// Enforces the fixed-position invariant and the 2-tap navigation budget.
   /// Throws [PackValidationError] on any violation — callers should fail fast.
   void validate() {
@@ -186,7 +235,16 @@ class LanguagePack {
       if (!seenIds.add(item.id)) {
         throw PackValidationError('Duplicate item id ${item.id}.');
       }
-      if (item.isFolder) folderIdsOnGrid.add(item.id);
+      _checkLevel(item);
+      if (item.isFolder) {
+        if (item.level != minSupportedLevel) {
+          throw PackValidationError(
+            'Folder tile ${item.id} must be level $minSupportedLevel — locking '
+            'navigation would strand the words behind it.',
+          );
+        }
+        folderIdsOnGrid.add(item.id);
+      }
     }
 
     for (final entry in folders.entries) {
@@ -207,6 +265,7 @@ class LanguagePack {
             '2-tap budget violated.',
           );
         }
+        _checkLevel(word);
       }
     }
 

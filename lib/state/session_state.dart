@@ -34,6 +34,13 @@ class SessionState extends ChangeNotifier {
   double buttonScale = 1.0;
   bool onboardingComplete = false;
 
+  /// Highest vocabulary level currently revealed on the board (1-3).
+  ///
+  /// Caregiver-controlled, and deliberately NOT in Settings: revealing
+  /// vocabulary is a clinical decision, not a preference. Raising it only ever
+  /// fills in empty cells — no word already on the board moves.
+  int unlockedLevel = LanguagePack.minSupportedLevel;
+
   SharedPreferences? _prefs;
 
   Future<void> boot() async {
@@ -50,6 +57,10 @@ class SessionState extends ChangeNotifier {
       buttonScale = _prefs!.getDouble('vidavoice.buttonScale') ?? 1.0;
       onboardingComplete =
           _prefs!.getBool('vidavoice.onboardingComplete') ?? false;
+      unlockedLevel = _clampLevel(
+        _prefs!.getInt('vidavoice.unlockedLevel') ??
+            LanguagePack.minSupportedLevel,
+      );
 
       pack = await LanguagePackService.loadPack(currentLocale);
       // Throws PackValidationError on any violation — boot must fail fast.
@@ -82,6 +93,21 @@ class SessionState extends ChangeNotifier {
   Future<void> setSpeechPitch(double pitch) async {
     await tts.setPitch(pitch);
     await _prefs?.setDouble('vidavoice.speechPitch', pitch);
+  }
+
+  static int _clampLevel(int level) => level.clamp(
+    LanguagePack.minSupportedLevel,
+    LanguagePack.maxSupportedLevel,
+  );
+
+  /// Reveal vocabulary up to [level]. Words above it keep their cells — the
+  /// cells are simply drawn empty — so unlocking never reshuffles the board.
+  Future<void> setUnlockedLevel(int level) async {
+    final next = _clampLevel(level);
+    if (next == unlockedLevel) return;
+    unlockedLevel = next;
+    await _prefs?.setInt('vidavoice.unlockedLevel', next);
+    notifyListeners();
   }
 
   Future<void> setButtonScale(double scale) async {

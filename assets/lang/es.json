@@ -12,7 +12,8 @@
       "id": "core.i",
       "label": "yo",
       "row": 0,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "pronouns",
@@ -21,7 +22,8 @@
       "id": "core.you",
       "label": "tú",
       "row": 0,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "pronouns",
@@ -30,7 +32,8 @@
       "id": "core.he",
       "label": "él",
       "row": 0,
-      "type": "word"
+      "type": "word",
+      "level": 2
     },
     {
       "category": "pronouns",
@@ -39,7 +42,8 @@
       "id": "core.she",
       "label": "ella",
       "row": 0,
-      "type": "word"
+      "type": "word",
+      "level": 2
     },
     {
       "category": "pronouns",
@@ -48,7 +52,8 @@
       "id": "core.we",
       "label": "nosotros",
       "row": 0,
-      "type": "word"
+      "type": "word",
+      "level": 2
     },
     {
       "category": "pronouns",
@@ -57,7 +62,8 @@
       "id": "core.they",
       "label": "ellos",
       "row": 0,
-      "type": "word"
+      "type": "word",
+      "level": 2
     },
     {
       "category": "pronouns",
@@ -66,7 +72,8 @@
       "id": "core.it",
       "label": "eso",
       "row": 0,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "pronouns",
@@ -75,7 +82,8 @@
       "id": "core.me",
       "label": "mí",
       "row": 0,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "verbs",
@@ -84,7 +92,8 @@
       "id": "core.want",
       "label": "quiero",
       "row": 1,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "verbs",
@@ -93,7 +102,8 @@
       "id": "core.need",
       "label": "necesito",
       "row": 1,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "verbs",
@@ -102,7 +112,8 @@
       "id": "core.like",
       "label": "me gusta",
       "row": 1,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "verbs",
@@ -111,7 +122,8 @@
       "id": "core.dont",
       "label": "no",
       "row": 1,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "verbs",
@@ -120,7 +132,8 @@
       "id": "core.go",
       "label": "ir",
       "row": 1,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "verbs",
@@ -129,7 +142,8 @@
       "id": "core.come",
       "label": "venir",
       "row": 1,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "verbs",
@@ -138,7 +152,8 @@
       "id": "core.stop",
       "label": "alto",
       "row": 1,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "verbs",
@@ -147,7 +162,8 @@
       "id": "core.help",
       "label": "ayuda",
       "row": 1,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "social",
@@ -156,7 +172,8 @@
       "id": "core.more",
       "label": "más",
       "row": 2,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "social",
@@ -165,7 +182,8 @@
       "id": "core.again",
       "label": "otra vez",
       "row": 2,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "social",
@@ -174,7 +192,8 @@
       "id": "core.finished",
       "label": "terminado",
       "row": 2,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "social",
@@ -183,7 +202,8 @@
       "id": "core.yes",
       "label": "sí",
       "row": 2,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "social",
@@ -192,7 +212,8 @@
       "id": "core.no",
       "label": "no",
       "row": 2,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "social",
@@ -201,7 +222,8 @@
       "id": "core.please",
       "label": "por favor",
       "row": 2,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "social",
@@ -210,7 +232,8 @@
       "id": "core.thanks",
       "label": "gracias",
       "row": 2,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "social",
@@ -219,7 +242,8 @@
       "id": "core.sorry",
       "label": "perdón",
       "row": 2,
-      "type": "word"
+      "type": "word",
+      "level": 2
     },
     {
       "category": "actions",
@@ -228,7 +252,8 @@
       "id": "core.get",
       "label": "tomar",
       "row": 3,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "actions",
@@ -237,7 +262,8 @@
       "id": "core.give",
       "label": "dar",
       "row": 3,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "actions",
@@ -246,7 +272,8 @@
       "id": "core.put",
       "label": "poner",
       "row": 3,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "actions",
@@ -255,7 +282,8 @@
       "id": "core.take",
       "label": "llevar",
       "row": 3,
-      "type": "word"
+      "type": "word",
+      "level": 2
     },
     {
       "category": "actions",
@@ -264,7 +292,8 @@
       "id": "core.make",
       "label": "crear",
       "row": 3,
-      "type": "word"
+      "type": "word",
+      "level": 2
     },
     {
       "category": "actions",
@@ -273,7 +302,8 @@
       "id": "core.do",
       "label": "hacer",
       "row": 3,
-      "type": "word"
+      "type": "word",
+      "level": 2
     },
     {
       "category": "actions",
@@ -282,7 +312,8 @@
       "id": "core.eat",
       "label": "comer",
       "row": 3,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "actions",
@@ -291,7 +322,8 @@
       "id": "core.drink",
       "label": "beber",
       "row": 3,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "places",
@@ -300,7 +332,8 @@
       "id": "core.here",
       "label": "aquí",
       "row": 4,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "places",
@@ -309,7 +342,8 @@
       "id": "core.there",
       "label": "allí",
       "row": 4,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "places",
@@ -318,7 +352,8 @@
       "id": "core.up",
       "label": "arriba",
       "row": 4,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "places",
@@ -327,7 +362,8 @@
       "id": "core.down",
       "label": "abajo",
       "row": 4,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "places",
@@ -336,7 +372,8 @@
       "id": "core.in",
       "label": "en",
       "row": 4,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "places",
@@ -345,7 +382,8 @@
       "id": "core.out",
       "label": "fuera",
       "row": 4,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "places",
@@ -354,7 +392,8 @@
       "id": "core.on",
       "label": "encendido",
       "row": 4,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "places",
@@ -363,7 +402,8 @@
       "id": "core.off",
       "label": "apagado",
       "row": 4,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "questions",
@@ -372,7 +412,8 @@
       "id": "core.what",
       "label": "qué",
       "row": 5,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "questions",
@@ -381,7 +422,8 @@
       "id": "core.where",
       "label": "dónde",
       "row": 5,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "questions",
@@ -390,7 +432,8 @@
       "id": "core.who",
       "label": "quién",
       "row": 5,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "questions",
@@ -399,7 +442,8 @@
       "id": "core.when",
       "label": "cuándo",
       "row": 5,
-      "type": "word"
+      "type": "word",
+      "level": 2
     },
     {
       "category": "questions",
@@ -408,7 +452,8 @@
       "id": "core.how",
       "label": "cómo",
       "row": 5,
-      "type": "word"
+      "type": "word",
+      "level": 2
     },
     {
       "category": "descriptors",
@@ -417,7 +462,8 @@
       "id": "core.big",
       "label": "grande",
       "row": 5,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "descriptors",
@@ -426,7 +472,8 @@
       "id": "core.little",
       "label": "pequeño",
       "row": 5,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "descriptors",
@@ -435,7 +482,8 @@
       "id": "core.good",
       "label": "bueno",
       "row": 5,
-      "type": "word"
+      "type": "word",
+      "level": 1
     },
     {
       "category": "folder",
@@ -444,7 +492,8 @@
       "id": "folder.food",
       "label": "comida",
       "row": 6,
-      "type": "folder"
+      "type": "folder",
+      "level": 1
     },
     {
       "category": "folder",
@@ -453,7 +502,8 @@
       "id": "folder.feelings",
       "label": "sentimientos",
       "row": 6,
-      "type": "folder"
+      "type": "folder",
+      "level": 1
     },
     {
       "category": "folder",
@@ -462,7 +512,8 @@
       "id": "folder.people",
       "label": "personas",
       "row": 6,
-      "type": "folder"
+      "type": "folder",
+      "level": 1
     },
     {
       "category": "folder",
@@ -471,7 +522,8 @@
       "id": "folder.play",
       "label": "jugar",
       "row": 6,
-      "type": "folder"
+      "type": "folder",
+      "level": 1
     },
     {
       "id": "core.my",
@@ -480,7 +532,8 @@
       "category": "pronouns",
       "row": 7,
       "col": 0,
-      "emoji": "🙋"
+      "emoji": "🙋",
+      "level": 1
     },
     {
       "id": "core.your",
@@ -489,7 +542,8 @@
       "category": "pronouns",
       "row": 7,
       "col": 1,
-      "emoji": "🫵"
+      "emoji": "🫵",
+      "level": 2
     },
     {
       "id": "core.his",
@@ -498,7 +552,8 @@
       "category": "pronouns",
       "row": 7,
       "col": 2,
-      "emoji": "🧔"
+      "emoji": "🧔",
+      "level": 3
     },
     {
       "id": "core.her",
@@ -507,7 +562,8 @@
       "category": "pronouns",
       "row": 7,
       "col": 3,
-      "emoji": "👱‍♀️"
+      "emoji": "👱‍♀️",
+      "level": 3
     },
     {
       "id": "core.our",
@@ -516,7 +572,8 @@
       "category": "pronouns",
       "row": 7,
       "col": 4,
-      "emoji": "🧑‍🤝‍🧑"
+      "emoji": "🧑‍🤝‍🧑",
+      "level": 3
     },
     {
       "id": "core.their",
@@ -525,7 +582,8 @@
       "category": "pronouns",
       "row": 7,
       "col": 5,
-      "emoji": "👪"
+      "emoji": "👪",
+      "level": 3
     },
     {
       "id": "core.mine",
@@ -534,7 +592,8 @@
       "category": "pronouns",
       "row": 7,
       "col": 6,
-      "emoji": "💼"
+      "emoji": "💼",
+      "level": 2
     },
     {
       "id": "core.yours",
@@ -543,7 +602,8 @@
       "category": "pronouns",
       "row": 7,
       "col": 7,
-      "emoji": "🎒"
+      "emoji": "🎒",
+      "level": 2
     },
     {
       "id": "core.see",
@@ -552,7 +612,8 @@
       "category": "verbs",
       "row": 8,
       "col": 0,
-      "emoji": "👀"
+      "emoji": "👀",
+      "level": 1
     },
     {
       "id": "core.look",
@@ -561,7 +622,8 @@
       "category": "verbs",
       "row": 8,
       "col": 1,
-      "emoji": "🔍"
+      "emoji": "🔍",
+      "level": 1
     },
     {
       "id": "core.listen",
@@ -570,7 +632,8 @@
       "category": "verbs",
       "row": 8,
       "col": 2,
-      "emoji": "👂"
+      "emoji": "👂",
+      "level": 2
     },
     {
       "id": "core.say",
@@ -579,7 +642,8 @@
       "category": "verbs",
       "row": 8,
       "col": 3,
-      "emoji": "💬"
+      "emoji": "💬",
+      "level": 2
     },
     {
       "id": "core.tell",
@@ -588,7 +652,8 @@
       "category": "verbs",
       "row": 8,
       "col": 4,
-      "emoji": "🗣️"
+      "emoji": "🗣️",
+      "level": 2
     },
     {
       "id": "core.ask",
@@ -597,7 +662,8 @@
       "category": "verbs",
       "row": 8,
       "col": 5,
-      "emoji": "❔"
+      "emoji": "❔",
+      "level": 2
     },
     {
       "id": "core.playv",
@@ -606,7 +672,8 @@
       "category": "verbs",
       "row": 8,
       "col": 6,
-      "emoji": "🎲"
+      "emoji": "🎲",
+      "level": 1
     },
     {
       "id": "core.work",
@@ -615,7 +682,8 @@
       "category": "verbs",
       "row": 8,
       "col": 7,
-      "emoji": "💼"
+      "emoji": "💼",
+      "level": 2
     },
     {
       "id": "core.sleep",
@@ -624,7 +692,8 @@
       "category": "verbs",
       "row": 9,
       "col": 0,
-      "emoji": "😴"
+      "emoji": "😴",
+      "level": 2
     },
     {
       "id": "core.sit",
@@ -633,7 +702,8 @@
       "category": "verbs",
       "row": 9,
       "col": 1,
-      "emoji": "🪑"
+      "emoji": "🪑",
+      "level": 2
     },
     {
       "id": "core.stand",
@@ -642,7 +712,8 @@
       "category": "verbs",
       "row": 9,
       "col": 2,
-      "emoji": "🧍"
+      "emoji": "🧍",
+      "level": 2
     },
     {
       "id": "core.walk",
@@ -651,7 +722,8 @@
       "category": "verbs",
       "row": 9,
       "col": 3,
-      "emoji": "🚶"
+      "emoji": "🚶",
+      "level": 2
     },
     {
       "id": "core.open",
@@ -660,7 +732,8 @@
       "category": "verbs",
       "row": 9,
       "col": 4,
-      "emoji": "🔓"
+      "emoji": "🔓",
+      "level": 1
     },
     {
       "id": "core.close",
@@ -669,7 +742,8 @@
       "category": "verbs",
       "row": 9,
       "col": 5,
-      "emoji": "🔒"
+      "emoji": "🔒",
+      "level": 2
     },
     {
       "id": "core.turn",
@@ -678,7 +752,8 @@
       "category": "verbs",
       "row": 9,
       "col": 6,
-      "emoji": "🔄"
+      "emoji": "🔄",
+      "level": 2
     },
     {
       "id": "core.push",
@@ -687,7 +762,8 @@
       "category": "verbs",
       "row": 9,
       "col": 7,
-      "emoji": "🫸"
+      "emoji": "🫸",
+      "level": 2
     },
     {
       "id": "core.pull",
@@ -696,7 +772,8 @@
       "category": "verbs",
       "row": 10,
       "col": 0,
-      "emoji": "🫷"
+      "emoji": "🫷",
+      "level": 2
     },
     {
       "id": "core.hold",
@@ -705,7 +782,8 @@
       "category": "verbs",
       "row": 10,
       "col": 1,
-      "emoji": "🤲"
+      "emoji": "🤲",
+      "level": 2
     },
     {
       "id": "core.drop",
@@ -714,7 +792,8 @@
       "category": "verbs",
       "row": 10,
       "col": 2,
-      "emoji": "👐"
+      "emoji": "👐",
+      "level": 2
     },
     {
       "id": "core.break",
@@ -723,7 +802,8 @@
       "category": "verbs",
       "row": 10,
       "col": 3,
-      "emoji": "💥"
+      "emoji": "💥",
+      "level": 3
     },
     {
       "id": "core.fix",
@@ -732,7 +812,8 @@
       "category": "verbs",
       "row": 10,
       "col": 4,
-      "emoji": "🔧"
+      "emoji": "🔧",
+      "level": 2
     },
     {
       "id": "core.cleanv",
@@ -741,7 +822,8 @@
       "category": "verbs",
       "row": 10,
       "col": 5,
-      "emoji": "🧽"
+      "emoji": "🧽",
+      "level": 2
     },
     {
       "id": "core.cook",
@@ -750,7 +832,8 @@
       "category": "verbs",
       "row": 10,
       "col": 6,
-      "emoji": "🍳"
+      "emoji": "🍳",
+      "level": 2
     },
     {
       "id": "core.read",
@@ -759,7 +842,8 @@
       "category": "verbs",
       "row": 10,
       "col": 7,
-      "emoji": "📖"
+      "emoji": "📖",
+      "level": 2
     },
     {
       "id": "core.write",
@@ -768,7 +852,8 @@
       "category": "verbs",
       "row": 11,
       "col": 0,
-      "emoji": "✏️"
+      "emoji": "✏️",
+      "level": 2
     },
     {
       "id": "core.sing",
@@ -777,7 +862,8 @@
       "category": "verbs",
       "row": 11,
       "col": 1,
-      "emoji": "🎤"
+      "emoji": "🎤",
+      "level": 2
     },
     {
       "id": "core.dance",
@@ -786,7 +872,8 @@
       "category": "verbs",
       "row": 11,
       "col": 2,
-      "emoji": "💃"
+      "emoji": "💃",
+      "level": 2
     },
     {
       "id": "core.run",
@@ -795,7 +882,8 @@
       "category": "verbs",
       "row": 11,
       "col": 3,
-      "emoji": "🏃"
+      "emoji": "🏃",
+      "level": 2
     },
     {
       "id": "core.jump",
@@ -804,7 +892,8 @@
       "category": "verbs",
       "row": 11,
       "col": 4,
-      "emoji": "🤸"
+      "emoji": "🤸",
+      "level": 2
     },
     {
       "id": "core.climb",
@@ -813,7 +902,8 @@
       "category": "verbs",
       "row": 11,
       "col": 5,
-      "emoji": "🧗"
+      "emoji": "🧗",
+      "level": 3
     },
     {
       "id": "core.ride",
@@ -822,7 +912,8 @@
       "category": "verbs",
       "row": 11,
       "col": 6,
-      "emoji": "🚲"
+      "emoji": "🚲",
+      "level": 3
     },
     {
       "id": "core.buy",
@@ -831,7 +922,8 @@
       "category": "verbs",
       "row": 11,
       "col": 7,
-      "emoji": "🛒"
+      "emoji": "🛒",
+      "level": 3
     },
     {
       "id": "core.find",
@@ -840,7 +932,8 @@
       "category": "verbs",
       "row": 12,
       "col": 0,
-      "emoji": "🔎"
+      "emoji": "🔎",
+      "level": 2
     },
     {
       "id": "core.lose",
@@ -849,7 +942,8 @@
       "category": "verbs",
       "row": 12,
       "col": 1,
-      "emoji": "🫗"
+      "emoji": "🫗",
+      "level": 3
     },
     {
       "id": "core.hide",
@@ -858,7 +952,8 @@
       "category": "verbs",
       "row": 12,
       "col": 2,
-      "emoji": "🙈"
+      "emoji": "🙈",
+      "level": 3
     },
     {
       "id": "core.show",
@@ -867,7 +962,8 @@
       "category": "verbs",
       "row": 12,
       "col": 3,
-      "emoji": "🖼️"
+      "emoji": "🖼️",
+      "level": 2
     },
     {
       "id": "core.wait",
@@ -876,7 +972,8 @@
       "category": "verbs",
       "row": 12,
       "col": 4,
-      "emoji": "⏳"
+      "emoji": "⏳",
+      "level": 2
     },
     {
       "id": "core.try",
@@ -885,7 +982,8 @@
       "category": "verbs",
       "row": 12,
       "col": 5,
-      "emoji": "🎯"
+      "emoji": "🎯",
+      "level": 2
     },
     {
       "id": "core.start",
@@ -894,7 +992,8 @@
       "category": "verbs",
       "row": 12,
       "col": 6,
-      "emoji": "🏁"
+      "emoji": "🏁",
+      "level": 2
     },
     {
       "id": "core.think",
@@ -903,7 +1002,8 @@
       "category": "verbs",
       "row": 12,
       "col": 7,
-      "emoji": "💭"
+      "emoji": "💭",
+      "level": 2
     },
     {
       "id": "core.know",
@@ -912,7 +1012,8 @@
       "category": "verbs",
       "row": 13,
       "col": 0,
-      "emoji": "🧠"
+      "emoji": "🧠",
+      "level": 2
     },
     {
       "id": "core.learn",
@@ -921,7 +1022,8 @@
       "category": "verbs",
       "row": 13,
       "col": 1,
-      "emoji": "🎓"
+      "emoji": "🎓",
+      "level": 3
     },
     {
       "id": "core.remember",
@@ -930,7 +1032,8 @@
       "category": "verbs",
       "row": 13,
       "col": 2,
-      "emoji": "📝"
+      "emoji": "📝",
+      "level": 3
     },
     {
       "id": "core.forget",
@@ -939,7 +1042,8 @@
       "category": "verbs",
       "row": 13,
       "col": 3,
-      "emoji": "🌫️"
+      "emoji": "🌫️",
+      "level": 3
     },
     {
       "id": "core.dream",
@@ -948,7 +1052,8 @@
       "category": "verbs",
       "row": 13,
       "col": 4,
-      "emoji": "💤"
+      "emoji": "💤",
+      "level": 3
     },
     {
       "id": "core.laugh",
@@ -957,7 +1062,8 @@
       "category": "verbs",
       "row": 13,
       "col": 5,
-      "emoji": "😂"
+      "emoji": "😂",
+      "level": 3
     },
     {
       "id": "core.cry",
@@ -966,7 +1072,8 @@
       "category": "verbs",
       "row": 13,
       "col": 6,
-      "emoji": "😭"
+      "emoji": "😭",
+      "level": 3
     },
     {
       "id": "core.fly",
@@ -975,7 +1082,8 @@
       "category": "verbs",
       "row": 13,
       "col": 7,
-      "emoji": "🛫"
+      "emoji": "🛫",
+      "level": 3
     },
     {
       "id": "core.hello",
@@ -984,7 +1092,8 @@
       "category": "social",
       "row": 14,
       "col": 0,
-      "emoji": "👋"
+      "emoji": "👋",
+      "level": 1
     },
     {
       "id": "core.goodbye",
@@ -993,7 +1102,8 @@
       "category": "social",
       "row": 14,
       "col": 1,
-      "emoji": "🖐️"
+      "emoji": "🖐️",
+      "level": 1
     },
     {
       "id": "core.excuseme",
@@ -1002,7 +1112,8 @@
       "category": "social",
       "row": 14,
       "col": 2,
-      "emoji": "🙇"
+      "emoji": "🙇",
+      "level": 2
     },
     {
       "id": "core.okay",
@@ -1011,7 +1122,8 @@
       "category": "social",
       "row": 14,
       "col": 3,
-      "emoji": "👌"
+      "emoji": "👌",
+      "level": 2
     },
     {
       "id": "core.wow",
@@ -1020,7 +1132,8 @@
       "category": "social",
       "row": 14,
       "col": 4,
-      "emoji": "😮"
+      "emoji": "😮",
+      "level": 2
     },
     {
       "id": "core.uhoh",
@@ -1029,7 +1142,8 @@
       "category": "social",
       "row": 14,
       "col": 5,
-      "emoji": "😬"
+      "emoji": "😬",
+      "level": 2
     },
     {
       "id": "core.goodmorning",
@@ -1038,7 +1152,8 @@
       "category": "social",
       "row": 14,
       "col": 6,
-      "emoji": "🌅"
+      "emoji": "🌅",
+      "level": 2
     },
     {
       "id": "core.goodnight",
@@ -1047,7 +1162,8 @@
       "category": "social",
       "row": 14,
       "col": 7,
-      "emoji": "🌙"
+      "emoji": "🌙",
+      "level": 2
     },
     {
       "id": "core.welcome",
@@ -1056,7 +1172,8 @@
       "category": "social",
       "row": 15,
       "col": 0,
-      "emoji": "🎊"
+      "emoji": "🎊",
+      "level": 3
     },
     {
       "id": "core.myturn",
@@ -1065,7 +1182,8 @@
       "category": "social",
       "row": 15,
       "col": 1,
-      "emoji": "🔂"
+      "emoji": "🔂",
+      "level": 2
     },
     {
       "id": "core.yourturn",
@@ -1074,7 +1192,8 @@
       "category": "social",
       "row": 15,
       "col": 2,
-      "emoji": "⏭️"
+      "emoji": "⏭️",
+      "level": 2
     },
     {
       "id": "core.careful",
@@ -1083,7 +1202,8 @@
       "category": "social",
       "row": 15,
       "col": 3,
-      "emoji": "⚠️"
+      "emoji": "⚠️",
+      "level": 2
     },
     {
       "id": "core.gentle",
@@ -1092,7 +1212,8 @@
       "category": "social",
       "row": 15,
       "col": 4,
-      "emoji": "🪶"
+      "emoji": "🪶",
+      "level": 3
     },
     {
       "id": "core.hurray",
@@ -1101,7 +1222,8 @@
       "category": "social",
       "row": 15,
       "col": 5,
-      "emoji": "🎉"
+      "emoji": "🎉",
+      "level": 2
     },
     {
       "id": "core.shhh",
@@ -1110,7 +1232,8 @@
       "category": "social",
       "row": 15,
       "col": 6,
-      "emoji": "🤫"
+      "emoji": "🤫",
+      "level": 3
     },
     {
       "id": "core.oops",
@@ -1119,7 +1242,8 @@
       "category": "social",
       "row": 15,
       "col": 7,
-      "emoji": "😅"
+      "emoji": "😅",
+      "level": 3
     },
     {
       "id": "core.bad",
@@ -1128,7 +1252,8 @@
       "category": "descriptors",
       "row": 16,
       "col": 0,
-      "emoji": "😖"
+      "emoji": "😖",
+      "level": 1
     },
     {
       "id": "core.hot",
@@ -1137,7 +1262,8 @@
       "category": "descriptors",
       "row": 16,
       "col": 1,
-      "emoji": "🔥"
+      "emoji": "🔥",
+      "level": 2
     },
     {
       "id": "core.cold",
@@ -1146,7 +1272,8 @@
       "category": "descriptors",
       "row": 16,
       "col": 2,
-      "emoji": "❄️"
+      "emoji": "❄️",
+      "level": 2
     },
     {
       "id": "core.fast",
@@ -1155,7 +1282,8 @@
       "category": "descriptors",
       "row": 16,
       "col": 3,
-      "emoji": "⚡"
+      "emoji": "⚡",
+      "level": 2
     },
     {
       "id": "core.slow",
@@ -1164,7 +1292,8 @@
       "category": "descriptors",
       "row": 16,
       "col": 4,
-      "emoji": "🐌"
+      "emoji": "🐌",
+      "level": 2
     },
     {
       "id": "core.new",
@@ -1173,7 +1302,8 @@
       "category": "descriptors",
       "row": 16,
       "col": 5,
-      "emoji": "🆕"
+      "emoji": "🆕",
+      "level": 2
     },
     {
       "id": "core.old",
@@ -1182,7 +1312,8 @@
       "category": "descriptors",
       "row": 16,
       "col": 6,
-      "emoji": "🏚️"
+      "emoji": "🏚️",
+      "level": 2
     },
     {
       "id": "core.cleand",
@@ -1191,7 +1322,8 @@
       "category": "descriptors",
       "row": 16,
       "col": 7,
-      "emoji": "✨"
+      "emoji": "✨",
+      "level": 2
     },
     {
       "id": "core.dirty",
@@ -1200,7 +1332,8 @@
       "category": "descriptors",
       "row": 17,
       "col": 0,
-      "emoji": "🦠"
+      "emoji": "🦠",
+      "level": 2
     },
     {
       "id": "core.wet",
@@ -1209,7 +1342,8 @@
       "category": "descriptors",
       "row": 17,
       "col": 1,
-      "emoji": "💦"
+      "emoji": "💦",
+      "level": 2
     },
     {
       "id": "core.dry",
@@ -1218,7 +1352,8 @@
       "category": "descriptors",
       "row": 17,
       "col": 2,
-      "emoji": "🏜️"
+      "emoji": "🏜️",
+      "level": 3
     },
     {
       "id": "core.loud",
@@ -1227,7 +1362,8 @@
       "category": "descriptors",
       "row": 17,
       "col": 3,
-      "emoji": "📢"
+      "emoji": "📢",
+      "level": 3
     },
     {
       "id": "core.funny",
@@ -1236,7 +1372,8 @@
       "category": "descriptors",
       "row": 17,
       "col": 4,
-      "emoji": "🤣"
+      "emoji": "🤣",
+      "level": 2
     },
     {
       "id": "core.easy",
@@ -1245,7 +1382,8 @@
       "category": "descriptors",
       "row": 17,
       "col": 5,
-      "emoji": "🙂"
+      "emoji": "🙂",
+      "level": 3
     },
     {
       "id": "core.hard",
@@ -1254,7 +1392,8 @@
       "category": "descriptors",
       "row": 17,
       "col": 6,
-      "emoji": "😓"
+      "emoji": "😓",
+      "level": 3
     },
     {
       "id": "core.same",
@@ -1263,7 +1402,8 @@
       "category": "descriptors",
       "row": 17,
       "col": 7,
-      "emoji": "🟰"
+      "emoji": "🟰",
+      "level": 3
     },
     {
       "id": "core.different",
@@ -1272,7 +1412,8 @@
       "category": "descriptors",
       "row": 18,
       "col": 0,
-      "emoji": "🆚"
+      "emoji": "🆚",
+      "level": 3
     },
     {
       "id": "core.all",
@@ -1281,7 +1422,8 @@
       "category": "descriptors",
       "row": 18,
       "col": 1,
-      "emoji": "💯"
+      "emoji": "💯",
+      "level": 2
     },
     {
       "id": "core.some",
@@ -1290,7 +1432,8 @@
       "category": "descriptors",
       "row": 18,
       "col": 2,
-      "emoji": "🥄"
+      "emoji": "🥄",
+      "level": 2
     },
     {
       "id": "core.pretty",
@@ -1299,7 +1442,8 @@
       "category": "descriptors",
       "row": 18,
       "col": 3,
-      "emoji": "🌸"
+      "emoji": "🌸",
+      "level": 3
     },
     {
       "id": "core.soft",
@@ -1308,7 +1452,8 @@
       "category": "descriptors",
       "row": 18,
       "col": 4,
-      "emoji": "☁️"
+      "emoji": "☁️",
+      "level": 3
     },
     {
       "id": "core.strong",
@@ -1317,7 +1462,8 @@
       "category": "descriptors",
       "row": 18,
       "col": 5,
-      "emoji": "🦾"
+      "emoji": "🦾",
+      "level": 3
     },
     {
       "id": "core.heavy",
@@ -1326,7 +1472,8 @@
       "category": "descriptors",
       "row": 18,
       "col": 6,
-      "emoji": "🏋️"
+      "emoji": "🏋️",
+      "level": 3
     },
     {
       "id": "core.light",
@@ -1335,7 +1482,8 @@
       "category": "descriptors",
       "row": 18,
       "col": 7,
-      "emoji": "🔦"
+      "emoji": "🔦",
+      "level": 3
     },
     {
       "id": "core.dark",
@@ -1344,7 +1492,8 @@
       "category": "descriptors",
       "row": 19,
       "col": 0,
-      "emoji": "🌃"
+      "emoji": "🌃",
+      "level": 3
     },
     {
       "id": "core.bright",
@@ -1353,7 +1502,8 @@
       "category": "descriptors",
       "row": 19,
       "col": 1,
-      "emoji": "☀️"
+      "emoji": "☀️",
+      "level": 3
     },
     {
       "id": "core.sweet",
@@ -1362,7 +1512,8 @@
       "category": "descriptors",
       "row": 19,
       "col": 2,
-      "emoji": "🍬"
+      "emoji": "🍬",
+      "level": 3
     },
     {
       "id": "core.tired",
@@ -1371,7 +1522,8 @@
       "category": "descriptors",
       "row": 19,
       "col": 3,
-      "emoji": "🥱"
+      "emoji": "🥱",
+      "level": 2
     },
     {
       "id": "core.sick",
@@ -1380,7 +1532,8 @@
       "category": "descriptors",
       "row": 19,
       "col": 4,
-      "emoji": "🤧"
+      "emoji": "🤧",
+      "level": 2
     },
     {
       "id": "core.favorite",
@@ -1389,7 +1542,8 @@
       "category": "descriptors",
       "row": 19,
       "col": 5,
-      "emoji": "⭐"
+      "emoji": "⭐",
+      "level": 2
     },
     {
       "id": "core.scary",
@@ -1398,7 +1552,8 @@
       "category": "descriptors",
       "row": 19,
       "col": 6,
-      "emoji": "👻"
+      "emoji": "👻",
+      "level": 3
     },
     {
       "id": "core.hungryd",
@@ -1407,7 +1562,8 @@
       "category": "descriptors",
       "row": 19,
       "col": 7,
-      "emoji": "😋"
+      "emoji": "😋",
+      "level": 2
     },
     {
       "id": "core.why",
@@ -1416,7 +1572,8 @@
       "category": "questions",
       "row": 20,
       "col": 0,
-      "emoji": "🤷"
+      "emoji": "🤷",
+      "level": 2
     },
     {
       "id": "core.which",
@@ -1425,7 +1582,8 @@
       "category": "questions",
       "row": 20,
       "col": 1,
-      "emoji": "🅰️"
+      "emoji": "🅰️",
+      "level": 3
     },
     {
       "id": "core.whose",
@@ -1434,7 +1592,8 @@
       "category": "questions",
       "row": 20,
       "col": 2,
-      "emoji": "🅱️"
+      "emoji": "🅱️",
+      "level": 3
     },
     {
       "id": "core.now",
@@ -1443,7 +1602,8 @@
       "category": "questions",
       "row": 20,
       "col": 3,
-      "emoji": "⏰"
+      "emoji": "⏰",
+      "level": 2
     },
     {
       "id": "core.later",
@@ -1452,7 +1612,8 @@
       "category": "questions",
       "row": 20,
       "col": 4,
-      "emoji": "🕑"
+      "emoji": "🕑",
+      "level": 2
     },
     {
       "id": "core.today",
@@ -1461,7 +1622,8 @@
       "category": "questions",
       "row": 20,
       "col": 5,
-      "emoji": "📅"
+      "emoji": "📅",
+      "level": 2
     },
     {
       "id": "core.tomorrow",
@@ -1470,7 +1632,8 @@
       "category": "questions",
       "row": 20,
       "col": 6,
-      "emoji": "🌄"
+      "emoji": "🌄",
+      "level": 3
     },
     {
       "id": "core.yesterday",
@@ -1479,7 +1642,8 @@
       "category": "questions",
       "row": 20,
       "col": 7,
-      "emoji": "🌇"
+      "emoji": "🌇",
+      "level": 3
     },
     {
       "id": "core.left",
@@ -1488,7 +1652,8 @@
       "category": "places",
       "row": 21,
       "col": 0,
-      "emoji": "◀️"
+      "emoji": "◀️",
+      "level": 3
     },
     {
       "id": "core.right",
@@ -1497,7 +1662,8 @@
       "category": "places",
       "row": 21,
       "col": 1,
-      "emoji": "▶️"
+      "emoji": "▶️",
+      "level": 3
     },
     {
       "id": "core.front",
@@ -1506,7 +1672,8 @@
       "category": "places",
       "row": 21,
       "col": 2,
-      "emoji": "🔼"
+      "emoji": "🔼",
+      "level": 3
     },
     {
       "id": "core.back",
@@ -1515,7 +1682,8 @@
       "category": "places",
       "row": 21,
       "col": 3,
-      "emoji": "🔽"
+      "emoji": "🔽",
+      "level": 3
     },
     {
       "id": "core.near",
@@ -1524,7 +1692,8 @@
       "category": "places",
       "row": 21,
       "col": 4,
-      "emoji": "🧲"
+      "emoji": "🧲",
+      "level": 2
     },
     {
       "id": "core.far",
@@ -1533,7 +1702,8 @@
       "category": "places",
       "row": 21,
       "col": 5,
-      "emoji": "🔭"
+      "emoji": "🔭",
+      "level": 2
     },
     {
       "id": "core.home",
@@ -1542,7 +1712,8 @@
       "category": "places",
       "row": 21,
       "col": 6,
-      "emoji": "🏠"
+      "emoji": "🏠",
+      "level": 2
     },
     {
       "id": "core.school",
@@ -1551,7 +1722,8 @@
       "category": "places",
       "row": 21,
       "col": 7,
-      "emoji": "🏫"
+      "emoji": "🏫",
+      "level": 2
     },
     {
       "id": "core.store",
@@ -1560,7 +1732,8 @@
       "category": "places",
       "row": 22,
       "col": 0,
-      "emoji": "🏪"
+      "emoji": "🏪",
+      "level": 3
     },
     {
       "id": "core.car",
@@ -1569,7 +1742,8 @@
       "category": "places",
       "row": 22,
       "col": 1,
-      "emoji": "🚗"
+      "emoji": "🚗",
+      "level": 2
     },
     {
       "id": "core.bus",
@@ -1578,7 +1752,8 @@
       "category": "places",
       "row": 22,
       "col": 2,
-      "emoji": "🚌"
+      "emoji": "🚌",
+      "level": 3
     },
     {
       "id": "core.church",
@@ -1587,7 +1762,8 @@
       "category": "places",
       "row": 22,
       "col": 3,
-      "emoji": "⛪"
+      "emoji": "⛪",
+      "level": 3
     },
     {
       "id": "core.bathroom",
@@ -1596,7 +1772,8 @@
       "category": "places",
       "row": 22,
       "col": 4,
-      "emoji": "🚻"
+      "emoji": "🚻",
+      "level": 2
     },
     {
       "id": "core.bedroom",
@@ -1605,7 +1782,8 @@
       "category": "places",
       "row": 22,
       "col": 5,
-      "emoji": "🛏️"
+      "emoji": "🛏️",
+      "level": 3
     },
     {
       "id": "core.zoo",
@@ -1614,7 +1792,8 @@
       "category": "places",
       "row": 22,
       "col": 6,
-      "emoji": "🦁"
+      "emoji": "🦁",
+      "level": 3
     },
     {
       "id": "core.beach",
@@ -1623,7 +1802,8 @@
       "category": "places",
       "row": 22,
       "col": 7,
-      "emoji": "🏖️"
+      "emoji": "🏖️",
+      "level": 3
     },
     {
       "id": "core.a",
@@ -1632,7 +1812,8 @@
       "category": "little",
       "row": 23,
       "col": 0,
-      "emoji": "🔹"
+      "emoji": "🔹",
+      "level": 2
     },
     {
       "id": "core.the",
@@ -1641,7 +1822,8 @@
       "category": "little",
       "row": 23,
       "col": 1,
-      "emoji": "🔷"
+      "emoji": "🔷",
+      "level": 2
     },
     {
       "id": "core.and",
@@ -1650,7 +1832,8 @@
       "category": "little",
       "row": 23,
       "col": 2,
-      "emoji": "🔗"
+      "emoji": "🔗",
+      "level": 2
     },
     {
       "id": "core.but",
@@ -1659,7 +1842,8 @@
       "category": "little",
       "row": 23,
       "col": 3,
-      "emoji": "⛔"
+      "emoji": "⛔",
+      "level": 2
     },
     {
       "id": "core.or",
@@ -1668,7 +1852,8 @@
       "category": "little",
       "row": 23,
       "col": 4,
-      "emoji": "⁉️"
+      "emoji": "⁉️",
+      "level": 3
     },
     {
       "id": "core.because",
@@ -1677,7 +1862,8 @@
       "category": "little",
       "row": 23,
       "col": 5,
-      "emoji": "💬"
+      "emoji": "💬",
+      "level": 3
     },
     {
       "id": "core.with",
@@ -1686,7 +1872,8 @@
       "category": "little",
       "row": 23,
       "col": 6,
-      "emoji": "🤝"
+      "emoji": "🤝",
+      "level": 2
     },
     {
       "id": "core.for",
@@ -1695,7 +1882,8 @@
       "category": "little",
       "row": 23,
       "col": 7,
-      "emoji": "🎁"
+      "emoji": "🎁",
+      "level": 3
     },
     {
       "id": "core.to",
@@ -1704,7 +1892,8 @@
       "category": "little",
       "row": 24,
       "col": 0,
-      "emoji": "➡️"
+      "emoji": "➡️",
+      "level": 2
     },
     {
       "id": "core.from",
@@ -1713,7 +1902,8 @@
       "category": "little",
       "row": 24,
       "col": 1,
-      "emoji": "⬅️"
+      "emoji": "⬅️",
+      "level": 3
     },
     {
       "id": "core.very",
@@ -1722,7 +1912,8 @@
       "category": "little",
       "row": 24,
       "col": 2,
-      "emoji": "💯"
+      "emoji": "💯",
+      "level": 2
     },
     {
       "id": "core.too",
@@ -1731,7 +1922,8 @@
       "category": "little",
       "row": 24,
       "col": 3,
-      "emoji": "➕"
+      "emoji": "➕",
+      "level": 3
     },
     {
       "id": "core.just",
@@ -1740,7 +1932,8 @@
       "category": "little",
       "row": 24,
       "col": 4,
-      "emoji": "1️⃣"
+      "emoji": "1️⃣",
+      "level": 3
     },
     {
       "id": "core.only",
@@ -1749,7 +1942,8 @@
       "category": "little",
       "row": 24,
       "col": 5,
-      "emoji": "☝️"
+      "emoji": "☝️",
+      "level": 3
     },
     {
       "id": "core.about",
@@ -1758,7 +1952,8 @@
       "category": "little",
       "row": 24,
       "col": 6,
-      "emoji": "💭"
+      "emoji": "💭",
+      "level": 3
     },
     {
       "id": "core.every",
@@ -1767,7 +1962,8 @@
       "category": "little",
       "row": 24,
       "col": 7,
-      "emoji": "🔁"
+      "emoji": "🔁",
+      "level": 3
     },
     {
       "id": "core.dog",
@@ -1776,7 +1972,8 @@
       "category": "animals",
       "row": 25,
       "col": 0,
-      "emoji": "🐶"
+      "emoji": "🐶",
+      "level": 2
     },
     {
       "id": "core.cat",
@@ -1785,7 +1982,8 @@
       "category": "animals",
       "row": 25,
       "col": 1,
-      "emoji": "🐱"
+      "emoji": "🐱",
+      "level": 2
     },
     {
       "id": "core.bird",
@@ -1794,7 +1992,8 @@
       "category": "animals",
       "row": 25,
       "col": 2,
-      "emoji": "🐦"
+      "emoji": "🐦",
+      "level": 2
     },
     {
       "id": "core.fish",
@@ -1803,7 +2002,8 @@
       "category": "animals",
       "row": 25,
       "col": 3,
-      "emoji": "🐟"
+      "emoji": "🐟",
+      "level": 2
     },
     {
       "id": "core.horse",
@@ -1812,7 +2012,8 @@
       "category": "animals",
       "row": 25,
       "col": 4,
-      "emoji": "🐴"
+      "emoji": "🐴",
+      "level": 3
     },
     {
       "id": "core.cow",
@@ -1821,7 +2022,8 @@
       "category": "animals",
       "row": 25,
       "col": 5,
-      "emoji": "🐄"
+      "emoji": "🐄",
+      "level": 3
     },
     {
       "id": "core.pig",
@@ -1830,7 +2032,8 @@
       "category": "animals",
       "row": 25,
       "col": 6,
-      "emoji": "🐷"
+      "emoji": "🐷",
+      "level": 3
     },
     {
       "id": "core.duck",
@@ -1839,7 +2042,8 @@
       "category": "animals",
       "row": 25,
       "col": 7,
-      "emoji": "🦆"
+      "emoji": "🦆",
+      "level": 3
     },
     {
       "id": "core.frog",
@@ -1848,7 +2052,8 @@
       "category": "animals",
       "row": 26,
       "col": 0,
-      "emoji": "🐸"
+      "emoji": "🐸",
+      "level": 3
     },
     {
       "id": "core.monkey",
@@ -1857,7 +2062,8 @@
       "category": "animals",
       "row": 26,
       "col": 1,
-      "emoji": "🐵"
+      "emoji": "🐵",
+      "level": 3
     },
     {
       "id": "core.lion",
@@ -1866,7 +2072,8 @@
       "category": "animals",
       "row": 26,
       "col": 2,
-      "emoji": "🦁"
+      "emoji": "🦁",
+      "level": 3
     },
     {
       "id": "core.bear",
@@ -1875,7 +2082,8 @@
       "category": "animals",
       "row": 26,
       "col": 3,
-      "emoji": "🐻"
+      "emoji": "🐻",
+      "level": 3
     },
     {
       "id": "core.butterfly",
@@ -1884,7 +2092,8 @@
       "category": "animals",
       "row": 26,
       "col": 4,
-      "emoji": "🦋"
+      "emoji": "🦋",
+      "level": 3
     },
     {
       "id": "core.spider",
@@ -1893,7 +2102,8 @@
       "category": "animals",
       "row": 26,
       "col": 5,
-      "emoji": "🕷️"
+      "emoji": "🕷️",
+      "level": 3
     },
     {
       "id": "core.snake",
@@ -1902,7 +2112,8 @@
       "category": "animals",
       "row": 26,
       "col": 6,
-      "emoji": "🐍"
+      "emoji": "🐍",
+      "level": 3
     },
     {
       "id": "core.red",
@@ -1911,7 +2122,8 @@
       "category": "descriptors",
       "row": 26,
       "col": 7,
-      "emoji": "🔴"
+      "emoji": "🔴",
+      "level": 2
     },
     {
       "id": "core.blue",
@@ -1920,7 +2132,8 @@
       "category": "descriptors",
       "row": 27,
       "col": 0,
-      "emoji": "🔵"
+      "emoji": "🔵",
+      "level": 2
     },
     {
       "id": "core.green",
@@ -1929,7 +2142,8 @@
       "category": "descriptors",
       "row": 27,
       "col": 1,
-      "emoji": "🟢"
+      "emoji": "🟢",
+      "level": 2
     },
     {
       "id": "core.yellow",
@@ -1938,7 +2152,8 @@
       "category": "descriptors",
       "row": 27,
       "col": 2,
-      "emoji": "🟡"
+      "emoji": "🟡",
+      "level": 2
     },
     {
       "id": "core.orange",
@@ -1947,7 +2162,8 @@
       "category": "descriptors",
       "row": 27,
       "col": 3,
-      "emoji": "🟠"
+      "emoji": "🟠",
+      "level": 2
     },
     {
       "id": "core.purple",
@@ -1956,7 +2172,8 @@
       "category": "descriptors",
       "row": 27,
       "col": 4,
-      "emoji": "🟣"
+      "emoji": "🟣",
+      "level": 2
     },
     {
       "id": "core.pink",
@@ -1965,7 +2182,8 @@
       "category": "descriptors",
       "row": 27,
       "col": 5,
-      "emoji": "🌸"
+      "emoji": "🌸",
+      "level": 2
     },
     {
       "id": "core.brown",
@@ -1974,7 +2192,8 @@
       "category": "descriptors",
       "row": 27,
       "col": 6,
-      "emoji": "🟤"
+      "emoji": "🟤",
+      "level": 2
     },
     {
       "id": "core.black",
@@ -1983,7 +2202,8 @@
       "category": "descriptors",
       "row": 27,
       "col": 7,
-      "emoji": "⚫"
+      "emoji": "⚫",
+      "level": 2
     },
     {
       "id": "core.white",
@@ -1992,7 +2212,8 @@
       "category": "descriptors",
       "row": 28,
       "col": 0,
-      "emoji": "⚪"
+      "emoji": "⚪",
+      "level": 2
     },
     {
       "id": "core.gray",
@@ -2001,7 +2222,8 @@
       "category": "descriptors",
       "row": 28,
       "col": 1,
-      "emoji": "🌫️"
+      "emoji": "🌫️",
+      "level": 2
     },
     {
       "id": "core.one",
@@ -2010,7 +2232,8 @@
       "category": "descriptors",
       "row": 28,
       "col": 2,
-      "emoji": "1️⃣"
+      "emoji": "1️⃣",
+      "level": 2
     },
     {
       "id": "core.two",
@@ -2019,7 +2242,8 @@
       "category": "descriptors",
       "row": 28,
       "col": 3,
-      "emoji": "2️⃣"
+      "emoji": "2️⃣",
+      "level": 2
     },
     {
       "id": "core.three",
@@ -2028,7 +2252,8 @@
       "category": "descriptors",
       "row": 28,
       "col": 4,
-      "emoji": "3️⃣"
+      "emoji": "3️⃣",
+      "level": 2
     },
     {
       "id": "core.four",
@@ -2037,7 +2262,8 @@
       "category": "descriptors",
       "row": 28,
       "col": 5,
-      "emoji": "4️⃣"
+      "emoji": "4️⃣",
+      "level": 2
     },
     {
       "id": "core.five",
@@ -2046,7 +2272,8 @@
       "category": "descriptors",
       "row": 28,
       "col": 6,
-      "emoji": "5️⃣"
+      "emoji": "5️⃣",
+      "level": 2
     },
     {
       "id": "core.six",
@@ -2055,7 +2282,8 @@
       "category": "descriptors",
       "row": 28,
       "col": 7,
-      "emoji": "6️⃣"
+      "emoji": "6️⃣",
+      "level": 2
     },
     {
       "id": "core.seven",
@@ -2064,7 +2292,8 @@
       "category": "descriptors",
       "row": 29,
       "col": 0,
-      "emoji": "7️⃣"
+      "emoji": "7️⃣",
+      "level": 2
     },
     {
       "id": "core.eight",
@@ -2073,7 +2302,8 @@
       "category": "descriptors",
       "row": 29,
       "col": 1,
-      "emoji": "8️⃣"
+      "emoji": "8️⃣",
+      "level": 2
     },
     {
       "id": "core.nine",
@@ -2082,7 +2312,8 @@
       "category": "descriptors",
       "row": 29,
       "col": 2,
-      "emoji": "9️⃣"
+      "emoji": "9️⃣",
+      "level": 2
     },
     {
       "id": "core.ten",
@@ -2091,7 +2322,8 @@
       "category": "descriptors",
       "row": 29,
       "col": 3,
-      "emoji": "🔟"
+      "emoji": "🔟",
+      "level": 2
     },
     {
       "id": "core.library",
@@ -2100,7 +2332,8 @@
       "category": "places",
       "row": 29,
       "col": 4,
-      "emoji": "📚"
+      "emoji": "📚",
+      "level": 3
     },
     {
       "id": "core.playground",
@@ -2109,7 +2342,8 @@
       "category": "places",
       "row": 29,
       "col": 5,
-      "emoji": "🛝"
+      "emoji": "🛝",
+      "level": 2
     },
     {
       "id": "core.restaurant",
@@ -2118,7 +2352,8 @@
       "category": "places",
       "row": 29,
       "col": 6,
-      "emoji": "🍽️"
+      "emoji": "🍽️",
+      "level": 3
     },
     {
       "id": "core.pool",
@@ -2127,7 +2362,8 @@
       "category": "places",
       "row": 29,
       "col": 7,
-      "emoji": "🏊"
+      "emoji": "🏊",
+      "level": 2
     },
     {
       "id": "core.farm",
@@ -2136,7 +2372,8 @@
       "category": "places",
       "row": 30,
       "col": 0,
-      "emoji": "🚜"
+      "emoji": "🚜",
+      "level": 3
     },
     {
       "id": "core.garden",
@@ -2145,7 +2382,8 @@
       "category": "places",
       "row": 30,
       "col": 1,
-      "emoji": "🌷"
+      "emoji": "🌷",
+      "level": 3
     },
     {
       "id": "core.museum",
@@ -2154,7 +2392,8 @@
       "category": "places",
       "row": 30,
       "col": 2,
-      "emoji": "🏛️"
+      "emoji": "🏛️",
+      "level": 3
     },
     {
       "id": "core.cinema",
@@ -2163,7 +2402,8 @@
       "category": "places",
       "row": 30,
       "col": 3,
-      "emoji": "🎬"
+      "emoji": "🎬",
+      "level": 3
     },
     {
       "id": "core.grapes",
@@ -2172,7 +2412,8 @@
       "category": "food",
       "row": 30,
       "col": 4,
-      "emoji": "🍇"
+      "emoji": "🍇",
+      "level": 3
     },
     {
       "id": "core.strawberry",
@@ -2181,7 +2422,8 @@
       "category": "food",
       "row": 30,
       "col": 5,
-      "emoji": "🍓"
+      "emoji": "🍓",
+      "level": 3
     },
     {
       "id": "core.carrot",
@@ -2190,7 +2432,8 @@
       "category": "food",
       "row": 30,
       "col": 6,
-      "emoji": "🥕"
+      "emoji": "🥕",
+      "level": 3
     },
     {
       "id": "core.icecream",
@@ -2199,7 +2442,8 @@
       "category": "food",
       "row": 30,
       "col": 7,
-      "emoji": "🍦"
+      "emoji": "🍦",
+      "level": 2
     },
     {
       "id": "core.cake",
@@ -2208,7 +2452,8 @@
       "category": "food",
       "row": 31,
       "col": 0,
-      "emoji": "🍰"
+      "emoji": "🍰",
+      "level": 2
     },
     {
       "id": "core.sandwich",
@@ -2217,7 +2462,8 @@
       "category": "food",
       "row": 31,
       "col": 1,
-      "emoji": "🥪"
+      "emoji": "🥪",
+      "level": 3
     }
   ],
   "folders": {
@@ -2228,62 +2474,74 @@
         {
           "id": "feel.excited",
           "label": "emocionado",
-          "emoji": "🤩"
+          "emoji": "🤩",
+          "level": 1
         },
         {
           "id": "feel.scared",
           "label": "asustado",
-          "emoji": "😨"
+          "emoji": "😨",
+          "level": 1
         },
         {
           "id": "feel.angry",
           "label": "enojado",
-          "emoji": "😠"
+          "emoji": "😠",
+          "level": 1
         },
         {
           "id": "feel.tired",
           "label": "cansado",
-          "emoji": "😴"
+          "emoji": "😴",
+          "level": 1
         },
         {
           "id": "feel.sick",
           "label": "enfermo",
-          "emoji": "🤒"
+          "emoji": "🤒",
+          "level": 1
         },
         {
           "id": "feel.hurt",
           "label": "lastimado",
-          "emoji": "🤕"
+          "emoji": "🤕",
+          "level": 1
         },
         {
           "id": "feel.calm",
           "label": "tranquilo",
-          "emoji": "😌"
+          "emoji": "😌",
+          "level": 2
         },
         {
           "id": "feel.silly",
           "label": "gracioso",
-          "emoji": "🤪"
+          "emoji": "🤪",
+          "level": 3
         },
         {
           "id": "feel.love",
           "label": "amor",
-          "emoji": "❤️"
+          "emoji": "❤️",
+          "level": 2
         },
         {
           "id": "feel.proud",
           "label": "orgulloso",
-          "emoji": "😄"
+          "emoji": "😄",
+          "level": 2
         },
         {
           "id": "feel.bored",
           "label": "aburrido",
-          "emoji": "🥱"
+          "emoji": "🥱",
+          "level": 2
         },
         {
           "id": "feel.brave",
           "label": "valiente",
-          "emoji": "🦁"
+          "emoji": "🦁",
+          "level": 3
         }
       ]
     },
@@ -2294,72 +2552,86 @@
         {
           "id": "food.apple",
           "label": "manzana",
-          "emoji": "🍎"
+          "emoji": "🍎",
+          "level": 1
         },
         {
           "id": "food.banana",
           "label": "plátano",
-          "emoji": "🍌"
+          "emoji": "🍌",
+          "level": 2
         },
         {
           "id": "food.cookie",
           "label": "galleta",
-          "emoji": "🍪"
+          "emoji": "🍪",
+          "level": 1
         },
         {
           "id": "food.bread",
           "label": "pan",
-          "emoji": "🍞"
+          "emoji": "🍞",
+          "level": 2
         },
         {
           "id": "food.cheese",
           "label": "queso",
-          "emoji": "🧀"
+          "emoji": "🧀",
+          "level": 2
         },
         {
           "id": "food.egg",
           "label": "huevo",
-          "emoji": "🍳"
+          "emoji": "🍳",
+          "level": 2
         },
         {
           "id": "food.water",
           "label": "agua",
-          "emoji": "💧"
+          "emoji": "💧",
+          "level": 1
         },
         {
           "id": "food.milk",
           "label": "leche",
-          "emoji": "🥛"
+          "emoji": "🥛",
+          "level": 1
         },
         {
           "id": "food.juice",
           "label": "jugo",
-          "emoji": "🧃"
+          "emoji": "🧃",
+          "level": 1
         },
         {
           "id": "food.hungry",
           "label": "hambriento",
-          "emoji": "😋"
+          "emoji": "😋",
+          "level": 1
         },
         {
           "id": "food.thirsty",
           "label": "sediento",
-          "emoji": "🥤"
+          "emoji": "🥤",
+          "level": 1
         },
         {
           "id": "food.yucky",
           "label": "asqueroso",
-          "emoji": "🤢"
+          "emoji": "🤢",
+          "level": 2
         },
         {
           "id": "food.pizza",
           "label": "pizza",
-          "emoji": "🍕"
+          "emoji": "🍕",
+          "level": 2
         },
         {
           "id": "food.spaghetti",
           "label": "espagueti",
-          "emoji": "🍝"
+          "emoji": "🍝",
+          "level": 3
         }
       ]
     },
@@ -2370,62 +2642,74 @@
         {
           "id": "people.mom",
           "label": "mamá",
-          "emoji": "👩"
+          "emoji": "👩",
+          "level": 1
         },
         {
           "id": "people.dad",
           "label": "papá",
-          "emoji": "👨"
+          "emoji": "👨",
+          "level": 1
         },
         {
           "id": "people.grandma",
           "label": "abuela",
-          "emoji": "👵"
+          "emoji": "👵",
+          "level": 2
         },
         {
           "id": "people.grandpa",
           "label": "abuelo",
-          "emoji": "👴"
+          "emoji": "👴",
+          "level": 2
         },
         {
           "id": "people.sister",
           "label": "hermana",
-          "emoji": "👧"
+          "emoji": "👧",
+          "level": 2
         },
         {
           "id": "people.brother",
           "label": "hermano",
-          "emoji": "👦"
+          "emoji": "👦",
+          "level": 2
         },
         {
           "id": "people.friend",
           "label": "amigo",
-          "emoji": "🧑‍🤝‍🧑"
+          "emoji": "🧑‍🤝‍🧑",
+          "level": 2
         },
         {
           "id": "people.teacher",
           "label": "maestro",
-          "emoji": "🧑‍🏫"
+          "emoji": "🧑‍🏫",
+          "level": 2
         },
         {
           "id": "people.doctor",
           "label": "doctor",
-          "emoji": "🧑‍⚕️"
+          "emoji": "🧑‍⚕️",
+          "level": 3
         },
         {
           "id": "people.baby",
           "label": "bebé",
-          "emoji": "👶"
+          "emoji": "👶",
+          "level": 1
         },
         {
           "id": "people.cousin",
           "label": "primo",
-          "emoji": "🧒"
+          "emoji": "🧒",
+          "level": 3
         },
         {
           "id": "people.aunt",
           "label": "tía",
-          "emoji": "👩‍🦳"
+          "emoji": "👩‍🦳",
+          "level": 3
         }
       ]
     },
@@ -2436,62 +2720,74 @@
         {
           "id": "play.ball",
           "label": "pelota",
-          "emoji": "⚽"
+          "emoji": "⚽",
+          "level": 1
         },
         {
           "id": "play.toy",
           "label": "juguete",
-          "emoji": "🧸"
+          "emoji": "🧸",
+          "level": 1
         },
         {
           "id": "play.book",
           "label": "libro",
-          "emoji": "📖"
+          "emoji": "📖",
+          "level": 1
         },
         {
           "id": "play.game",
           "label": "juego",
-          "emoji": "🎮"
+          "emoji": "🎮",
+          "level": 2
         },
         {
           "id": "play.music",
           "label": "música",
-          "emoji": "🎵"
+          "emoji": "🎵",
+          "level": 2
         },
         {
           "id": "play.outside",
           "label": "afuera",
-          "emoji": "🌳"
+          "emoji": "🌳",
+          "level": 1
         },
         {
           "id": "play.park",
           "label": "parque",
-          "emoji": "🏞️"
+          "emoji": "🏞️",
+          "level": 2
         },
         {
           "id": "play.swim",
           "label": "nadar",
-          "emoji": "🏊"
+          "emoji": "🏊",
+          "level": 2
         },
         {
           "id": "play.draw",
           "label": "dibujar",
-          "emoji": "🎨"
+          "emoji": "🎨",
+          "level": 2
         },
         {
           "id": "play.tv",
           "label": "tele",
-          "emoji": "📺"
+          "emoji": "📺",
+          "level": 2
         },
         {
           "id": "play.puzzle",
           "label": "rompecabezas",
-          "emoji": "🧩"
+          "emoji": "🧩",
+          "level": 3
         },
         {
           "id": "play.slide",
           "label": "resbaladilla",
-          "emoji": "🛝"
+          "emoji": "🛝",
+          "level": 3
         }
       ]
     }

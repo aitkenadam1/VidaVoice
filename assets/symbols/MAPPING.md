@@ -214,3 +214,53 @@ Not visually QA-reviewed — same caveat as the first 50-word batch.
 - core.lesson ("lesson" via "lesson"): arasaac_id=34709 keyword="ethics and values class"
 - core.student ("student" via "student"): arasaac_id=5899 keyword="student"
 - core.count ("count" via "count"): arasaac_id=2714 keyword="count"
+
+## Visual QA review 2026-09-14 (atlas/overnight-features) — batch-1 + batch-2 new symbols
+
+REVIEW ONLY. No image files or JSON packs were changed. All 90 first-search-hit
+symbols from the two expansion batches were visually reviewed against their
+words. 79 keep, 11 flagged below. Verdicts:
+- keep — reads clearly as the word.
+- replace-after-test — wrong or ambiguous; swap the image after Adam's 9am
+  test (do not touch before then).
+
+### Batch 1 (50 words) — findings
+- core.five: replace-after-test — digital clock reading "17:00"; reads as
+  "time/clock", not the number five. Siblings (one/two/three/four/six/seven/
+  eight/nine/ten) all use plain numerals; use a "5" numeral for consistency.
+- core.icecream: replace-after-test — outline-only popsicle with no fill;
+  reads okay but inconsistent with the filled symbol set. Find a filled
+  ice-cream symbol.
+- All other 48 batch-1 symbols: keep. (Color words use a consistent paint-splat
+  set; core.ten pairs the "10" numeral with ten fingers — good.)
+
+### Batch 2 (40 words) — findings
+- core.taste: replace-after-test — tongue + chili pepper (keyword "spicy");
+  reads as "spicy/hot", not "taste".
+- core.stay: replace-after-test — house with person in bed, sun + moon
+  (keyword "half-stay unit"); reads as "sleep/night", not "stay (remain)".
+- core.catch: replace-after-test — policeman arresting a striped thief
+  (keyword "arrest"); reads as "police/arrest", not "catch (a ball)".
+- core.throw: replace-after-test — hand shaking a die from a cup (keyword
+  "roll the die"); reads as "dice", not "throw".
+- core.wash: replace-after-test — car going through a car wash (keyword "wash
+  the car"); the word is "wash" (hands). Find a "wash hands" symbol.
+- core.wave: replace-after-test — tsunami wave over a city (keyword
+  "seaquake"); reads as "tsunami", not "wave hello".
+- core.empty: replace-after-test — box of circles beside a U-shaped outline;
+  confusing, does not read as "empty". Find a clear empty-container symbol.
+- core.round: replace-after-test — merry-go-round (keyword "ride on a
+  merry-go-round"); reads as "carousel", not the shape "round". Find a plain
+  circle/round-shape symbol.
+- core.desk: replace-after-test — two yellow KEYS on a ring (keyword "front
+  desk" — hotel front desk, wrong concept entirely); reads as "keys", not a
+  desk. Find a school/work desk symbol.
+- Observation (keep, no action): core.bring and core.carry are visually
+  similar (both stick figures carrying something) but distinguishable —
+  bring has a ball + direction arrow, carry has a box.
+- All other 31 batch-2 symbols: keep.
+
+### Pre-existing known issues (unchanged, for reference)
+- core.try still depicts a courtroom "trial"; core.just still uses justice
+  scales; core.about still uses a roundabout sign. No satisfactory ARASAAC
+  replacements found yet.

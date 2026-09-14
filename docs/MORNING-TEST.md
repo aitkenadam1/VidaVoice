@@ -75,6 +75,13 @@ mode first if you want to prove it.
 8. **Most used words.** Go back to **Caregiver** → scroll to
    **Most used words**. The words you tapped in steps 2–5 should be
    listed, most-tapped first, with counts.
+9. **Vocabulary levels.** In **Caregiver** → **Vocabulary level**, choose
+   **Level 1 — Starter**. Go back to the word board: you should see far
+   fewer words, and the locked ones are blank cells — nothing moved
+   position. Open a folder: some words inside are blank too, but never
+   the folder tiles themselves. Now set **Level 2**, then **Level 3**:
+   more words fill into the blanks each time, and every word you could
+   already see is exactly where it was.
 
 ## Part 4 — What to write down
 

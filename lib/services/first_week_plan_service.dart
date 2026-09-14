@@ -30,7 +30,8 @@ const List<PlanDay> firstWeekPlan = [
     body: 'Use VidaVoice to talk WITH them, not test them. They learn by '
         'watching you use it — not by being quizzed on it.',
     tryIt: 'At the next meal, tap \u201cI want\u201d + a food on the app yourself '
-        'before handing anything over. Do it 3 times today.',
+        'before handing anything over. Do it 3 times today. Don\u2019t ask them '
+        'to tap anything at all \u2014 today is for watching.',
   ),
   PlanDay(
     day: 2,
@@ -38,7 +39,7 @@ const List<PlanDay> firstWeekPlan = [
     body: 'Talk about whatever has their attention right now — not what you '
         'wish they\u2019d notice. Attention is where learning happens.',
     tryIt: 'Watch what they look at for 2 minutes. Model 5 words about '
-        'exactly that thing on the app.',
+        'exactly that thing on the app \u2014 even if it\u2019s the ceiling fan.',
   ),
   PlanDay(
     day: 3,
@@ -53,8 +54,9 @@ const List<PlanDay> firstWeekPlan = [
     title: 'Presume competence',
     body: 'Talk about everything, all day — feelings, jokes, plans — exactly '
         'like you would with any child. Don\u2019t limit topics to needs and wants.',
-    tryIt: 'Model something fun on the app 3 times today: a joke, a plan, '
-        'a feeling. Nothing to do with asking for things.',
+    tryIt: 'Model one word today that is NOT a want or a need \u2014 try '
+        '\u201cfunny\u201d, \u201cmy turn\u201d, \u201cuh-oh\u201d or \u201csilly\u201d. '
+        'Comment on something instead of asking for it.',
   ),
   PlanDay(
     day: 5,
@@ -62,7 +64,8 @@ const List<PlanDay> firstWeekPlan = [
     body: 'After you model, silently count to 10. Processing takes time — '
         'don\u2019t rush to fill the silence or answer for them.',
     tryIt: 'After every model today, count silently to 10 before saying '
-        'anything else. Practice it 5 times.',
+        'anything else. Practice it 5 times. It will feel much longer '
+        'than it is.',
   ),
   PlanDay(
     day: 6,

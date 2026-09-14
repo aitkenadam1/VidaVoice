@@ -32,7 +32,10 @@ class TtsService {
     this.rate = rate;
     this.pitch = pitch;
     try {
-      await _engine.setSharedInstance(true);
+      // iOS/macOS-only API (no-op on Android). The web plugin does not
+      // implement it and throws Unimplemented — which must not poison init
+      // on web, so it is skipped there.
+      if (!kIsWeb) await _engine.setSharedInstance(true);
       // Web quirk: speechSynthesis.getVoices() returns an empty list until
       // the browser fires voiceschanged (async, after page load). Without
       // this wait, the language binding below sees no voices and the probe

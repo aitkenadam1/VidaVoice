@@ -10,7 +10,7 @@ AAC app for nonverbal children and adults) from the v0.02 overnight build toward
 the MVP milestone defined in the blueprint.
 
 REPO / BRANCH STATE:
-- Project lives at ~/workspace/vidacare-aac/vidavoice/ (Flutter, stable channel).
+- Repo: https://github.com/aitkenadam1/VidaVoice — clone it (Flutter, stable channel).
 - Git repo initialized; v0.02 committed as 18f91eb ("VidaVoice v0.02..."),
   working tree clean. Work feature-by-feature on branches from here.
 - App name is FINAL: VidaVoice. Display name is centralized in
@@ -21,7 +21,7 @@ REPO / BRANCH STATE:
   unless rebranding.
 
 KEY FILE PATHS:
-- Product blueprint (read FIRST): ~/workspace/vidacare-aac/aac-app-blueprint.md
+- Product blueprint (read FIRST): docs/aac-app-blueprint.md
   (§3 phasing, §4 architecture, §5 symbols, §6 multilingual, §8 roadmap)
 - lib/app_config.dart — app identity, supportedLocales (en, es), voice defaults
 - assets/lang/en.json — THE vocabulary: 192 core words at FIXED grid positions

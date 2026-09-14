@@ -381,6 +381,14 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
                           setState(() {
                             if (isPinned) {
                               _pinned.remove(s.id);
+                              // Keep the invariant the help text promises:
+                              // pinned sections sit at the top.
+                              _order = [
+                                for (final id in _order)
+                                  if (_pinned.contains(id)) id,
+                                for (final id in _order)
+                                  if (!_pinned.contains(id)) id,
+                              ];
                             } else {
                               _pinToTop(s.id);
                             }
@@ -578,7 +586,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
           final profileId = session.profiles.active?.id;
           if (profileId == null) return 'A daily plan for week one';
           final done = session.plan.completedCount(profileId);
-          return 'First-week plan: $done of 7 days done';
+          return '$done of 7 days done';
         },
         content: (context, session, refresh) {
           final active = session.profiles.active;

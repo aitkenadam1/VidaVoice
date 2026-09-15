@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vidavoice/models/dashboard.dart';
 import 'package:vidavoice/models/word.dart';
+import 'package:vidavoice/services/dashboard_service.dart';
 import 'package:vidavoice/services/tts_service.dart';
 import 'package:vidavoice/state/session_state.dart';
 
@@ -111,5 +112,42 @@ void main() {
     expect(session.canRestoreDashboard, isFalse);
     session.restoreDashboard(); // must not throw
     expect(session.showDashboard, isFalse);
+  });
+
+  test('backfillLabels heals legacy cells whose word still resolves',
+      () async {
+    final tts = _RecordingTts();
+    final session = await makeSession(tts);
+    final profileId = session.profiles.active!.id;
+    final dashboard = session.dashboards.ensureFor(profileId);
+    dashboard.cells.addAll(const [
+      // Legacy 0a03d75 cell: wordId only, no stored label.
+      DashboardCell(id: 'legacy', wordId: 'core.want'),
+      // Word already gone: nothing to backfill from, must not throw.
+      DashboardCell(id: 'gone', wordId: 'nope.vanished'),
+      // Already has a label: untouched.
+      DashboardCell(id: 'kept', wordId: 'core.want', label: 'mine'),
+      // Custom button: untouched.
+      DashboardCell(id: 'custom', label: 'hi'),
+    ]);
+    await session.dashboards.save(dashboard);
+
+    await session.dashboards.backfillLabels(session.pack);
+
+    final cells = {for (final c in dashboard.cells) c.id: c};
+    final wantLabel = session.pack.wordById('core.want').label;
+    expect(cells['legacy']!.label, wantLabel);
+    expect(cells['gone']!.label, isEmpty);
+    expect(cells['kept']!.label, 'mine');
+    expect(cells['custom']!.label, 'hi');
+
+    // The heal persists: a fresh load (next boot) sees the stored label.
+    final fresh = DashboardService();
+    await fresh.load();
+    final reloaded = {
+      for (final c in fresh.forProfile(profileId)!.cells) c.id: c,
+    };
+    expect(reloaded['legacy']!.label, wantLabel);
+    expect(reloaded['gone']!.label, isEmpty);
   });
 }

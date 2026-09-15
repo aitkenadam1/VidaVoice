@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/dashboard.dart';
+import '../models/word.dart';
 
 /// Per-profile personal dashboards, persisted locally.
 ///
@@ -49,6 +50,40 @@ class DashboardService {
       for (final entry in _byProfile.entries) entry.key: entry.value.toJson(),
     };
     await prefs.setString(_kDashboards, json.encode(map));
+  }
+
+  /// One-time backfill for vocab cells stored before the label fallback
+  /// existed (B2): when a cell has a wordId but no stored label and the
+  /// word still resolves in [pack], store the label so the cell stays
+  /// speakable if the word ever leaves a later pack. Cells whose word is
+  /// already gone are left alone — nothing to backfill from. Persists
+  /// only when something changed; idempotent, safe to run every boot
+  /// (it also heals dashboards restored from profile backups).
+  Future<void> backfillLabels(LanguagePack pack) async {
+    var changed = false;
+    for (final dashboard in _byProfile.values) {
+      for (var i = 0; i < dashboard.cells.length; i++) {
+        final cell = dashboard.cells[i];
+        final wordId = cell.wordId;
+        if (wordId == null || cell.label.isNotEmpty) continue;
+        try {
+          final label = pack.wordById(wordId).label;
+          dashboard.cells[i] = DashboardCell(
+            id: cell.id,
+            wordId: cell.wordId,
+            label: label,
+            speakText: cell.speakText,
+            emoji: cell.emoji,
+            imageData: cell.imageData,
+            color: cell.color,
+          );
+          changed = true;
+        } on Object {
+          // Word already gone from this pack — nothing to backfill from.
+        }
+      }
+    }
+    if (changed) await _persist();
   }
 
   /// Returns the profile's dashboard, creating an empty one when needed.

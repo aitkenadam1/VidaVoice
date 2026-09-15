@@ -136,6 +136,9 @@ class SessionState extends ChangeNotifier {
       await symbols.load();
       await profiles.load();
       await dashboards.load();
+      // Heal pre-fallback cells (stored with wordId but no label) while
+      // their words still resolve — see DashboardService.backfillLabels.
+      await dashboards.backfillLabels(pack);
       await usage.load();
       await history.load(profiles.active?.id ?? '');
       await plan.load(profiles.active?.id ?? '');

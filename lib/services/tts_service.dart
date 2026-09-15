@@ -7,22 +7,27 @@ import '../app_config.dart';
 import 'elevenlabs_audio.dart';
 import 'elevenlabs_service.dart';
 import 'kokoro_tts_service.dart';
+import 'proxy_client.dart';
 
 /// A speakable voice exposed by the TTS engine.
 ///
-/// System voices come from flutter_tts ([kokoroVoiceId] and
-/// [elevenLabsVoiceId] are null). Kokoro voices are on-device neural voices
-/// ([kokoroVoiceId] is the voice id, e.g. 'af_bella'); they only appear
-/// when the Kokoro model pack is downloaded. ElevenLabs voices are cloud
-/// voices on the caregiver's own ElevenLabs account ([elevenLabsVoiceId]
-/// is the voice id); they need an API key and internet, and any failure
-/// falls back to the on-device voices.
+/// System voices come from flutter_tts ([kokoroVoiceId],
+/// [elevenLabsVoiceId] and [proxyVoiceId] are null). Kokoro voices are
+/// on-device neural voices ([kokoroVoiceId] is the voice id, e.g.
+/// 'af_bella'); they only appear when the Kokoro model pack is downloaded.
+/// ElevenLabs voices are cloud voices on the caregiver's own ElevenLabs
+/// account ([elevenLabsVoiceId] is the voice id); they need an API key and
+/// internet, and any failure falls back to the on-device voices. Managed
+/// ("included") cloud voices ([proxyVoiceId] is the opaque voice id from
+/// the family's proxy entitlement) need a signed-in VidaVoice account and
+/// internet; any failure falls back to the on-device voices.
 class TtsVoice {
   const TtsVoice({
     required this.name,
     required this.locale,
     this.kokoroVoiceId,
     this.elevenLabsVoiceId,
+    this.proxyVoiceId,
   });
 
   /// Engine voice name, e.g. "Microsoft David - English (United States)".
@@ -38,11 +43,18 @@ class TtsVoice {
   /// Non-null for ElevenLabs cloud voices.
   final String? elevenLabsVoiceId;
 
+  /// Non-null for managed ("included") cloud voices: the opaque voice id
+  /// from the family's proxy entitlement.
+  final String? proxyVoiceId;
+
   /// True for Kokoro on-device neural voices.
   bool get isKokoro => kokoroVoiceId != null;
 
   /// True for ElevenLabs cloud voices.
   bool get isElevenLabs => elevenLabsVoiceId != null;
+
+  /// True for managed ("included") cloud voices.
+  bool get isProxy => proxyVoiceId != null;
 
   @override
   bool operator ==(Object other) =>
@@ -51,11 +63,12 @@ class TtsVoice {
           name == other.name &&
           locale == other.locale &&
           kokoroVoiceId == other.kokoroVoiceId &&
-          elevenLabsVoiceId == other.elevenLabsVoiceId;
+          elevenLabsVoiceId == other.elevenLabsVoiceId &&
+          proxyVoiceId == other.proxyVoiceId;
 
   @override
   int get hashCode =>
-      Object.hash(name, locale, kokoroVoiceId, elevenLabsVoiceId);
+      Object.hash(name, locale, kokoroVoiceId, elevenLabsVoiceId, proxyVoiceId);
 
   @override
   String toString() => '$name ($locale)';
@@ -84,6 +97,16 @@ class TtsService {
   /// on-device voices. Set by SessionState whenever the key changes.
   ElevenLabsService? elevenLabs;
 
+  /// The managed voice backend client. Null (or a client with no token)
+  /// means managed cloud voices are unavailable; speech falls back to
+  /// on-device voices. Set by SessionState at construction and on sign-in.
+  ProxyClient? proxy;
+
+  /// Supplies the active communicator profile id for managed-voice
+  /// synthesis (the contract requires a profile_id per request). Wired by
+  /// SessionState; null means "no profile" and the proxy branch is skipped.
+  String? Function()? proxyProfileIdProvider;
+
   /// Player for cloud-voice audio. A settable seam so tests can observe
   /// routing without platform channels.
   ElevenLabsAudioPlayer elevenAudioPlayer = ElevenLabsAudioPlayer();
@@ -102,6 +125,20 @@ class TtsService {
       _cloudAudioCache.remove(_cloudAudioCache.keys.first);
     }
     _cloudAudioCache[key] = bytes;
+  }
+
+  /// Cache of managed-voice utterances, keyed by `proxy::<voiceId>::<text>`.
+  /// Smaller than the BYO cache: managed quotas are shared per family per
+  /// month, so repeats must not re-bill. Bounded FIFO.
+  static const _proxyCacheMax = 100;
+  final Map<String, Uint8List> _proxyAudioCache = <String, Uint8List>{};
+
+  void _storeProxyAudio(String key, Uint8List bytes) {
+    _proxyAudioCache.remove(key);
+    while (_proxyAudioCache.length >= _proxyCacheMax) {
+      _proxyAudioCache.remove(_proxyAudioCache.keys.first);
+    }
+    _proxyAudioCache[key] = bytes;
   }
 
   double rate = AppConfig.defaultSpeechRate;
@@ -193,6 +230,37 @@ class TtsService {
   Future<void> speak(String text) async {
     if (text.trim().isEmpty) return;
     final voice = currentVoice;
+    if (voice != null && voice.isProxy) {
+      final svc = proxy;
+      final profileId = proxyProfileIdProvider?.call();
+      if (svc != null &&
+          svc.hasToken &&
+          profileId != null &&
+          profileId.isNotEmpty) {
+        try {
+          // Shared family quota: serve repeats from the cache so a child
+          // re-tapping the same button doesn't re-bill the same utterance.
+          final cacheKey = 'proxy::${voice.proxyVoiceId}::$text';
+          final cached = _proxyAudioCache[cacheKey];
+          if (cached != null) {
+            await elevenAudioPlayer.playBytes(cached);
+            return;
+          }
+          final audio = await svc.synthesize(
+            requestId: proxyUuid4(),
+            profileId: profileId,
+            voiceId: voice.proxyVoiceId!,
+            text: text,
+          );
+          _storeProxyAudio(cacheKey, audio);
+          await elevenAudioPlayer.playBytes(audio);
+          return;
+        } catch (_) {
+          // Managed voice unavailable (offline, quota, session expired):
+          // fall through to the on-device voices rather than going silent.
+        }
+      }
+    }
     if (voice != null && voice.isElevenLabs) {
       final svc = elevenLabs;
       if (svc != null) {
@@ -274,11 +342,11 @@ class TtsService {
   /// engine as soon as one is ready.
   Future<void> setVoice(TtsVoice voice) async {
     currentVoice = voice;
-    // Kokoro and ElevenLabs voices are not system-engine voices: poking
-    // flutter_tts with a nonexistent voice name would be pointless at best,
-    // and that engine is exactly the fallback used when they fail, so leave
-    // it alone.
-    if (_ready && !voice.isKokoro && !voice.isElevenLabs) {
+    // Kokoro, ElevenLabs and managed-proxy voices are not system-engine
+    // voices: poking flutter_tts with a nonexistent voice name would be
+    // pointless at best, and that engine is exactly the fallback used when
+    // they fail, so leave it alone.
+    if (_ready && !voice.isKokoro && !voice.isElevenLabs && !voice.isProxy) {
       try {
         await _engine.setVoice({'name': voice.name, 'locale': voice.locale});
       } catch (_) {

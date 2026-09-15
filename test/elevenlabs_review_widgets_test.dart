@@ -160,6 +160,13 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    // The BYO key UI lives collapsed under "Advanced" now — expand it so
+    // the clone/delete flows below exercise the same widgets as before.
+    final tile = find.text('Advanced: use my own ElevenLabs key');
+    await tester.ensureVisible(tile);
+    await tester.pumpAndSettle();
+    await tester.tap(tile);
+    await tester.pumpAndSettle();
   }
 
   /// Opens the clone dialog with one 35s sample recorded and a name typed.
@@ -167,7 +174,10 @@ void main() {
     WidgetTester tester, {
     String name = 'Maya test',
   }) async {
-    await tester.tap(find.text('Clone a new voice'));
+    final cloneButton = find.text('Clone a new voice');
+    await tester.ensureVisible(cloneButton);
+    await tester.pumpAndSettle();
+    await tester.tap(cloneButton);
     await tester.pumpAndSettle();
     expect(find.text('Clone a voice'), findsOneWidget);
 
@@ -177,7 +187,13 @@ void main() {
     await tester.pump();
     expect(find.textContaining('Sample 1'), findsOneWidget);
 
-    await tester.enterText(find.byType(TextField), name);
+    // The section's managed-card sign-in form also has TextFields, so scope
+    // the name entry to the clone dialog.
+    final nameField = find.descendant(
+      of: find.byType(AlertDialog),
+      matching: find.byType(TextField),
+    );
+    await tester.enterText(nameField, name);
     await tester.pump();
   }
 
@@ -297,7 +313,10 @@ void main() {
         expect(find.text('Maya clone'), findsOneWidget);
 
         // Remove here only: local removal, no cloud call.
-        await tester.tap(find.byTooltip('Remove from profile'));
+        final removeButton1 = find.byTooltip('Remove from profile');
+        await tester.ensureVisible(removeButton1);
+        await tester.pumpAndSettle();
+        await tester.tap(removeButton1);
         await tester.pumpAndSettle();
         expect(find.text('Remove "Maya clone"?'), findsOneWidget);
         await tester.tap(find.text('Remove here only'));
@@ -316,7 +335,10 @@ void main() {
         );
         await pumpSection(tester, session);
         expect(find.text('Maya clone'), findsOneWidget);
-        await tester.tap(find.byTooltip('Remove from profile'));
+        final removeButton2 = find.byTooltip('Remove from profile');
+        await tester.ensureVisible(removeButton2);
+        await tester.pumpAndSettle();
+        await tester.tap(removeButton2);
         await tester.pumpAndSettle();
         await tester.tap(find.text('Delete everywhere'));
         await tester.pumpAndSettle();
@@ -341,7 +363,10 @@ void main() {
         await pumpSection(tester, session);
 
         // Cancel: nothing is removed anywhere.
-        await tester.tap(find.byTooltip('Remove from profile'));
+        final removeButton3 = find.byTooltip('Remove from profile');
+        await tester.ensureVisible(removeButton3);
+        await tester.pumpAndSettle();
+        await tester.tap(removeButton3);
         await tester.pumpAndSettle();
         await tester.tap(find.text('Cancel'));
         await tester.pumpAndSettle();
@@ -363,7 +388,10 @@ void main() {
         );
         await pumpSection(tester, session);
         expect(find.text('Library voice'), findsOneWidget);
-        await tester.tap(find.byTooltip('Remove from profile'));
+        final removeButton4 = find.byTooltip('Remove from profile');
+        await tester.ensureVisible(removeButton4);
+        await tester.pumpAndSettle();
+        await tester.tap(removeButton4);
         await tester.pumpAndSettle();
         expect(find.text('Remove "Library voice"?'), findsNothing);
         expect(find.text('Library voice'), findsNothing);

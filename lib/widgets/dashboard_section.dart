@@ -1,13 +1,12 @@
 import 'dart:convert';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/dashboard.dart';
-import '../services/obf_import_service.dart';
 import '../services/word_finder.dart';
 import '../state/session_state.dart';
+import 'obf_import_button.dart';
 import 'pick_button_image.dart';
 import 'symbol_image.dart';
 
@@ -24,8 +23,6 @@ class DashboardSection extends StatefulWidget {
 }
 
 class _DashboardSectionState extends State<DashboardSection> {
-  bool _busy = false;
-
   @override
   Widget build(BuildContext context) {
     final session = context.watch<SessionState>();
@@ -41,7 +38,6 @@ class _DashboardSectionState extends State<DashboardSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (_busy) const LinearProgressIndicator(),
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
           child: Text(
@@ -89,13 +85,7 @@ class _DashboardSectionState extends State<DashboardSection> {
                 label: const Text('Add custom'),
                 onPressed: () => _addCustomDialog(session, profile.id),
               ),
-              OutlinedButton.icon(
-                icon: const Icon(Icons.upload_file),
-                label: const Text('Import file'),
-                onPressed: _busy
-                    ? null
-                    : () => _importFile(session, profile.id, profile.name),
-              ),
+              ObfImportButton(onChanged: widget.refresh),
               if (dashboard != null)
                 TextButton.icon(
                   icon: const Icon(Icons.delete_outline),
@@ -608,92 +598,6 @@ class _DashboardSectionState extends State<DashboardSection> {
       );
       await session.dashboards.save(dashboard);
       widget.refresh();
-    }
-  }
-
-  // --------------------------------------------------------------- import ---
-
-  Future<void> _importFile(
-    SessionState session,
-    String profileId,
-    String profileName,
-  ) async {
-    final List<PlatformFile> files;
-    try {
-      files = await FilePicker.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['obf', 'obz', 'json'],
-      );
-    } catch (e) {
-      _showError('Could not open the file picker: $e');
-      return;
-    }
-    if (files.isEmpty) return; // user cancelled
-    setState(() => _busy = true);
-    try {
-      final picked = files.single;
-      final bytes = await picked.readAsBytes();
-      final report = ObfImportService().importBytes(
-        bytes,
-        profileId: profileId,
-        fileName: picked.name,
-      );
-      if (!mounted) return;
-      final existing = session.dashboards.forProfile(profileId);
-      final hasExisting = existing != null && existing.cells.isNotEmpty;
-      final confirm = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text('Import "${report.dashboard.name}"?'),
-          content: Text(
-            '${report.buttonCount} buttons'
-            '${hasExisting ? ' will replace the current dashboard' : ''}.'
-            '\n\nImported buttons speak their text immediately when tapped '
-            '— they do not build sentences.'
-            '${report.warnings.isNotEmpty ? '\n\nNotes:\n${report.warnings.join('\n')}' : ''}',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text('Import'),
-            ),
-          ],
-        ),
-      );
-      if (confirm != true || !mounted) return;
-      final dashboard = session.dashboards.ensureFor(
-        profileId,
-        name: profileName,
-      );
-      final wasEnabled = dashboard.enabled;
-      dashboard.name = report.dashboard.name;
-      dashboard.source = report.dashboard.source;
-      dashboard.cells
-        ..clear()
-        ..addAll(report.dashboard.cells);
-      dashboard.enabled = wasEnabled;
-      await session.dashboards.save(dashboard);
-      widget.refresh();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Imported ${report.buttonCount} buttons'
-              '${report.imageCount > 0 ? ' (${report.imageCount} with images)' : ''}.',
-            ),
-          ),
-        );
-      }
-    } on ObfImportError catch (e) {
-      _showError(e.message);
-    } catch (e) {
-      _showError('Import failed: $e');
-    } finally {
-      if (mounted) setState(() => _busy = false);
     }
   }
 

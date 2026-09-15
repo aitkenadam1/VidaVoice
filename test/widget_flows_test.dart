@@ -38,7 +38,6 @@ class _FakeTts extends TtsService {
 
   @override
   Future<void> clearVoice() async {}
-
 }
 
 /// Widget coverage for the flows in docs/MORNING-TEST.md that had no
@@ -118,8 +117,9 @@ void main() {
     expect(session.onboardingComplete, isTrue);
   });
 
-  testWidgets('onboarding: full walkthrough completes and renames profile',
-      (tester) async {
+  testWidgets('onboarding: full walkthrough completes and renames profile', (
+    tester,
+  ) async {
     useWideSurface(tester);
     final session = await makeSession(onboardingComplete: false);
 
@@ -127,14 +127,29 @@ void main() {
     await tester.pump();
     expect(find.text('Welcome to VidaVoice'), findsOneWidget);
 
-    // Page 2: enter the communicator's name.
+    // Page 2 (account): defer the caregiver account for now.
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
+    expect(find.text('Your VidaVoice account'), findsOneWidget);
+    await tester.tap(find.text('Continue with on-device voices for now'));
+    await tester.pumpAndSettle();
+
+    // Page 3: enter the communicator's name.
+    expect(find.text('Who will use VidaVoice?'), findsOneWidget);
     await tester.enterText(find.byType(TextField), 'Maya');
 
-    // Pages 3 and 4: voice speed, then the tour.
+    // Pages 4 and 5: import, then customization (both skippable).
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
+    expect(find.text('Bring a board from another app?'), findsOneWidget);
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+    expect(find.text('Make it theirs'), findsOneWidget);
+
+    // Pages 6 and 7: voice speed, then the tour.
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+    expect(find.text('Choose a voice speed'), findsOneWidget);
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
     expect(find.text('Start communicating'), findsOneWidget);
@@ -146,8 +161,9 @@ void main() {
     expect(session.profiles.activeName, 'Maya');
   });
 
-  testWidgets('Spanish pack renders Spanish labels on the board',
-      (tester) async {
+  testWidgets('Spanish pack renders Spanish labels on the board', (
+    tester,
+  ) async {
     useWideSurface(tester);
     final session = await makeSession(locale: 'es');
     await session.setUnlockedLevel(LanguagePack.maxSupportedLevel);
@@ -167,8 +183,9 @@ void main() {
     expect(session.sentence.first.label, 'quiero');
   });
 
-  testWidgets('unlocking level 2 mid-session fills empty cells in place',
-      (tester) async {
+  testWidgets('unlocking level 2 mid-session fills empty cells in place', (
+    tester,
+  ) async {
     useWideSurface(tester);
     final session = await makeSession();
     await session.setUnlockedLevel(1);
@@ -211,8 +228,9 @@ void main() {
     expect(find.text(starter.label), findsOneWidget);
   });
 
-  testWidgets('caregiver activity summary renders with usage data',
-      (tester) async {
+  testWidgets('caregiver activity summary renders with usage data', (
+    tester,
+  ) async {
     useWideSurface(tester);
     SharedPreferences.setMockInitialValues({
       'vidavoice.onboardingComplete': true,

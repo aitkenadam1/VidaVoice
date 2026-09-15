@@ -5,18 +5,25 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../services/elevenlabs_service.dart';
+import '../services/proxy_client.dart';
 import '../services/tts_service.dart';
 import '../services/voice_sample_recorder.dart';
 import '../state/session_state.dart';
+import 'proxy_account_form.dart';
 
-/// ElevenLabs cloud voices (bring-your-own-key, advanced option).
+/// AI cloud voices.
 ///
-/// Optional and off by default: the caregiver pastes their own ElevenLabs
-/// API key (stored in the platform keychain, never in backups or logs),
-/// then clones a voice from microphone recordings or picks one from their
-/// ElevenLabs library. Usage is billed to their ElevenLabs account and
-/// needs internet. Any cloud failure falls back to on-device voices —
-/// the board never goes silent.
+/// The primary path is the managed ("included") cloud voices: a VidaVoice
+/// account adds AI voices on up to 3 devices, billed through the family's
+/// shared monthly quota — no API key needed.
+///
+/// Below that, collapsed under "Advanced", is the original
+/// bring-your-own-key ElevenLabs UI, verbatim: the caregiver pastes their
+/// own ElevenLabs API key (stored in the platform keychain, never in
+/// backups or logs), then clones a voice from microphone recordings or
+/// picks one from their ElevenLabs library. Usage is billed to their
+/// ElevenLabs account and needs internet. Any cloud failure falls back to
+/// on-device voices — the board never goes silent.
 class ElevenLabsSection extends StatefulWidget {
   const ElevenLabsSection({super.key, required this.onVoicesChanged});
 
@@ -28,6 +35,262 @@ class ElevenLabsSection extends StatefulWidget {
 }
 
 class _ElevenLabsSectionState extends State<ElevenLabsSection> {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _ProxyVoiceCard(onVoicesChanged: widget.onVoicesChanged),
+        const SizedBox(height: 8),
+        Card(
+          child: ExpansionTile(
+            leading: const Icon(Icons.key_outlined),
+            title: const Text('Advanced: use my own ElevenLabs key'),
+            subtitle: const Text(
+              'Clone a voice with your own ElevenLabs account',
+              style: TextStyle(fontSize: 12),
+            ),
+            children: [
+              _ByoElevenLabsContent(onVoicesChanged: widget.onVoicesChanged),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// The managed ("included") cloud voices card: sign-in when signed out,
+/// the family's entitlement voices with quota when signed in.
+class _ProxyVoiceCard extends StatefulWidget {
+  const _ProxyVoiceCard({required this.onVoicesChanged});
+
+  /// Called after the voice choice changes so the voice picker reloads.
+  final VoidCallback onVoicesChanged;
+
+  @override
+  State<_ProxyVoiceCard> createState() => _ProxyVoiceCardState();
+}
+
+class _ProxyVoiceCardState extends State<_ProxyVoiceCard> {
+  bool _loading = false;
+  bool _loadedSignedIn = false;
+  String? _error;
+  List<ProxyVoice> _voices = const [];
+  String? _quotaLine;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadedSignedIn = context.read<SessionState>().proxySignedIn;
+    if (_loadedSignedIn) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+    }
+  }
+
+  Future<void> _load({bool force = false}) async {
+    final session = context.read<SessionState>();
+    if (!session.proxySignedIn) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final voices = await session.proxyEntitlement(force: force);
+      final usage = await session.proxyUsage();
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _voices = voices;
+        _quotaLine = usage == null
+            ? null
+            : '${usage.used} of ${usage.monthlyCap} characters used this month';
+      });
+    } on ProxyException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = e.code == 'unreachable'
+            ? 'Couldn\u2019t reach the VidaVoice service. Your board works '
+                  'fully offline \u2014 cloud voices need an account and '
+                  'internet.'
+            : e.message;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = 'Something went wrong. Please try again.';
+      });
+    }
+  }
+
+  Future<void> _useVoice(ProxyVoice voice) async {
+    final session = context.read<SessionState>();
+    await session.setVoice(
+      TtsVoice(name: voice.name, locale: voice.locale, proxyVoiceId: voice.id),
+    );
+    await session.speakText(_previewFor(session.currentLocale));
+    widget.onVoicesChanged();
+  }
+
+  Future<void> _signOut() async {
+    await context.read<SessionState>().signOut();
+    widget.onVoicesChanged();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final session = context.watch<SessionState>();
+    // Reload when the sign-in state flips under us (e.g. signed in from
+    // the inline form below, or signed out from the caregiver hub).
+    if (session.proxySignedIn != _loadedSignedIn) {
+      _loadedSignedIn = session.proxySignedIn;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          if (_loadedSignedIn) {
+            _load();
+          } else {
+            setState(() {
+              _voices = const [];
+              _quotaLine = null;
+              _error = null;
+            });
+          }
+        }
+      });
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.cloud_outlined),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text(
+                    'AI cloud voices (included)',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  ),
+                ),
+                if (session.proxySignedIn)
+                  IconButton(
+                    tooltip: 'Refresh',
+                    icon: const Icon(Icons.refresh, size: 20),
+                    onPressed: _loading ? null : () => _load(force: true),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (!session.proxySignedIn) ...[
+              const Text(
+                'A VidaVoice account adds AI cloud voices on up to 3 '
+                'devices, with a shared monthly quota \u2014 no API key '
+                'needed. Sign up below, or keep using on-device voices: '
+                'nothing changes.',
+                style: TextStyle(fontSize: 12),
+              ),
+              const SizedBox(height: 12),
+              const ProxyAccountForm(),
+            ] else ...[
+              if (session.deviceLimitNotice != null) ...[
+                Card(
+                  color: Theme.of(context).colorScheme.errorContainer,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.warning_amber_outlined),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            session.deviceLimitNotice!,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
+              if (_loading && _voices.isEmpty)
+                const Center(child: CircularProgressIndicator())
+              else if (_error != null && _voices.isEmpty)
+                Text(
+                  _error!,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                )
+              else ...[
+                if (_voices.isEmpty)
+                  const Text(
+                    'No cloud voices on your account yet.',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                for (final v in _voices)
+                  ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.cloud_done_outlined, size: 20),
+                    title: Text(v.name, style: const TextStyle(fontSize: 13)),
+                    subtitle: v.locale.isEmpty
+                        ? null
+                        : Text(v.locale, style: const TextStyle(fontSize: 11)),
+                    trailing: session.currentVoice?.proxyVoiceId == v.id
+                        ? const Icon(Icons.check, color: Colors.green, size: 20)
+                        : TextButton(
+                            onPressed: () => _useVoice(v),
+                            child: const Text('Use'),
+                          ),
+                  ),
+                if (_quotaLine != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    _quotaLine!,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: _signOut,
+                    child: const Text('Sign out'),
+                  ),
+                ),
+              ],
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The bring-your-own-key ElevenLabs UI, unchanged: key field, account
+/// voices, clone dialog, saved voices, consent, purge, and createdByApp
+/// deletion. Lives collapsed under "Advanced" — the managed cloud voices
+/// above are the primary path now.
+class _ByoElevenLabsContent extends StatefulWidget {
+  const _ByoElevenLabsContent({required this.onVoicesChanged});
+
+  /// Called after the saved-voice list changes so the voice picker reloads.
+  final VoidCallback onVoicesChanged;
+
+  @override
+  State<_ByoElevenLabsContent> createState() => _ByoElevenLabsContentState();
+}
+
+class _ByoElevenLabsContentState extends State<_ByoElevenLabsContent> {
   final _keyController = TextEditingController();
   bool? _keySet;
   bool _busy = false;
@@ -238,183 +501,178 @@ class _ElevenLabsSectionState extends State<ElevenLabsSection> {
   @override
   Widget build(BuildContext context) {
     final keySet = _keySet;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Row(
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.cloud_outlined),
+              SizedBox(width: 8),
+              Text(
+                'AI cloud voices (ElevenLabs) · advanced',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Optional, advanced. Clone a custom voice — for example the '
+            "communicator's own voice — with your own ElevenLabs account "
+            'and API key. ElevenLabs bills per character spoken and needs '
+            'internet; repeated taps of the same button are cached so '
+            'they are not billed twice. Everything else in the app keeps '
+            'working offline.',
+            style: TextStyle(fontSize: 12),
+          ),
+          const SizedBox(height: 12),
+          if (keySet == null)
+            const Center(child: CircularProgressIndicator())
+          else if (!keySet) ...[
+            const Text(
+              'Paste an ElevenLabs API key to begin. The key is stored in '
+              'this device\u2019s secure storage — never in backups.',
+              style: TextStyle(fontSize: 12),
+            ),
+            const SizedBox(height: 8),
+            Row(
               children: [
-                Icon(Icons.cloud_outlined),
-                SizedBox(width: 8),
-                Text(
-                  'AI cloud voices (ElevenLabs) · advanced',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                Expanded(
+                  child: TextField(
+                    controller: _keyController,
+                    obscureText: true,
+                    enableSuggestions: false,
+                    autocorrect: false,
+                    decoration: const InputDecoration(
+                      labelText: 'ElevenLabs API key',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                    onSubmitted: (_) => _saveKey(),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                FilledButton(
+                  onPressed: _busy ? null : _saveKey,
+                  child: const Text('Save'),
+                ),
+              ],
+            ),
+          ] else ...[
+            Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.green, size: 18),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text(
+                    'API key saved on this device.',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ),
+                TextButton(
+                  onPressed: _busy ? null : _clearKey,
+                  child: const Text('Remove key'),
                 ),
               ],
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Optional, advanced. Clone a custom voice — for example the '
-              "communicator's own voice — with your own ElevenLabs account "
-              'and API key. ElevenLabs bills per character spoken and needs '
-              'internet; repeated taps of the same button are cached so '
-              'they are not billed twice. Everything else in the app keeps '
-              'working offline.',
-              style: TextStyle(fontSize: 12),
-            ),
-            const SizedBox(height: 12),
-            if (keySet == null)
-              const Center(child: CircularProgressIndicator())
-            else if (!keySet) ...[
-              const Text(
-                'Paste an ElevenLabs API key to begin. The key is stored in '
-                'this device\u2019s secure storage — never in backups.',
-                style: TextStyle(fontSize: 12),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _keyController,
-                      obscureText: true,
-                      enableSuggestions: false,
-                      autocorrect: false,
-                      decoration: const InputDecoration(
-                        labelText: 'ElevenLabs API key',
-                        border: OutlineInputBorder(),
-                        isDense: true,
-                      ),
-                      onSubmitted: (_) => _saveKey(),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  FilledButton(
-                    onPressed: _busy ? null : _saveKey,
-                    child: const Text('Save'),
-                  ),
-                ],
-              ),
-            ] else ...[
-              Row(
-                children: [
-                  const Icon(Icons.check_circle, color: Colors.green, size: 18),
-                  const SizedBox(width: 8),
-                  const Expanded(
-                    child: Text(
-                      'API key saved on this device.',
-                      style: TextStyle(fontSize: 12),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: _busy ? null : _clearKey,
-                    child: const Text('Remove key'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                children: [
-                  OutlinedButton.icon(
-                    onPressed: _busy ? null : _refreshAccountVoices,
-                    icon: const Icon(Icons.refresh, size: 18),
-                    label: const Text('My ElevenLabs voices'),
-                  ),
-                  FilledButton.icon(
-                    onPressed: _busy ? null : _clone,
-                    icon: const Icon(Icons.mic_outlined, size: 18),
-                    label: const Text('Clone a new voice'),
-                  ),
-                ],
-              ),
-              if (_busy) ...[
-                const SizedBox(height: 12),
-                const Center(child: CircularProgressIndicator()),
-              ],
-              if (_accountVoices != null) ...[
-                const SizedBox(height: 12),
-                const Text(
-                  'Voices on your ElevenLabs account:',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+            Wrap(
+              spacing: 8,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: _busy ? null : _refreshAccountVoices,
+                  icon: const Icon(Icons.refresh, size: 18),
+                  label: const Text('My ElevenLabs voices'),
                 ),
-                if (_accountVoices!.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 4),
-                    child: Text(
-                      'No voices found. Clone one above to get started.',
-                      style: TextStyle(fontSize: 12),
-                    ),
-                  ),
-                for (final v in _accountVoices!)
-                  ListTile(
-                    dense: true,
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(v.name, style: const TextStyle(fontSize: 13)),
-                    subtitle: v.category.isEmpty
-                        ? null
-                        : Text(
-                            v.category,
-                            style: const TextStyle(fontSize: 11),
-                          ),
-                    trailing: TextButton(
-                      onPressed: () => _saveToProfile(v),
-                      child: const Text('Add'),
-                    ),
-                  ),
+                FilledButton.icon(
+                  onPressed: _busy ? null : _clone,
+                  icon: const Icon(Icons.mic_outlined, size: 18),
+                  label: const Text('Clone a new voice'),
+                ),
               ],
+            ),
+            if (_busy) ...[
+              const SizedBox(height: 12),
+              const Center(child: CircularProgressIndicator()),
+            ],
+            if (_accountVoices != null) ...[
               const SizedBox(height: 12),
               const Text(
-                'Saved for this profile:',
+                'Voices on your ElevenLabs account:',
                 style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
               ),
-              if (_savedVoices.isEmpty)
+              if (_accountVoices!.isEmpty)
                 const Padding(
                   padding: EdgeInsets.only(top: 4),
                   child: Text(
-                    'None yet. Cloned voices appear here and in Voice choice above.',
+                    'No voices found. Clone one above to get started.',
                     style: TextStyle(fontSize: 12),
                   ),
                 ),
-              for (final v in _savedVoices)
+              for (final v in _accountVoices!)
                 ListTile(
                   dense: true,
                   contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.cloud_done_outlined, size: 20),
                   title: Text(v.name, style: const TextStyle(fontSize: 13)),
-                  subtitle: Text(
-                    v.createdByApp
-                        ? 'ElevenLabs · cloned in this app'
-                        : 'ElevenLabs · cloud voice',
-                    style: TextStyle(fontSize: 11),
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextButton(
-                        onPressed: () => _useVoice(v),
-                        child: const Text('Use'),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete_outline, size: 20),
-                        tooltip: 'Remove from profile',
-                        onPressed: () => _removeSaved(v),
-                      ),
-                    ],
+                  subtitle: v.category.isEmpty
+                      ? null
+                      : Text(v.category, style: const TextStyle(fontSize: 11)),
+                  trailing: TextButton(
+                    onPressed: () => _saveToProfile(v),
+                    child: const Text('Add'),
                   ),
                 ),
             ],
-            if (_error != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                _error!,
-                style: const TextStyle(fontSize: 12, color: Colors.red),
+            const SizedBox(height: 12),
+            const Text(
+              'Saved for this profile:',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+            ),
+            if (_savedVoices.isEmpty)
+              const Padding(
+                padding: EdgeInsets.only(top: 4),
+                child: Text(
+                  'None yet. Cloned voices appear here and in Voice choice above.',
+                  style: TextStyle(fontSize: 12),
+                ),
               ),
-            ],
+            for (final v in _savedVoices)
+              ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.cloud_done_outlined, size: 20),
+                title: Text(v.name, style: const TextStyle(fontSize: 13)),
+                subtitle: Text(
+                  v.createdByApp
+                      ? 'ElevenLabs · cloned in this app'
+                      : 'ElevenLabs · cloud voice',
+                  style: TextStyle(fontSize: 11),
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextButton(
+                      onPressed: () => _useVoice(v),
+                      child: const Text('Use'),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline, size: 20),
+                      tooltip: 'Remove from profile',
+                      onPressed: () => _removeSaved(v),
+                    ),
+                  ],
+                ),
+              ),
           ],
-        ),
+          if (_error != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              _error!,
+              style: const TextStyle(fontSize: 12, color: Colors.red),
+            ),
+          ],
+        ],
       ),
     );
   }

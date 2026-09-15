@@ -155,7 +155,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onVoicesChanged: () => setState(() => _voiceListVersion++),
           ),
           const SizedBox(height: 16),
-          _sectionTitle(context, 'AI cloud voices (optional)'),
+          _sectionTitle(context, 'AI cloud voices'),
           ElevenLabsSection(
             onVoicesChanged: () => setState(() => _voiceListVersion++),
           ),

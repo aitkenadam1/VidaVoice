@@ -8,6 +8,7 @@ import '../widgets/activity_summary_section.dart';
 import '../widgets/backup_section.dart';
 import '../widgets/custom_symbols_section.dart';
 import '../widgets/dashboard_section.dart';
+import '../widgets/device_section.dart';
 import '../widgets/first_week_plan_section.dart';
 import '../widgets/word_finder_section.dart';
 
@@ -268,7 +269,11 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
       padding: const EdgeInsets.all(16),
       children: [
         for (final id in _order)
-          _sectionCard(context, _byId(id), session, refresh),
+          // Device management needs a signed-in caregiver account: the
+          // whole card is hidden until then (the customize list still
+          // shows it so order/pins can be arranged ahead of time).
+          if (id != 'devices' || session.proxySignedIn)
+            _sectionCard(context, _byId(id), session, refresh),
       ],
     );
   }
@@ -734,6 +739,13 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
         ),
       ),
       _Section(
+        id: 'devices',
+        title: 'Devices',
+        icon: Icons.devices_outlined,
+        summary: (session) => 'Manage this family\u2019s devices',
+        content: (context, session, refresh) => const DeviceSection(),
+      ),
+      _Section(
         id: 'more',
         title: 'Setup & what\u2019s next',
         icon: Icons.more_horiz,
@@ -742,9 +754,10 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.replay_outlined),
-              title: const Text('Replay setup tour'),
+              title: const Text('Re-run setup'),
               subtitle: const Text(
-                'Run the first-run wizard again (welcome, voice, quick tour).',
+                'Run the first-run wizard again (welcome, account, import, '
+                'voice, quick tour).',
               ),
               onTap: () {
                 session.reopenOnboarding();

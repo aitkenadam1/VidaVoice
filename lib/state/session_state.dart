@@ -12,6 +12,7 @@ import '../services/elevenlabs_service.dart';
 import '../services/elevenlabs_voice_store.dart';
 import '../services/language_pack_service.dart';
 import '../services/profile_service.dart';
+import '../services/proxy_client.dart';
 import '../services/symbol_override_service.dart';
 import '../services/symbol_service.dart';
 import '../services/tts_service.dart';
@@ -32,9 +33,28 @@ class SessionState extends ChangeNotifier {
     Future<SharedPreferences> Function()? prefsFactory,
     TtsService? tts,
     ElevenLabsKeyStore? elevenLabsKeys,
+    ProxyClient? proxy,
+    ProxyAuthStore? proxyAuth,
   }) : _prefsFactory = prefsFactory ?? SharedPreferences.getInstance,
        tts = tts ?? TtsService(),
-       elevenLabsKeys = elevenLabsKeys ?? ElevenLabsKeyStore();
+       elevenLabsKeys = elevenLabsKeys ?? ElevenLabsKeyStore(),
+       proxy = proxy ?? ProxyClient(),
+       proxyAuth = proxyAuth ?? ProxyAuthStore() {
+    // The managed-voice branch of TtsService.speak needs the server-issued
+    // profile id (the proxy contract requires profile_id per request) and
+    // the shared proxy client. Wired once here so every speak path —
+    // board taps, dashboard cells, sentence replay — routes the same way.
+    //
+    // NOTE: only ids the server issued at auth are valid as profile_id.
+    // The app's local profile ids are unrelated UUIDs the server never
+    // issued, so they must never be sent. Until the proxy contract defines
+    // a local↔server child-profile mapping, speech meters against the
+    // family's first server profile id (created at signup); with no known
+    // server id the TTS falls back to on-device voices.
+    this.tts.proxy = this.proxy;
+    this.tts.proxyProfileIdProvider = () =>
+        _serverProfileIds.isNotEmpty ? _serverProfileIds.first : null;
+  }
 
   final Future<SharedPreferences> Function() _prefsFactory;
   final TtsService tts;
@@ -50,6 +70,35 @@ class SessionState extends ChangeNotifier {
   /// per-profile saved cloud voices. Null key = cloud voices unavailable.
   final ElevenLabsKeyStore elevenLabsKeys;
   final ElevenLabsVoiceStore elevenLabsVoices = ElevenLabsVoiceStore();
+
+  /// The managed voice backend client (caregiver account, cloud voices,
+  /// device management). Constructor-injectable for tests.
+  final ProxyClient proxy;
+
+  /// Secure storage for the proxy token / family id / install id.
+  final ProxyAuthStore proxyAuth;
+
+  /// True when a proxy token is in hand (restored from secure storage on
+  /// boot, or freshly signed in). The token is validated lazily on first
+  /// use — a 401 signs out silently.
+  bool proxySignedIn = false;
+
+  /// The family id from the last successful auth, if known.
+  String? proxyFamilyId;
+
+  /// Server-issued profile ids from the last auth (see the constructor
+  /// note: the first is used as the speech profile_id).
+  List<String> _serverProfileIds = const [];
+
+  /// Set when device registration hit the family's device cap: the
+  /// server's caregiver-readable message, shown once in the device
+  /// section. Null otherwise.
+  String? deviceLimitNotice;
+
+  /// True when the caregiver skipped the account step during onboarding
+  /// ("Continue with on-device voices for now"). Persisted in prefs so a
+  /// later nudge can offer account setup again.
+  bool accountDeferred = false;
 
   BootStatus status = BootStatus.loading;
   String bootError = '';
@@ -148,6 +197,19 @@ class SessionState extends ChangeNotifier {
       buttonScale = _prefs!.getDouble('vidavoice.buttonScale') ?? 1.0;
       onboardingComplete =
           _prefs!.getBool('vidavoice.onboardingComplete') ?? false;
+      accountDeferred = _prefs!.getBool('vidavoice.accountDeferred') ?? false;
+      // Restore the proxy session best-effort: a stored token means the
+      // caregiver signed in before. The token is validated lazily on first
+      // use (a 401 signs out silently) — never a boot failure.
+      try {
+        final token = await proxyAuth.readToken();
+        if (token != null && token.isNotEmpty) {
+          proxy.setToken(token);
+          proxySignedIn = true;
+          proxyFamilyId = await proxyAuth.readFamilyId();
+          _serverProfileIds = await proxyAuth.readProfileIds();
+        }
+      } catch (_) {}
       unlockedLevel = _clampLevel(
         _prefs!.getInt('vidavoice.unlockedLevel') ??
             LanguagePack.minSupportedLevel,
@@ -223,6 +285,155 @@ class SessionState extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ------------------------------------------------- managed voice proxy ---
+
+  /// Create a caregiver account on the managed backend and sign in.
+  /// Throws [ProxyException] with the server's code on failure
+  /// ("email_taken", "weak_password", "unreachable", ...).
+  Future<void> signUp({
+    required String email,
+    required String username,
+    required String password,
+  }) async {
+    deviceLimitNotice = null;
+    final result = await proxy.signup(
+      email: email,
+      username: username,
+      password: password,
+    );
+    await _afterProxyAuth(result);
+  }
+
+  /// Sign in with email or username. Throws [ProxyException] on failure.
+  Future<void> signIn({
+    required String identifier,
+    required String password,
+  }) async {
+    deviceLimitNotice = null;
+    final result = await proxy.login(
+      identifier: identifier,
+      password: password,
+    );
+    await _afterProxyAuth(result);
+  }
+
+  /// Common post-auth: persist the token, register this install as a
+  /// family device (best-effort), and clear any earlier account deferral.
+  Future<void> _afterProxyAuth(ProxyAuthResult result) async {
+    proxy.setToken(result.token);
+    proxySignedIn = true;
+    proxyFamilyId = result.familyId;
+    _serverProfileIds = List<String>.of(result.profileIds);
+    deviceLimitNotice = null;
+    try {
+      await proxyAuth.save(result);
+    } catch (_) {}
+    await clearAccountDeferred();
+    // Register this install so it counts toward the family's device slots.
+    // Best-effort: a device that can't register (offline, cap reached)
+    // still gets a working account — the hub surfaces the cap message.
+    try {
+      final installId = await proxyAuth.installId();
+      await _authed(
+        () => proxy.registerDevice(
+          installId: installId,
+          platform: kIsWeb ? 'web' : defaultTargetPlatform.name,
+        ),
+      );
+    } on ProxyException catch (e) {
+      if (e.code == 'DEVICE_LIMIT_REACHED') {
+        deviceLimitNotice = e.message;
+      }
+    } catch (_) {}
+    notifyListeners();
+  }
+
+  /// Sign out of the managed backend: drop the token (secure storage too)
+  /// and forget any proxy voice choice. The install id is kept so a
+  /// re-sign-in re-registers the same device instead of burning a slot.
+  Future<void> signOut() async {
+    proxy.setToken(null);
+    proxySignedIn = false;
+    proxyFamilyId = null;
+    _serverProfileIds = const [];
+    deviceLimitNotice = null;
+    _entitlementVoices = null;
+    _entitlementFetched = null;
+    try {
+      await proxyAuth.clear();
+    } catch (_) {}
+    if (tts.currentVoice?.isProxy ?? false) {
+      await clearVoice();
+    }
+    notifyListeners();
+  }
+
+  /// Run a proxy call, signing out silently when the token is rejected.
+  /// "Silently" means no error surfacing — listeners are still notified so
+  /// the UI reflects the signed-out state.
+  Future<T> _authed<T>(Future<T> Function() call) async {
+    try {
+      return await call();
+    } on ProxyException catch (e) {
+      if (e.code == 'unauthorized') await signOut();
+      rethrow;
+    }
+  }
+
+  List<ProxyVoice>? _entitlementVoices;
+  DateTime? _entitlementFetched;
+  static const _entitlementTtl = Duration(seconds: 60);
+
+  /// The family's cloud voices, cached briefly in memory. Throws
+  /// [ProxyException] on failure (including "unauthorized", which signs
+  /// out first).
+  Future<List<ProxyVoice>> proxyEntitlement({bool force = false}) async {
+    final now = DateTime.now();
+    if (!force &&
+        _entitlementVoices != null &&
+        _entitlementFetched != null &&
+        now.difference(_entitlementFetched!) < _entitlementTtl) {
+      return _entitlementVoices!;
+    }
+    final entitlement = await _authed(() => proxy.getEntitlement());
+    _entitlementVoices = entitlement.voices;
+    _entitlementFetched = now;
+    return entitlement.voices;
+  }
+
+  /// Quota and request counts for the current period, or null when the
+  /// service can't be reached. Never throws.
+  Future<ProxyUsage?> proxyUsage() async {
+    try {
+      return await _authed(() => proxy.getUsageSummary());
+    } on ProxyException {
+      return null;
+    }
+  }
+
+  /// The family's registered devices and slot counts. Throws
+  /// [ProxyException] on failure.
+  Future<ProxyDeviceList> proxyDevices() => _authed(() => proxy.listDevices());
+
+  /// Remove a device, freeing its slot. Throws [ProxyException] on failure.
+  Future<void> removeProxyDevice(String installId) =>
+      _authed(() => proxy.deleteDevice(installId));
+
+  /// The caregiver skipped the account step ("Continue with on-device
+  /// voices for now"). Persisted so a later nudge can offer setup again.
+  Future<void> deferAccount() async {
+    accountDeferred = true;
+    await _prefs?.setBool('vidavoice.accountDeferred', true);
+    notifyListeners();
+  }
+
+  Future<void> clearAccountDeferred() async {
+    if (!accountDeferred) return;
+    accountDeferred = false;
+    await _prefs?.remove('vidavoice.accountDeferred');
+    notifyListeners();
+  }
+
   /// Saved ElevenLabs voices for the active profile, as picker entries.
   Future<List<TtsVoice>> elevenLabsVoiceEntries() async {
     final id = profiles.active?.id;
@@ -284,6 +495,7 @@ class SessionState extends ChangeNotifier {
   String _voiceKokoroKey(String locale) => 'vidavoice.voice.$locale.kokoro';
   String _voiceElevenLabsKey(String locale) =>
       'vidavoice.voice.$locale.elevenlabs';
+  String _voiceProxyKey(String locale) => 'vidavoice.voice.$locale.proxy';
 
   /// Persist and apply a voice choice for the current language.
   Future<void> setVoice(TtsVoice voice) async {
@@ -304,6 +516,12 @@ class SessionState extends ChangeNotifier {
     } else {
       await _prefs?.remove(_voiceElevenLabsKey(currentLocale));
     }
+    final proxyId = voice.proxyVoiceId;
+    if (proxyId != null) {
+      await _prefs?.setString(_voiceProxyKey(currentLocale), proxyId);
+    } else {
+      await _prefs?.remove(_voiceProxyKey(currentLocale));
+    }
     notifyListeners();
   }
 
@@ -314,6 +532,7 @@ class SessionState extends ChangeNotifier {
     await _prefs?.remove(_voiceLocaleKey(currentLocale));
     await _prefs?.remove(_voiceKokoroKey(currentLocale));
     await _prefs?.remove(_voiceElevenLabsKey(currentLocale));
+    await _prefs?.remove(_voiceProxyKey(currentLocale));
     notifyListeners();
   }
 
@@ -357,6 +576,18 @@ class SessionState extends ChangeNotifier {
           return true;
         }
         return false;
+      }
+      // Managed ("included") cloud voices aren't in the engine list
+      // either. The voice id alone is enough to synthesize, so restore it
+      // directly — synthesis fails lazily (→ on-device fallback) when the
+      // account is signed out or offline. Only restore while signed in, so
+      // the picker never shows a cloud voice selected that can't speak.
+      final proxyId = _prefs?.getString(_voiceProxyKey(currentLocale));
+      if (proxyId != null && proxyId.isNotEmpty && proxySignedIn) {
+        await tts.setVoice(
+          TtsVoice(name: name, locale: locale, proxyVoiceId: proxyId),
+        );
+        return true;
       }
       final voices = await tts.getVoices();
       final match = voices.where((v) => v.name == name && v.locale == locale);

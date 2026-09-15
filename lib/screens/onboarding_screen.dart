@@ -3,9 +3,16 @@ import 'package:provider/provider.dart';
 
 import '../app_config.dart';
 import '../state/session_state.dart';
+import '../widgets/dashboard_section.dart';
+import '../widgets/obf_import_button.dart';
+import '../widgets/proxy_account_form.dart';
 
-/// First-run setup: welcome → profile name → voice speed → quick tour.
-/// Shown once (flag in SharedPreferences); re-runnable from Caregiver.
+/// First-run setup: welcome → account → profile name → import → customize →
+/// voice speed → quick tour. Shown once (flag in SharedPreferences);
+/// re-runnable from the caregiver hub ("Re-run setup").
+///
+/// The account, import, and customize steps are all skippable: the board
+/// works fully with on-device voices and no account.
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -14,6 +21,9 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
+  static const _pageCount = 7;
+  static const _accountPage = 1;
+
   final PageController _pages = PageController();
   final TextEditingController _name = TextEditingController();
   double _rate = AppConfig.defaultSpeechRate;
@@ -27,7 +37,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _next() {
-    if (_index < 3) {
+    if (_index < _pageCount - 1) {
       _pages.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
@@ -50,6 +60,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    // The account page drives itself (sign up / log in / continue without
+    // an account), so the global Continue button hides there — the form's
+    // own actions are the step's actions.
+    final showContinue = _index != _accountPage;
     return Scaffold(
       backgroundColor: scheme.surface,
       body: SafeArea(
@@ -61,7 +75,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 onPageChanged: (i) => setState(() => _index = i),
                 children: [
                   _welcome(scheme),
+                  _accountStep(scheme),
                   _profileStep(scheme),
+                  _importStep(scheme),
+                  _customizeStep(scheme),
                   _voiceStep(scheme),
                   _tourStep(scheme),
                 ],
@@ -70,7 +87,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                for (var i = 0; i < 4; i++)
+                for (var i = 0; i < _pageCount; i++)
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 4),
                     width: 10,
@@ -84,22 +101,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
               ],
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 12, 24, 8),
-              child: SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: _next,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Text(
-                      _index == 3 ? 'Start communicating' : 'Continue',
-                      style: const TextStyle(fontSize: 17),
+            if (showContinue)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 8),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: _next,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Text(
+                        _index == _pageCount - 1
+                            ? 'Start communicating'
+                            : 'Continue',
+                        style: const TextStyle(fontSize: 17),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
+              )
+            else
+              const SizedBox(height: 12),
             TextButton(onPressed: _finish, child: const Text('Skip for now')),
             const SizedBox(height: 8),
           ],
@@ -142,6 +164,34 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
+  Widget _accountStep(ColorScheme scheme) {
+    return _page(
+      children: [
+        Icon(Icons.cloud_outlined, size: 72, color: scheme.primary),
+        const SizedBox(height: 16),
+        const Text(
+          'Your VidaVoice account',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'An account unlocks AI cloud voices, included with VidaVoice, '
+          'on up to 3 devices. It\u2019s optional \u2014 the board speaks '
+          'fully offline with on-device voices.',
+          style: TextStyle(fontSize: 15, color: scheme.onSurfaceVariant),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 20),
+        ProxyAccountForm(
+          showDeferButton: true,
+          onSignedIn: _next,
+          onDeferred: _next,
+        ),
+      ],
+    );
+  }
+
   Widget _profileStep(ColorScheme scheme) {
     return _page(
       children: [
@@ -169,6 +219,54 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           onSubmitted: (_) => _next(),
         ),
+      ],
+    );
+  }
+
+  Widget _importStep(ColorScheme scheme) {
+    return _page(
+      children: [
+        Icon(Icons.upload_file_outlined, size: 72, color: scheme.primary),
+        const SizedBox(height: 16),
+        const Text(
+          'Bring a board from another app?',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'If you already built a board elsewhere, import it now.\n'
+          'Otherwise just continue \u2014 you can import later from the '
+          'caregiver hub.',
+          style: TextStyle(fontSize: 15, color: scheme.onSurfaceVariant),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 24),
+        ObfImportButton(onChanged: () => setState(() {})),
+      ],
+    );
+  }
+
+  Widget _customizeStep(ColorScheme scheme) {
+    return _page(
+      children: [
+        Icon(Icons.dashboard_outlined, size: 72, color: scheme.primary),
+        const SizedBox(height: 16),
+        const Text(
+          'Make it theirs',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Add the words and phrases that matter most, arrange them '
+          'freely, or turn on a personal home board.\n'
+          'Skip this and the standard board is ready to go.',
+          style: TextStyle(fontSize: 15, color: scheme.onSurfaceVariant),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 16),
+        DashboardSection(refresh: () => setState(() {})),
       ],
     );
   }

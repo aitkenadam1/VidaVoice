@@ -38,6 +38,8 @@ void main() {
       },
     ],
     planDays: [1, 2],
+    customSymbols: const {},
+    elevenLabsVoices: const [],
   );
 
   Map<String, Object> seedPrefs() => {
@@ -153,56 +155,62 @@ void main() {
       expect(backup.locale, 'en');
     });
 
-    test('apply() replace overwrites profile data, keeps other profiles', () async {
-      final service = ProfileBackupService();
-      await service.apply(sampleBackup(), merge: false);
-      final prefs = await SharedPreferences.getInstance();
+    test(
+      'apply() replace overwrites profile data, keeps other profiles',
+      () async {
+        final service = ProfileBackupService();
+        await service.apply(sampleBackup(), merge: false);
+        final prefs = await SharedPreferences.getInstance();
 
-      // p-1 replaced with backup content
-      final history =
-          json.decode(prefs.getString('vidavoice.history.p-1.v1')!) as List;
-      expect(history.single['text'], 'I want juice');
-      expect(
-        json.decode(prefs.getString('vidavoice.firstWeekPlan.p-1.v1')!),
-        [1, 2],
-      );
-      expect(
-        json.decode(prefs.getString('vidavoice.usageCounts.v1')!),
-        {'core.want': 5, 'core.go': 3},
-      );
+        // p-1 replaced with backup content
+        final history =
+            json.decode(prefs.getString('vidavoice.history.p-1.v1')!) as List;
+        expect(history.single['text'], 'I want juice');
+        expect(
+          json.decode(prefs.getString('vidavoice.firstWeekPlan.p-1.v1')!),
+          [1, 2],
+        );
+        expect(json.decode(prefs.getString('vidavoice.usageCounts.v1')!), {
+          'core.want': 5,
+          'core.go': 3,
+        });
 
-      // p-2 untouched
-      final other =
-          json.decode(prefs.getString('vidavoice.history.p-2.v1')!) as List;
-      expect(other.single['text'], 'no');
-    });
+        // p-2 untouched
+        final other =
+            json.decode(prefs.getString('vidavoice.history.p-2.v1')!) as List;
+        expect(other.single['text'], 'no');
+      },
+    );
 
-    test('apply() merge sums usage, unions plan, concatenates history', () async {
-      final service = ProfileBackupService();
-      await service.apply(sampleBackup(), merge: true);
-      final prefs = await SharedPreferences.getInstance();
+    test(
+      'apply() merge sums usage, unions plan, concatenates history',
+      () async {
+        final service = ProfileBackupService();
+        await service.apply(sampleBackup(), merge: true);
+        final prefs = await SharedPreferences.getInstance();
 
-      final counts =
-          json.decode(prefs.getString('vidavoice.usageCounts.v1')!) as Map;
-      expect(counts['core.want'], 7); // 2 existing + 5 backup
-      expect(counts['core.no'], 7); // untouched
-      expect(counts['core.go'], 3); // new from backup
+        final counts =
+            json.decode(prefs.getString('vidavoice.usageCounts.v1')!) as Map;
+        expect(counts['core.want'], 7); // 2 existing + 5 backup
+        expect(counts['core.no'], 7); // untouched
+        expect(counts['core.go'], 3); // new from backup
 
-      final plan =
-          json.decode(prefs.getString('vidavoice.firstWeekPlan.p-1.v1')!)
-              as List;
-      expect(Set.from(plan), {1, 2, 3});
+        final plan = json.decode(
+          prefs.getString('vidavoice.firstWeekPlan.p-1.v1')!,
+        ) as List;
+        expect(Set.from(plan), {1, 2, 3});
 
-      final history =
-          json.decode(prefs.getString('vidavoice.history.p-1.v1')!) as List;
-      expect(history.length, 2);
-      // newest first
-      expect(history.first['text'], 'I want juice');
+        final history =
+            json.decode(prefs.getString('vidavoice.history.p-1.v1')!) as List;
+        expect(history.length, 2);
+        // newest first
+        expect(history.first['text'], 'I want juice');
 
-      // device settings left alone in merge mode
-      expect(prefs.getString('vidavoice.locale'), 'en');
-      expect(prefs.getInt('vidavoice.unlockedLevel'), 3);
-    });
+        // device settings left alone in merge mode
+        expect(prefs.getString('vidavoice.locale'), 'en');
+        expect(prefs.getInt('vidavoice.unlockedLevel'), 3);
+      },
+    );
 
     test('apply() adds an unknown profile to the profile list', () async {
       SharedPreferences.setMockInitialValues({
@@ -298,9 +306,7 @@ void main() {
         ChangeNotifierProvider.value(
           value: session,
           child: MaterialApp(
-            home: Scaffold(
-              body: BackupSection(pickFile: () async => path),
-            ),
+            home: Scaffold(body: BackupSection(pickFile: () async => path)),
           ),
         ),
       );

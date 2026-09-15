@@ -47,10 +47,20 @@ dependencies:
   audioplayers: ^6.8.1
   http: ^1.6.0
   archive: ^4.3.0
+  # Pure-Dart image decode/resize/encode for caregiver-picked button images
+  # (downscaled before base64 storage so SharedPreferences stays small).
+  image: ^4.5.4
   # Directly imported by kokoro_tts_service.dart (and its test); declared
   # explicitly rather than relying on transitive resolution.
   path: ^1.9.0
   crypto: ^3.0.0
+  # API key for the optional ElevenLabs cloud voices (bring-your-own-key).
+  # Never in SharedPreferences or logs: billing credentials belong in the
+  # platform keychain/keystore.
+  flutter_secure_storage: ^11.1.1
+  # In-app microphone recording for ElevenLabs voice cloning (the family
+  # records samples; audio is uploaded only when they tap "Create voice").
+  record: ^7.1.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -137,6 +137,7 @@ class HomeBoardScreen extends StatelessWidget {
           item: item,
           scale: scale,
           hasSymbol: session.symbols.hasSymbol(item.id),
+          imageOverride: session.symbolOverrideFor(item.id),
           onTap: () => session.tapDashboardCell(cell),
         );
       } on Object {
@@ -170,6 +171,7 @@ class HomeBoardScreen extends StatelessWidget {
       item: item,
       scale: scale,
       hasSymbol: session.symbols.hasSymbol(item.id),
+      imageOverride: session.symbolOverrideFor(item.id),
       onTap: () {
         if (item.isFolder) {
           Navigator.of(context).push(

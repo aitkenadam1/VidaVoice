@@ -1,11 +1,14 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../app_config.dart';
 import '../services/kokoro_tts_service.dart';
+import '../services/personal_voice_service.dart';
 import '../services/tts_service.dart';
 import '../state/session_state.dart';
+import '../widgets/elevenlabs_section.dart';
 
 /// Settings: language, voice (rate + pitch), and button size.
 ///
@@ -147,6 +150,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onVoicesChanged: () => setState(() => _voiceListVersion++),
           ),
           const SizedBox(height: 16),
+          _sectionTitle(context, 'My own voice (iPhone)'),
+          _PersonalVoiceSection(
+            onVoicesChanged: () => setState(() => _voiceListVersion++),
+          ),
+          const SizedBox(height: 16),
+          _sectionTitle(context, 'AI cloud voices (optional)'),
+          ElevenLabsSection(
+            onVoicesChanged: () => setState(() => _voiceListVersion++),
+          ),
+          const SizedBox(height: 16),
           _sectionTitle(context, 'Buttons'),
           Card(
             child: Padding(
@@ -228,9 +241,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       padding: EdgeInsets.only(bottom: 8),
       child: Text(
         title,
-        style: Theme.of(
-          context,
-        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+        style: Theme.of(context).textTheme.titleMedium
+            ?.copyWith(fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -333,6 +345,8 @@ class _VoiceChoiceSectionState extends State<_VoiceChoiceSection> {
                         subtitle: Text(
                           voice.isKokoro
                               ? 'Kokoro · on-device neural voice'
+                              : voice.isElevenLabs
+                              ? 'ElevenLabs · cloud voice'
                               : voice.locale,
                           style: const TextStyle(fontSize: 12),
                         ),
@@ -522,5 +536,157 @@ class _KokoroSectionState extends State<_KokoroSection> {
         ),
       ),
     );
+  }
+}
+
+/// Apple's Personal Voice (iPhone/iPad, iOS 17+): a voice the family
+/// creates on-device in Settings → Accessibility → Personal Voice. Free,
+/// private, works offline — ideal for a communicator who wants their own
+/// (or a parent's) voice. iOS hides it from apps until the app explicitly
+/// asks, so this section requests access; once granted, the Personal Voice
+/// appears in Voice choice above like any other system voice.
+class _PersonalVoiceSection extends StatefulWidget {
+  const _PersonalVoiceSection({required this.onVoicesChanged});
+
+  /// Called after access is granted so the voice picker reloads.
+  final VoidCallback onVoicesChanged;
+
+  @override
+  State<_PersonalVoiceSection> createState() => _PersonalVoiceSectionState();
+}
+
+class _PersonalVoiceSectionState extends State<_PersonalVoiceSection> {
+  final _service = PersonalVoiceService();
+  bool _busy = false;
+  PersonalVoiceStatus? _status;
+
+  Future<void> _enable() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    final status = await _service.requestAuthorization();
+    if (!mounted) return;
+    setState(() {
+      _busy = false;
+      _status = status;
+    });
+    if (status == PersonalVoiceStatus.authorized) widget.onVoicesChanged();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Android, web, and desktop have no Personal Voice.
+    if (!PersonalVoiceService.isPlatformSupported) {
+      return const SizedBox.shrink();
+    }
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              children: [
+                Icon(Icons.record_voice_over_outlined),
+                SizedBox(width: 8),
+                Text(
+                  'Personal Voice',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Use a voice created on this iPhone — for example the '
+              'communicator\'s own voice, or a parent\'s. It is created '
+              'entirely on the device: free, private, and it works offline.',
+              style: TextStyle(fontSize: 12),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'No Personal Voice yet? Create one in the iPhone Settings app '
+              '→ Accessibility → Personal Voice (a few minutes of reading '
+              'aloud). Then enable access below.',
+              style: TextStyle(fontSize: 12),
+            ),
+            const SizedBox(height: 12),
+            _buildStatus(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatus() {
+    final status = _status;
+    if (_busy) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(8),
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    switch (status) {
+      case null:
+      case PersonalVoiceStatus.notDetermined:
+        return FilledButton.icon(
+          onPressed: _enable,
+          icon: const Icon(Icons.voice_over_off_outlined),
+          label: const Text('Enable Personal Voice access'),
+        );
+      case PersonalVoiceStatus.authorized:
+        return const Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.green, size: 18),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Enabled. Your Personal Voice now appears in Voice choice '
+                'above — pick it like any other voice.',
+                style: TextStyle(fontSize: 12),
+              ),
+            ),
+          ],
+        );
+      case PersonalVoiceStatus.denied:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Access was denied. To allow it: iPhone Settings → '
+              'Accessibility → Personal Voice → turn on “Allow Apps to '
+              'Request to Use”, then try again.',
+              style: TextStyle(fontSize: 12),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: _enable,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Try again'),
+            ),
+          ],
+        );
+      case PersonalVoiceStatus.unsupported:
+        return const Text(
+          'Personal Voice needs iOS 17 or later on this device.',
+          style: TextStyle(fontSize: 12),
+        );
+      case PersonalVoiceStatus.unknown:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Something went wrong asking iOS for access.',
+              style: TextStyle(fontSize: 12),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: _enable,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Try again'),
+            ),
+          ],
+        );
+    }
   }
 }

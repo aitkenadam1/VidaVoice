@@ -6,6 +6,7 @@ import '../models/word.dart';
 import '../state/session_state.dart';
 import '../widgets/activity_summary_section.dart';
 import '../widgets/backup_section.dart';
+import '../widgets/custom_symbols_section.dart';
 import '../widgets/dashboard_section.dart';
 import '../widgets/first_week_plan_section.dart';
 import '../widgets/word_finder_section.dart';
@@ -144,22 +145,24 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
       final savedOrder = prefs.getStringList(_orderKey);
       final savedPinned = prefs.getStringList(_pinnedKey);
       final savedCollapsed = prefs.getStringList(_collapsedKey);
-      if (savedOrder == null &&
-          savedPinned == null &&
-          savedCollapsed == null) {
+      if (savedOrder == null && savedPinned == null && savedCollapsed == null) {
         _applyFirstRunDefaults();
       } else {
         final order = savedOrder ?? [];
         // Saved order first, then any new sections appended at the end.
         _order = [
-          for (final id in order) if (ids.contains(id)) id,
-          for (final id in ids) if (!order.contains(id)) id,
+          for (final id in order)
+            if (ids.contains(id)) id,
+          for (final id in ids)
+            if (!order.contains(id)) id,
         ];
         _pinned = {
-          for (final id in savedPinned ?? []) if (ids.contains(id)) id,
+          for (final id in savedPinned ?? [])
+            if (ids.contains(id)) id,
         };
         _collapsed = {
-          for (final id in savedCollapsed ?? []) if (ids.contains(id)) id,
+          for (final id in savedCollapsed ?? [])
+            if (ids.contains(id)) id,
         };
         // Upgrade path: sections the saved prefs have never seen (absent
         // from the saved order) arrive with their default collapsed/pinned
@@ -207,8 +210,10 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
   /// list is reordered or unpinned.
   void _pinnedSectionsFirst() {
     _order = [
-      for (final id in _order) if (_pinned.contains(id)) id,
-      for (final id in _order) if (!_pinned.contains(id)) id,
+      for (final id in _order)
+        if (_pinned.contains(id)) id,
+      for (final id in _order)
+        if (!_pinned.contains(id)) id,
     ];
   }
 
@@ -523,6 +528,21 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
         ),
       ),
       _Section(
+        id: 'symbols',
+        title: 'Custom symbols',
+        icon: Icons.image_outlined,
+        summary: (session) {
+          final profile = session.profiles.active;
+          if (profile == null) return 'Add a profile first';
+          final n = session.symbolOverrides.countFor(profile.id);
+          return n == 0
+              ? 'Standard symbols for ${profile.name}'
+              : '$n custom symbol${n == 1 ? '' : 's'} for ${profile.name}';
+        },
+        content: (context, session, refresh) =>
+            CustomSymbolsSection(refresh: refresh),
+      ),
+      _Section(
         id: 'profiles',
         title: 'Communicator profiles',
         icon: Icons.person_outline,
@@ -559,8 +579,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
                           tooltip: 'Remove profile',
                           icon: const Icon(Icons.delete_outline),
                           onPressed: () async {
-                            await profiles.removeProfile(p.id);
-                            await session.reloadProfileData();
+                            await session.removeProfile(p.id);
                             refresh();
                           },
                         ),

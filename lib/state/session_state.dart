@@ -1,13 +1,18 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'dart:async';
 
 import '../app_config.dart';
 import '../models/dashboard.dart';
 import '../models/word.dart';
 import '../services/dashboard_service.dart';
+import '../services/elevenlabs_key_store.dart';
+import '../services/elevenlabs_service.dart';
+import '../services/elevenlabs_voice_store.dart';
 import '../services/language_pack_service.dart';
 import '../services/profile_service.dart';
+import '../services/symbol_override_service.dart';
 import '../services/symbol_service.dart';
 import '../services/tts_service.dart';
 import '../services/kokoro_tts_service.dart';
@@ -23,9 +28,11 @@ class SessionState extends ChangeNotifier {
   /// Test seam: inject fakes so widget tests can boot a [SessionState]
   /// without touching platform channels (SharedPreferences / flutter_tts).
   /// Production always uses the default — no behavior change.
-  SessionState({Future<SharedPreferences> Function()? prefsFactory, TtsService? tts})
-    : _prefsFactory = prefsFactory ?? SharedPreferences.getInstance,
-      tts = tts ?? TtsService();
+  SessionState({
+    Future<SharedPreferences> Function()? prefsFactory,
+    TtsService? tts,
+  }) : _prefsFactory = prefsFactory ?? SharedPreferences.getInstance,
+       tts = tts ?? TtsService();
 
   final Future<SharedPreferences> Function() _prefsFactory;
   final TtsService tts;
@@ -35,6 +42,12 @@ class SessionState extends ChangeNotifier {
   final HistoryService history = HistoryService();
   final FirstWeekPlanService plan = FirstWeekPlanService();
   final DashboardService dashboards = DashboardService();
+  final SymbolOverrideService symbolOverrides = SymbolOverrideService();
+
+  /// The caregiver's own ElevenLabs API key (secure storage) and the
+  /// per-profile saved cloud voices. Null key = cloud voices unavailable.
+  final ElevenLabsKeyStore elevenLabsKeys = ElevenLabsKeyStore();
+  final ElevenLabsVoiceStore elevenLabsVoices = ElevenLabsVoiceStore();
 
   BootStatus status = BootStatus.loading;
   String bootError = '';
@@ -62,6 +75,18 @@ class SessionState extends ChangeNotifier {
   double buttonScale = 1.0;
   bool onboardingComplete = false;
 
+  /// The caregiver-set image (base64) for [itemId] on the active profile,
+  /// or null when the standard symbol applies. Keeps board call sites to
+  /// one lookup.
+  String? symbolOverrideFor(String itemId) {
+    final id = profiles.active?.id;
+    if (id == null) return null;
+    return symbolOverrides.imageFor(id, itemId);
+  }
+
+  /// Tell listeners the symbol overrides changed so boards re-read them.
+  void symbolsChanged() => notifyListeners();
+
   /// Highest vocabulary level currently revealed on the board (1-3).
   ///
   /// Caregiver-controlled, and deliberately NOT in Settings: revealing
@@ -77,9 +102,7 @@ class SessionState extends ChangeNotifier {
     final id = profiles.active?.id;
     if (id == null) return false;
     final dashboard = dashboards.forProfile(id);
-    return dashboard != null &&
-        dashboard.enabled &&
-        dashboard.cells.isNotEmpty;
+    return dashboard != null && dashboard.enabled && dashboard.cells.isNotEmpty;
   }
 
   /// Session-only escape hatch: the communicator asked for the full board.
@@ -104,9 +127,7 @@ class SessionState extends ChangeNotifier {
     final id = profiles.active?.id;
     if (id == null) return false;
     final dashboard = dashboards.forProfile(id);
-    return dashboard != null &&
-        dashboard.enabled &&
-        dashboard.cells.isNotEmpty;
+    return dashboard != null && dashboard.enabled && dashboard.cells.isNotEmpty;
   }
 
   SharedPreferences? _prefs;
@@ -139,9 +160,14 @@ class SessionState extends ChangeNotifier {
       // Heal pre-fallback cells (stored with wordId but no label) while
       // their words still resolve — see DashboardService.backfillLabels.
       await dashboards.backfillLabels(pack);
+      await symbolOverrides.load();
       await usage.load();
       await history.load(profiles.active?.id ?? '');
       await plan.load(profiles.active?.id ?? '');
+      // Wire the ElevenLabs cloud backend when the caregiver entered an API
+      // key. Best-effort like TTS itself: a missing key only means cloud
+      // voices are unavailable, never a boot failure.
+      await refreshElevenLabs();
       // TTS is best-effort and NEVER fails boot: a device with no voice
       // engine (bare Fire tablet, missing voice data) still gets the full
       // board, plus a banner explaining the missing voice.
@@ -180,6 +206,37 @@ class SessionState extends ChangeNotifier {
     await _prefs?.setDouble('vidavoice.speechPitch', pitch);
   }
 
+  /// (Re)reads the ElevenLabs API key from secure storage and wires the
+  /// cloud backend into [tts]. Call after the key is saved or cleared.
+  /// Never throws: without a key the backend is simply unavailable.
+  Future<void> refreshElevenLabs() async {
+    try {
+      final key = await elevenLabsKeys.readKey();
+      tts.elevenLabs = (key == null || key.isEmpty)
+          ? null
+          : ElevenLabsService(apiKey: key);
+    } catch (_) {
+      tts.elevenLabs = null;
+    }
+    notifyListeners();
+  }
+
+  /// Saved ElevenLabs voices for the active profile, as picker entries.
+  Future<List<TtsVoice>> elevenLabsVoiceEntries() async {
+    final id = profiles.active?.id;
+    if (id == null) return const [];
+    final saved = await elevenLabsVoices.load(id);
+    final prefix = currentLocale.toLowerCase();
+    final matching = saved
+        .where((v) => v.locale.toLowerCase().startsWith(prefix))
+        .toList();
+    final list = matching.isNotEmpty ? matching : saved;
+    return [
+      for (final v in list)
+        TtsVoice(name: v.name, locale: v.locale, elevenLabsVoiceId: v.id),
+    ];
+  }
+
   /// Engine voices for the current language, for the voice picker. Empty
   /// when TTS is unavailable. Falls back to the full engine list when no
   /// voice reports a matching locale (some engines report bare tags).
@@ -194,7 +251,8 @@ class SessionState extends ChangeNotifier {
         .toList();
     final system = matching.isNotEmpty ? matching : all;
     final kokoro = await _kokoroVoicesForLocale();
-    return [...kokoro, ...system];
+    final elevenLabs = await elevenLabsVoiceEntries();
+    return [...kokoro, ...elevenLabs, ...system];
   }
 
   /// The on-device neural TTS backend (for the Settings download UI).
@@ -222,6 +280,8 @@ class SessionState extends ChangeNotifier {
   String _voiceNameKey(String locale) => 'vidavoice.voice.$locale.name';
   String _voiceLocaleKey(String locale) => 'vidavoice.voice.$locale.locale';
   String _voiceKokoroKey(String locale) => 'vidavoice.voice.$locale.kokoro';
+  String _voiceElevenLabsKey(String locale) =>
+      'vidavoice.voice.$locale.elevenlabs';
 
   /// Persist and apply a voice choice for the current language.
   Future<void> setVoice(TtsVoice voice) async {
@@ -236,6 +296,12 @@ class SessionState extends ChangeNotifier {
     } else {
       await _prefs?.remove(_voiceKokoroKey(currentLocale));
     }
+    final elevenId = voice.elevenLabsVoiceId;
+    if (elevenId != null) {
+      await _prefs?.setString(_voiceElevenLabsKey(currentLocale), elevenId);
+    } else {
+      await _prefs?.remove(_voiceElevenLabsKey(currentLocale));
+    }
     notifyListeners();
   }
 
@@ -245,6 +311,7 @@ class SessionState extends ChangeNotifier {
     await _prefs?.remove(_voiceNameKey(currentLocale));
     await _prefs?.remove(_voiceLocaleKey(currentLocale));
     await _prefs?.remove(_voiceKokoroKey(currentLocale));
+    await _prefs?.remove(_voiceElevenLabsKey(currentLocale));
     notifyListeners();
   }
 
@@ -276,10 +343,21 @@ class SessionState extends ChangeNotifier {
         }
         return false;
       }
+      // ElevenLabs voices aren't in the engine list either — restore from
+      // the profile's saved cloud voices. A missing entry (or no API key)
+      // keeps the default; speech falls back on-device anyway.
+      final elevenId = _prefs?.getString(_voiceElevenLabsKey(currentLocale));
+      if (elevenId != null && elevenId.isNotEmpty) {
+        final entries = await elevenLabsVoiceEntries();
+        final match = entries.where((v) => v.elevenLabsVoiceId == elevenId);
+        if (match.isNotEmpty) {
+          await tts.setVoice(match.first);
+          return true;
+        }
+        return false;
+      }
       final voices = await tts.getVoices();
-      final match = voices.where(
-        (v) => v.name == name && v.locale == locale,
-      );
+      final match = voices.where((v) => v.name == name && v.locale == locale);
       if (match.isNotEmpty) {
         await tts.setVoice(match.first);
         return true;
@@ -341,6 +419,17 @@ class SessionState extends ChangeNotifier {
   Future<void> switchProfile(String id) async {
     await profiles.setActive(id);
     _dashboardBypassed = false;
+    await reloadProfileData();
+    notifyListeners();
+  }
+
+  /// Delete a communicator profile and everything stored for it — including
+  /// its custom button images and saved cloud voices — then reload
+  /// per-profile data for whoever is now active.
+  Future<void> removeProfile(String id) async {
+    await profiles.removeProfile(id);
+    await symbolOverrides.removeProfile(id);
+    await elevenLabsVoices.clearProfile(id);
     await reloadProfileData();
     notifyListeners();
   }

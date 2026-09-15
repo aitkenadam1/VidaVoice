@@ -3,6 +3,10 @@ import 'dart:io';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'elevenlabs_service.dart';
+import 'elevenlabs_voice_store.dart';
+import 'symbol_override_service.dart';
+
 /// One exported profile backup: everything needed to restore a communicator
 /// profile on this device or another one.
 ///
@@ -25,6 +29,8 @@ class ProfileBackup {
     required this.usageDays,
     required this.historyEntries,
     required this.planDays,
+    required this.customSymbols,
+    required this.elevenLabsVoices,
   });
 
   static const format = 'vidavoice-profile-backup';
@@ -53,6 +59,16 @@ class ProfileBackup {
   /// Completed first-week plan days (1..7).
   final List<int> planDays;
 
+  /// Per-profile custom button images: vocabulary/phrase item id ->
+  /// base64 JPEG (see SymbolOverrideService). Empty when the profile has
+  /// none, or when the backup predates the custom-symbols feature.
+  final Map<String, String> customSymbols;
+
+  /// Saved ElevenLabs cloud voices for the profile. The ids only resolve
+  /// with an API key (kept in secure storage, never in backups); without
+  /// one they are inert and speech falls back on-device.
+  final List<SavedElevenLabsVoice> elevenLabsVoices;
+
   Map<String, dynamic> toJson() => {
     'format': format,
     'version': version,
@@ -66,12 +82,11 @@ class ProfileBackup {
       'unlockedLevel': unlockedLevel,
       'onboardingComplete': onboardingComplete,
     },
-    'usage': {
-      'counts': usageCounts,
-      'days': usageDays,
-    },
+    'usage': {'counts': usageCounts, 'days': usageDays},
     'history': historyEntries,
     'planDays': planDays,
+    'customSymbols': customSymbols,
+    'elevenLabsVoices': [for (final v in elevenLabsVoices) v.toJson()],
   };
 
   /// Parses and validates a backup. Throws [BackupFormatException] on
@@ -167,6 +182,39 @@ class ProfileBackup {
     final exportedAt = json['exportedAt'];
     if (exportedAt is! num) req('exportedAt is missing');
 
+    // Optional so backups written before the custom-symbols feature still
+    // decode; those simply restore with no custom images.
+    final customSymbols = <String, String>{};
+    final rawSymbols = json['customSymbols'];
+    if (rawSymbols != null) {
+      if (rawSymbols is! Map) req('customSymbols is malformed');
+      for (final e in (rawSymbols as Map).entries) {
+        final k = e.key;
+        final v = e.value;
+        if (k is! String || k.isEmpty || v is! String || v.isEmpty) {
+          req('customSymbols has a bad entry');
+        }
+        customSymbols[k] = v;
+      }
+    }
+
+    // Optional so backups written before these features still decode.
+    final elevenLabsVoices = <SavedElevenLabsVoice>[];
+    final rawVoices = json['elevenLabsVoices'];
+    if (rawVoices != null) {
+      if (rawVoices is! List) req('elevenLabsVoices is malformed');
+      for (final e in rawVoices as List) {
+        if (e is! Map) req('elevenLabsVoices has a bad entry');
+        try {
+          elevenLabsVoices.add(
+            SavedElevenLabsVoice.fromJson(Map<String, dynamic>.from(e as Map)),
+          );
+        } on ElevenLabsException {
+          req('elevenLabsVoices has a bad entry');
+        }
+      }
+    }
+
     return ProfileBackup(
       profileId: profileId,
       profileName: profileName,
@@ -181,6 +229,8 @@ class ProfileBackup {
       usageDays: days,
       historyEntries: history,
       planDays: planDays,
+      customSymbols: customSymbols,
+      elevenLabsVoices: elevenLabsVoices,
     );
   }
 
@@ -317,7 +367,22 @@ class ProfileBackupService {
       usageDays: days,
       historyEntries: history,
       planDays: planDays,
+      customSymbols: await _customSymbols(prefs, profileId),
+      elevenLabsVoices: await ElevenLabsVoiceStore(
+        prefsFactory: () async => prefs,
+      ).load(profileId),
     );
+  }
+
+  /// The profile's custom button images, read straight from the override
+  /// blob. A corrupt blob yields no symbols rather than failing the backup.
+  Future<Map<String, String>> _customSymbols(
+    SharedPreferences prefs,
+    String profileId,
+  ) async {
+    final overrides = SymbolOverrideService(prefsFactory: () async => prefs);
+    await overrides.load();
+    return overrides.sliceFor(profileId);
   }
 
   /// Writes a backup file into [dir]; returns the file. The file name is
@@ -340,24 +405,35 @@ class ProfileBackupService {
 
   /// Applies [backup].
   ///
-  /// * Replace (`merge: false`): the profile's history, plan, usage and
-  ///   device settings are overwritten with the backup. Returns the device
-  ///   settings so the caller can push them through the live session.
+  /// * Replace (`merge: false`): the profile's history, plan, usage,
+  ///   custom symbols, saved cloud voices and device settings are
+  ///   overwritten with the backup. Returns the device settings so the
+  ///   caller can push them through the live session.
   /// * Merge (`merge: true`): usage counts and day buckets are summed,
   ///   history is concatenated (newest first, capped), plan days are
-  ///   unioned, device settings are left alone.
+  ///   unioned, custom symbols are unioned (the backup wins on conflict),
+  ///   saved cloud voices are unioned by id (the backup wins on conflict),
+  ///   device settings are left alone.
   ///
   /// If the backup's profile id is unknown on this device it is added to
   /// the profile list (import onto a fresh device). Nothing belonging to
   /// any other profile is touched.
-  Future<ProfileBackup> apply(ProfileBackup backup, {required bool merge}) async {
+  Future<ProfileBackup> apply(
+    ProfileBackup backup, {
+    required bool merge,
+  }) async {
     final prefs = await _prefsFactory();
     await _ensureProfile(prefs, backup);
+    final overrides = SymbolOverrideService(prefsFactory: () async => prefs);
+    await overrides.load();
+    final voiceStore = ElevenLabsVoiceStore(prefsFactory: () async => prefs);
 
     if (merge) {
       await _mergeUsage(prefs, backup);
       await _mergeHistory(prefs, backup);
       await _mergePlan(prefs, backup);
+      await overrides.mergeSlice(backup.profileId, backup.customSymbols);
+      await _mergeElevenLabsVoices(voiceStore, backup);
     } else {
       await prefs.setString(
         _historyKey(backup.profileId),
@@ -369,8 +445,24 @@ class ProfileBackupService {
       );
       await prefs.setString(_kUsageCounts, json.encode(backup.usageCounts));
       await prefs.setString(_kUsageDays, json.encode(backup.usageDays));
+      await overrides.replaceSlice(backup.profileId, backup.customSymbols);
+      await voiceStore.save(backup.profileId, backup.elevenLabsVoices);
     }
     return backup;
+  }
+
+  /// Unions saved cloud voices by id; the backup wins on conflict.
+  Future<void> _mergeElevenLabsVoices(
+    ElevenLabsVoiceStore voiceStore,
+    ProfileBackup backup,
+  ) async {
+    final existing = await voiceStore.load(backup.profileId);
+    final ids = {for (final v in backup.elevenLabsVoices) v.id};
+    await voiceStore.save(backup.profileId, [
+      for (final v in existing)
+        if (!ids.contains(v.id)) v,
+      ...backup.elevenLabsVoices,
+    ]);
   }
 
   String? _profileName(SharedPreferences prefs, String profileId) {
@@ -409,7 +501,10 @@ class ProfileBackupService {
     }
   }
 
-  Future<void> _mergeUsage(SharedPreferences prefs, ProfileBackup backup) async {
+  Future<void> _mergeUsage(
+    SharedPreferences prefs,
+    ProfileBackup backup,
+  ) async {
     final counts = _readIntMap(prefs.getString(_kUsageCounts));
     backup.usageCounts.forEach((k, v) => counts[k] = (counts[k] ?? 0) + v);
     final days = _readDayMap(prefs.getString(_kUsageDays));

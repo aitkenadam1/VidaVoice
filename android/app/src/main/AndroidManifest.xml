@@ -1,6 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Model downloads (Kokoro neural voices) and any other network use. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- In-app microphone recording for ElevenLabs voice cloning. The
+         caregiver is asked at recording time; audio is uploaded only when
+         they explicitly create a voice. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <application
         android:label="VidaVoice"
         android:name="${applicationName}"

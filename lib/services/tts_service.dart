@@ -2,16 +2,26 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_tts/flutter_tts.dart';
 
 import '../app_config.dart';
+import 'elevenlabs_audio.dart';
+import 'elevenlabs_service.dart';
 import 'kokoro_tts_service.dart';
 
 /// A speakable voice exposed by the TTS engine.
 ///
-/// System voices come from flutter_tts ([kokoroVoiceId] is null). Kokoro
-/// voices are on-device neural voices ([kokoroVoiceId] is the voice id,
-/// e.g. 'af_bella'); they only appear when the Kokoro model pack is
-/// downloaded.
+/// System voices come from flutter_tts ([kokoroVoiceId] and
+/// [elevenLabsVoiceId] are null). Kokoro voices are on-device neural voices
+/// ([kokoroVoiceId] is the voice id, e.g. 'af_bella'); they only appear
+/// when the Kokoro model pack is downloaded. ElevenLabs voices are cloud
+/// voices on the caregiver's own ElevenLabs account ([elevenLabsVoiceId]
+/// is the voice id); they need an API key and internet, and any failure
+/// falls back to the on-device voices.
 class TtsVoice {
-  const TtsVoice({required this.name, required this.locale, this.kokoroVoiceId});
+  const TtsVoice({
+    required this.name,
+    required this.locale,
+    this.kokoroVoiceId,
+    this.elevenLabsVoiceId,
+  });
 
   /// Engine voice name, e.g. "Microsoft David - English (United States)".
   /// Kokoro voices are named "Kokoro Bella" (from the voice display name).
@@ -23,8 +33,14 @@ class TtsVoice {
   /// Non-null for Kokoro on-device voices.
   final String? kokoroVoiceId;
 
+  /// Non-null for ElevenLabs cloud voices.
+  final String? elevenLabsVoiceId;
+
   /// True for Kokoro on-device neural voices.
   bool get isKokoro => kokoroVoiceId != null;
+
+  /// True for ElevenLabs cloud voices.
+  bool get isElevenLabs => elevenLabsVoiceId != null;
 
   @override
   bool operator ==(Object other) =>
@@ -32,10 +48,12 @@ class TtsVoice {
       other is TtsVoice &&
           name == other.name &&
           locale == other.locale &&
-          kokoroVoiceId == other.kokoroVoiceId;
+          kokoroVoiceId == other.kokoroVoiceId &&
+          elevenLabsVoiceId == other.elevenLabsVoiceId;
 
   @override
-  int get hashCode => Object.hash(name, locale, kokoroVoiceId);
+  int get hashCode =>
+      Object.hash(name, locale, kokoroVoiceId, elevenLabsVoiceId);
 
   @override
   String toString() => '$name ($locale)';
@@ -47,7 +65,8 @@ class TtsService {
   /// Lazily created: constructing a [TtsService] (or a test fake of one)
   /// must not touch the platform channel before the binding exists.
   /// [kokoro] is likewise side-effect free at construction.
-  TtsService({KokoroTtsService? kokoro}) : _kokoro = kokoro ?? KokoroTtsService();
+  TtsService({KokoroTtsService? kokoro})
+    : _kokoro = kokoro ?? KokoroTtsService();
 
   FlutterTts? _tts;
   FlutterTts get _engine => _tts ??= FlutterTts();
@@ -57,6 +76,15 @@ class TtsService {
 
   /// The on-device neural TTS backend (model download, worker, playback).
   KokoroTtsService get kokoro => _kokoro;
+
+  /// The ElevenLabs cloud backend, when the caregiver entered an API key.
+  /// Null means cloud voices are unavailable; speech falls back to
+  /// on-device voices. Set by SessionState whenever the key changes.
+  ElevenLabsService? elevenLabs;
+
+  /// Player for cloud-voice audio. A settable seam so tests can observe
+  /// routing without platform channels.
+  ElevenLabsAudioPlayer elevenAudioPlayer = ElevenLabsAudioPlayer();
 
   double rate = AppConfig.defaultSpeechRate;
   double pitch = AppConfig.defaultSpeechPitch;
@@ -147,6 +175,22 @@ class TtsService {
   Future<void> speak(String text) async {
     if (text.trim().isEmpty) return;
     final voice = currentVoice;
+    if (voice != null && voice.isElevenLabs) {
+      final svc = elevenLabs;
+      if (svc != null) {
+        try {
+          final audio = await svc.synthesize(
+            text: text,
+            voiceId: voice.elevenLabsVoiceId!,
+          );
+          await elevenAudioPlayer.playBytes(audio);
+          return;
+        } catch (_) {
+          // Cloud voice unavailable (no internet, bad key, quota): fall
+          // through to the on-device voices rather than going silent.
+        }
+      }
+    }
     if (voice != null && voice.isKokoro) {
       final kv = kokoroVoiceById(voice.kokoroVoiceId!);
       if (kv != null) {
@@ -165,8 +209,9 @@ class TtsService {
     }
   }
 
-  /// Stop any in-flight speech on both backends. Never throws.
+  /// Stop any in-flight speech on all backends. Never throws.
   Future<void> stop() async {
+    await elevenAudioPlayer.stop();
     try {
       await _kokoro.stop();
     } catch (_) {}
@@ -202,10 +247,11 @@ class TtsService {
   /// engine as soon as one is ready.
   Future<void> setVoice(TtsVoice voice) async {
     currentVoice = voice;
-    // Kokoro voices are not system-engine voices: poking flutter_tts with
-    // a nonexistent voice name would be pointless at best, and that engine
-    // is exactly the fallback used when Kokoro fails, so leave it alone.
-    if (_ready && !voice.isKokoro) {
+    // Kokoro and ElevenLabs voices are not system-engine voices: poking
+    // flutter_tts with a nonexistent voice name would be pointless at best,
+    // and that engine is exactly the fallback used when they fail, so leave
+    // it alone.
+    if (_ready && !voice.isKokoro && !voice.isElevenLabs) {
       try {
         await _engine.setVoice({'name': voice.name, 'locale': voice.locale});
       } catch (_) {

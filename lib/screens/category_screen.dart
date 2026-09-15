@@ -53,6 +53,7 @@ class CategoryScreen extends StatelessWidget {
                       item: word,
                       scale: scale,
                       hasSymbol: session.symbols.hasSymbol(word.id),
+                      imageOverride: session.symbolOverrideFor(word.id),
                       onTap: () => session.tapWord(word),
                     ),
               ],

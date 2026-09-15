@@ -15,12 +15,17 @@ class WordButton extends StatelessWidget {
     required this.onTap,
     this.scale = 1.0,
     this.hasSymbol = false,
+    this.imageOverride,
   });
 
   final BoardItem item;
   final VoidCallback onTap;
   final double scale;
   final bool hasSymbol;
+
+  /// Per-profile caregiver image for this button (base64). Null keeps the
+  /// standard symbol.
+  final String? imageOverride;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +43,12 @@ class WordButton extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SymbolImage(item: item, hasSymbol: hasSymbol, size: 38 * scale),
+              SymbolImage(
+                item: item,
+                hasSymbol: hasSymbol,
+                overrideData: imageOverride,
+                size: 38 * scale,
+              ),
               const SizedBox(height: 2),
               Text(
                 item.label,

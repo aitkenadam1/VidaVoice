@@ -7,12 +7,15 @@ import '../state/session_state.dart';
 /// Phase 2 (communication modes): mode selection UI shared by onboarding
 /// and the caregiver hub.
 ///
-/// The ONLY sanctioned mutation path for a profile's communication mode is
-/// [ProfileService.setCommunicationMode], called from an explicit caregiver
-/// "Save mode" action. Nothing in this file derives the mode from mobility
-/// answers, grid size, or any other signal, and the sandbox previews below
-/// never touch the TTS layer at all — they are pure local-state mocks, so
-/// "try before saving" cannot speak by construction.
+/// The ONLY sanctioned persistence path for a profile's communication mode
+/// is [ProfileService.setCommunicationMode]; UI code calls it through the
+/// [SessionState.setCommunicationMode] wrapper (same persistence plus a
+/// listener notification so the home screen switches surfaces). Both save
+/// actions below are explicit caregiver "Save mode" presses. Nothing in
+/// this file derives the mode from mobility answers, grid size, or any
+/// other signal, and the sandbox previews below never touch the TTS layer
+/// at all — they are pure local-state mocks, so "try before saving" cannot
+/// speak by construction.
 ///
 /// Copy source: the OneVoz Communication Modes plan (onboarding + profile
 /// settings sections).
@@ -298,8 +301,9 @@ class _ModeChoiceStepState extends State<ModeChoiceStep> {
     final session = context.read<SessionState>();
     final profile = session.profiles.active;
     if (profile == null) return;
-    // The ONLY sanctioned mutation path for the communication mode.
-    await session.profiles.setCommunicationMode(profile.id, _selected);
+    // The UI-level save: persists the mode through the single sanctioned
+    // ProfileService path and notifies so the home screen switches.
+    await session.setCommunicationMode(profile.id, _selected);
     if (!mounted) return;
     setState(() => _saved = _selected);
     ScaffoldMessenger.of(context).showSnackBar(
@@ -357,7 +361,9 @@ class _ModeChoiceStepState extends State<ModeChoiceStep> {
 
 /// Per-profile "Communication mode" editor for the caregiver hub's
 /// Communicator profiles section. Shows the profile's current mode and
-/// saves only through [ProfileService.setCommunicationMode], which touches
+/// saves only through [SessionState.setCommunicationMode] (which persists
+/// via the single sanctioned [ProfileService] path and notifies so the
+/// home screen switches), which touches
 /// the mode field and nothing else — dashboards, symbols, phrases, voice,
 /// and history are stored separately and are never rewritten here.
 class ProfileModeEditor extends StatefulWidget {
@@ -388,7 +394,10 @@ class _ProfileModeEditorState extends State<ProfileModeEditor> {
 
   Future<void> _save() async {
     final session = context.read<SessionState>();
-    await session.profiles.setCommunicationMode(widget.profileId, _selected);
+    // The UI-level save: persists through the single sanctioned
+    // ProfileService path and notifies so the home screen switches to
+    // the new mode surface immediately.
+    await session.setCommunicationMode(widget.profileId, _selected);
     if (!mounted) return;
     setState(() {}); // refresh the "Current" line below
     ScaffoldMessenger.of(context).showSnackBar(
@@ -479,7 +488,9 @@ class _BuildLengthEditorState extends State<BuildLengthEditor> {
 
   Future<void> _save() async {
     final session = context.read<SessionState>();
-    await session.profiles.setBuildMaxSymbols(
+    // The UI-level save: persists through ProfileService and notifies so
+    // the phrase strip re-reads the limit immediately.
+    await session.setBuildMaxSymbols(
       widget.profileId,
       _draft.round(),
     );

@@ -122,6 +122,10 @@ class _BackupSectionState extends State<BackupSection> {
     setState(() => _busy = true);
     try {
       await _service.apply(backup, merge: merge);
+      // The import rewrites the profile blob in prefs directly, so the
+      // in-memory profile list (including the communication mode, which
+      // decides the home screen) must be reloaded and the UI rebuilt.
+      await session.reloadProfiles();
       if (!merge) {
         // Replace mode restores device settings through the live session
         // so in-memory state and persisted prefs stay in sync.

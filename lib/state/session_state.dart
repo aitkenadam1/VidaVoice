@@ -655,6 +655,9 @@ class SessionState extends ChangeNotifier {
     }
     currentLocale = locale;
     _sentenceIds.clear();
+    // Strip labels are language-specific, like the sentence bar.
+    _buildStrip.clear();
+    buildNotice = null;
     _dashboardBypassed = false;
     pack = await LanguagePackService.loadPack(locale);
     await tts.setLanguage(pack.ttsLocale);
@@ -680,13 +683,51 @@ class SessionState extends ChangeNotifier {
   Future<void> switchProfile(String id) async {
     await profiles.setActive(id);
     _dashboardBypassed = false;
+    // Composition state is per profile: never leak an unsent phrase strip
+    // (or a notice about it) into another profile's session.
+    _buildStrip.clear();
+    buildNotice = null;
     await reloadProfileData();
     notifyListeners();
   }
 
+  /// Reload the profile list from storage — a backup import rewrites the
+  /// profile blob in SharedPreferences directly, so the in-memory list
+  /// would otherwise stay stale (including the communication mode, which
+  /// decides which home screen is shown). Reloads per-profile data for
+  /// the active profile and notifies so the home surface rebuilds.
+  Future<void> reloadProfiles() async {
+    await profiles.load();
+    _buildStrip.clear();
+    buildNotice = null;
+    await reloadProfileData();
+    notifyListeners();
+  }
+
+  /// Explicit caregiver save for a profile's communication mode. This is
+  /// the UI-level entry point to [ProfileService.setCommunicationMode] —
+  /// it persists the mode AND notifies listeners, so the home screen
+  /// switches to the new mode surface immediately. A raw
+  /// [ProfileService] call persists but does not rebuild the MaterialApp
+  /// home; UI code must call this instead.
+  Future<void> setCommunicationMode(String id, CommunicationMode mode) async {
+    await profiles.setCommunicationMode(id, mode);
+    notifyListeners();
+  }
+
+  /// Explicit caregiver save for a profile's Build-mode phrase length.
+  /// Same contract as [setCommunicationMode]: persists through
+  /// [ProfileService] and notifies so the phrase strip re-reads the
+  /// limit immediately.
+  Future<void> setBuildMaxSymbols(String id, int max) async {
+    await profiles.setBuildMaxSymbols(id, max);
+    notifyListeners();
+  }
+
   /// Delete a communicator profile and everything stored for it — including
-  /// its custom button images and saved cloud voices — then reload
-  /// per-profile data for whoever is now active.
+  /// its custom button images, saved cloud voices, spoken-history records,
+  /// and learned prediction ranks — then reload per-profile data for
+  /// whoever is now active.
   Future<void> removeProfile(String id) async {
     await profiles.removeProfile(id);
     await symbolOverrides.removeProfile(id);
@@ -695,6 +736,14 @@ class SessionState extends ChangeNotifier {
     // the durable "do not suggest" preference lives on the profile blob,
     // which is already gone with the profile).
     await nudge.removeProfile(id);
+    // The profile's spoken history and learned prediction ranks are
+    // per-profile stores keyed by this id: they must not linger on the
+    // device for a profile that no longer exists.
+    await history.clear(id);
+    await prediction.reset(id);
+    // The unsent composition belongs to the deleted profile's session.
+    _buildStrip.clear();
+    buildNotice = null;
     await reloadProfileData();
     notifyListeners();
   }

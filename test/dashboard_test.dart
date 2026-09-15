@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vidavoice/models/dashboard.dart';
@@ -144,5 +146,74 @@ void main() {
     );
     final ids = {for (var i = 0; i < 10; i++) svc.newCellId(dashboard)};
     expect(ids.length, 10);
+  });
+
+  test('wrong field types are tolerated instead of failing boot (B1)', () async {
+    // Hand-edited or cross-version data: ints where Strings/bools belong.
+    // fromJson casts used to throw _TypeError here, failing app boot.
+    SharedPreferences.setMockInitialValues({
+      'vidavoice.dashboards.v1': jsonEncode({
+        'p1': {
+          'id': 'dash-p1',
+          'profileId': 'p1',
+          'name': 'Typed wrong',
+          'enabled': 'yes',
+          'source': 7,
+          'updatedAt': 12345,
+          'cells': [
+            {
+              'id': 'c1',
+              'wordId': 'core.want',
+              'label': 42,
+              'speakText': 43,
+              'emoji': 44,
+              'color': 'red',
+            },
+          ],
+        },
+      }),
+    });
+    final svc = DashboardService();
+    await svc.load(); // must not throw
+    final dashboard = svc.forProfile('p1')!;
+    expect(dashboard.enabled, isFalse);
+    expect(dashboard.source, isNull);
+    expect(dashboard.cells, hasLength(1));
+    expect(dashboard.cells.single.label, isEmpty);
+    expect(dashboard.cells.single.color, isNull);
+    expect(dashboard.cells.single.wordId, 'core.want');
+  });
+
+  test('one bad cell is skipped, the rest of the dashboard survives (B1)', () async {
+    SharedPreferences.setMockInitialValues({
+      'vidavoice.dashboards.v1': jsonEncode({
+        'p1': {
+          'id': 'dash-p1',
+          'profileId': 'p1',
+          'name': 'One bad cell',
+          'cells': [
+            {'label': 'no id at all'},
+            {'id': 'c2', 'label': 'Good'},
+          ],
+        },
+      }),
+    });
+    final svc = DashboardService();
+    await svc.load();
+    final cells = svc.forProfile('p1')!.cells;
+    expect(cells.map((c) => c.id), ['c2']);
+  });
+
+  test('vocab cell keeps its stored label through JSON (B2 fallback)', () {
+    const cell = DashboardCell(
+      id: 'c',
+      wordId: 'core.want',
+      label: 'want',
+    );
+    final back = DashboardCell.fromJson(cell.toJson());
+    expect(back.wordId, 'core.want');
+    expect(back.label, 'want');
+    // The fallback tapDashboardCell uses when the word leaves the pack.
+    expect(back.customText, 'want');
   });
 }

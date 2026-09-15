@@ -84,12 +84,29 @@ class SessionState extends ChangeNotifier {
 
   /// Session-only escape hatch: the communicator asked for the full board.
   /// The caregiver's enable/disable setting is untouched and rules again
-  /// on profile switch, language switch, or next boot.
+  /// on profile switch, language switch, or next boot. [restoreDashboard]
+  /// brings the dashboard back within the session.
   bool _dashboardBypassed = false;
 
   void bypassDashboard() {
     _dashboardBypassed = true;
     notifyListeners();
+  }
+
+  void restoreDashboard() {
+    _dashboardBypassed = false;
+    notifyListeners();
+  }
+
+  /// True when the dashboard is bypassed but still available to return to.
+  bool get canRestoreDashboard {
+    if (!_dashboardBypassed) return false;
+    final id = profiles.active?.id;
+    if (id == null) return false;
+    final dashboard = dashboards.forProfile(id);
+    return dashboard != null &&
+        dashboard.enabled &&
+        dashboard.cells.isNotEmpty;
   }
 
   SharedPreferences? _prefs;

@@ -151,6 +151,9 @@ class _DashboardSectionState extends State<DashboardSection> {
                       DashboardCell(
                         id: session.dashboards.newCellId(dashboard),
                         wordId: s.item.id,
+                        // Stored fallback: if the word ever leaves the
+                        // pack, the tile still shows and speaks this.
+                        label: s.item.label,
                       ),
                     );
                     await session.dashboards.save(dashboard);
@@ -208,7 +211,13 @@ class _DashboardSectionState extends State<DashboardSection> {
                   widget.refresh();
                 },
               ),
-              const Icon(Icons.drag_handle),
+              ReorderableDragStartListener(
+                index: index,
+                child: const Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Icon(Icons.drag_handle),
+                ),
+              ),
             ],
           ),
         );
@@ -329,6 +338,10 @@ class _DashboardSectionState extends State<DashboardSection> {
                                         dashboard,
                                       ),
                                       wordId: hit.item.id,
+                                      // Stored fallback: if the word ever
+                                      // leaves the pack, the tile still
+                                      // shows and speaks this.
+                                      label: hit.item.label,
                                     ),
                                   );
                                   await session.dashboards.save(dashboard);
@@ -463,6 +476,8 @@ class _DashboardSectionState extends State<DashboardSection> {
           content: Text(
             '${report.buttonCount} buttons'
             '${hasExisting ? ' will replace the current dashboard' : ''}.'
+            '\n\nImported buttons speak their text immediately when tapped '
+            '— they do not build sentences.'
             '${report.warnings.isNotEmpty ? '\n\nNotes:\n${report.warnings.join('\n')}' : ''}',
           ),
           actions: [

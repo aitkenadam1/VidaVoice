@@ -31,11 +31,14 @@ class DashboardCell {
   /// Null for a free custom button.
   final String? wordId;
 
-  /// Custom-button label (ignored when [wordId] is set).
+  /// Button label. For a custom button this is the visible text. For a
+  /// vocab cell the live label comes from the language pack; this stored
+  /// label is only a fallback, spoken when the word has left the pack.
   final String label;
 
-  /// What TTS speaks for a custom button (ignored when [wordId] is set).
-  /// Falls back to [label] when empty.
+  /// What TTS speaks for a custom button (ignored when [wordId] resolves
+  /// to a live word). Falls back to [label] when empty. For a vocab cell
+  /// whose word left the pack, the stored [label] is spoken instead.
   final String speakText;
 
   /// Emoji shown for a custom button without an imported image.
@@ -51,7 +54,10 @@ class DashboardCell {
 
   bool get isCustom => wordId == null;
 
-  /// The text a custom button speaks. Empty when this is a vocab cell.
+  /// The text spoken when the button can't resolve a live word: the
+  /// custom [speakText] when set, else the stored [label]. For vocab cells
+  /// this is the fallback for a word that left the pack; empty only when
+  /// a vocab cell was stored with no label at all.
   String get customText =>
       speakText.isNotEmpty ? speakText : label;
 
@@ -73,12 +79,15 @@ class DashboardCell {
     final wordId = json['wordId'];
     final imageData = json['imageData'];
     final color = json['color'];
+    // Every other field is type-tolerant: a wrong type (hand-edited or
+    // cross-version data) falls back to a default instead of throwing a
+    // _TypeError that would fail the whole dashboard load.
     return DashboardCell(
       id: id,
       wordId: wordId is String && wordId.isNotEmpty ? wordId : null,
-      label: (json['label'] as String?) ?? '',
-      speakText: (json['speakText'] as String?) ?? '',
-      emoji: (json['emoji'] as String?) ?? '🔤',
+      label: _stringField(json, 'label'),
+      speakText: _stringField(json, 'speakText'),
+      emoji: _stringField(json, 'emoji', '🔤'),
       imageData: imageData is String && imageData.isNotEmpty ? imageData : null,
       color: color is int ? color : null,
     );
@@ -141,15 +150,22 @@ class PersonalDashboard {
     if (cellsJson is List) {
       for (final entry in cellsJson) {
         if (entry is Map) {
-          cells.add(
-            DashboardCell.fromJson(Map<String, dynamic>.from(entry)),
-          );
+          try {
+            cells.add(
+              DashboardCell.fromJson(Map<String, dynamic>.from(entry)),
+            );
+          } on FormatException {
+            // One bad cell is skipped; the rest of the dashboard survives.
+          }
         }
       }
     }
     DateTime updatedAt;
+    final updatedRaw = json['updatedAt'];
     try {
-      updatedAt = DateTime.parse((json['updatedAt'] as String?) ?? '');
+      updatedAt = updatedRaw is String
+          ? DateTime.parse(updatedRaw)
+          : DateTime.now();
     } on FormatException {
       updatedAt = DateTime.now();
     }
@@ -158,9 +174,22 @@ class PersonalDashboard {
       profileId: profileId,
       name: name,
       cells: cells,
-      enabled: (json['enabled'] as bool?) ?? false,
-      source: json['source'] as String?,
+      enabled: _boolField(json, 'enabled'),
+      source: _stringOrNull(json, 'source'),
       updatedAt: updatedAt,
     );
   }
 }
+
+/// Type-tolerant field readers: wrong types fall back to defaults instead
+/// of throwing [_TypeError], so one bad field can never fail a dashboard
+/// load (and with it, app boot).
+String _stringField(Map<String, dynamic> json, String key,
+        [String fallback = '']) =>
+    json[key] is String ? json[key] as String : fallback;
+
+String? _stringOrNull(Map<String, dynamic> json, String key) =>
+    json[key] is String ? json[key] as String : null;
+
+bool _boolField(Map<String, dynamic> json, String key) =>
+    json[key] is bool ? json[key] as bool : false;

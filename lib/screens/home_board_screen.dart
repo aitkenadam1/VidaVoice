@@ -28,6 +28,9 @@ class HomeBoardScreen extends StatelessWidget {
     final showDashboard = context.select<SessionState, bool>(
       (s) => s.showDashboard,
     );
+    final canRestoreDashboard = context.select<SessionState, bool>(
+      (s) => s.canRestoreDashboard,
+    );
     final session = context.read<SessionState>();
 
     return Scaffold(
@@ -80,6 +83,12 @@ class HomeBoardScreen extends StatelessWidget {
               onPressed: session.bypassDashboard,
               icon: const Icon(Icons.grid_view),
               label: const Text('Show all words'),
+            )
+          else if (canRestoreDashboard)
+            TextButton.icon(
+              onPressed: session.restoreDashboard,
+              icon: const Icon(Icons.dashboard),
+              label: const Text('Back to my board'),
             ),
           const MessageBar(),
         ],

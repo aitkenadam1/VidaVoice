@@ -241,6 +241,113 @@ void main() {
     await tester.pump();
     expect(find.text('🔤'), findsOneWidget);
   });
+
+  test('blank placeholder buttons do not trigger the truncation warning (3)',
+      () {
+    // The shared fixture has 4 grid buttons: 2 imported, 1 link, 1 blank.
+    final report = ObfImportService().importBytes(
+      utf8.encode(_obfJson()),
+      profileId: 'p1',
+      fileName: 'placeholders.obf',
+    );
+    expect(report.buttonCount, 2);
+    expect(report.truncated, isFalse);
+    expect(
+      report.warnings.any((w) => w.contains('very large')),
+      isFalse,
+    );
+  });
+
+  test('versioned format values pass the prefix check without warning (4)',
+      () {
+    final json = jsonDecode(_obfJson()) as Map<String, dynamic>;
+    json['format'] = 'open-board-format-v0.1';
+    final ok = ObfImportService().importBytes(
+      utf8.encode(jsonEncode(json)),
+      profileId: 'p1',
+      fileName: 'versioned.obf',
+    );
+    expect(
+      ok.warnings.any((w) => w.contains('Open Board Format standard')),
+      isFalse,
+    );
+
+    json['format'] = 'something-else-entirely';
+    final warned = ObfImportService().importBytes(
+      utf8.encode(jsonEncode(json)),
+      profileId: 'p1',
+      fileName: 'other.obf',
+    );
+    expect(
+      warned.warnings.any((w) => w.contains('Open Board Format standard')),
+      isTrue,
+    );
+  });
+
+  test('rgb() and rgba() button colors are parsed (5)', () {
+    final json = jsonDecode(_obfJson()) as Map<String, dynamic>;
+    final buttons = json['buttons'] as List;
+    buttons[0]['background_color'] = 'rgb(255, 0, 0)';
+    buttons[1]['background_color'] = 'rgba(0, 255, 0, 0.5)';
+    final report = ObfImportService().importBytes(
+      utf8.encode(jsonEncode(json)),
+      profileId: 'p1',
+      fileName: 'css-colors.obf',
+    );
+    expect(report.dashboard.cells[0].color, 0xFFFF0000);
+    expect(report.dashboard.cells[1].color, 0x8000FF00);
+    expect(
+      report.warnings.any((w) => w.contains('colors')),
+      isFalse,
+    );
+  });
+
+  test('a multi-board .obz picks one board deterministically and says which',
+      () {
+    final first = utf8.encode(_obfJson());
+    final secondJson = jsonDecode(_obfJson()) as Map<String, dynamic>;
+    secondJson['name'] = 'Second Board';
+    final second = utf8.encode(jsonEncode(secondJson));
+    final archive = Archive()
+      ..addFile(ArchiveFile('zebra.obf', second.length, second))
+      ..addFile(ArchiveFile('alpha.obf', first.length, first));
+    final report = ObfImportService().importBytes(
+      ZipEncoder().encode(archive),
+      profileId: 'p1',
+      fileName: 'multi.obz',
+    );
+    // Sorted by name: alpha.obf wins over zebra.obf regardless of order.
+    expect(report.dashboard.name, 'Test Board');
+    expect(
+      report.warnings.any((w) => w.contains('2 boards') && w.contains('alpha.obf')),
+      isTrue,
+    );
+  });
+
+  test('a multi-board .obz honors the manifest root board', () {
+    final first = utf8.encode(_obfJson());
+    final secondJson = jsonDecode(_obfJson()) as Map<String, dynamic>;
+    secondJson['name'] = 'Second Board';
+    final second = utf8.encode(jsonEncode(secondJson));
+    final manifest = utf8.encode(jsonEncode({'root': 'boards/zebra.obf'}));
+    final archive = Archive()
+      ..addFile(ArchiveFile('boards/zebra.obf', second.length, second))
+      ..addFile(ArchiveFile('boards/alpha.obf', first.length, first))
+      ..addFile(ArchiveFile('manifest.json', manifest.length, manifest));
+    final report = ObfImportService().importBytes(
+      ZipEncoder().encode(archive),
+      profileId: 'p1',
+      fileName: 'multi.obz',
+    );
+    // The manifest root wins over alphabetical order.
+    expect(report.dashboard.name, 'Second Board');
+    expect(
+      report.warnings.any(
+        (w) => w.contains('2 boards') && w.contains('root board'),
+      ),
+      isTrue,
+    );
+  });
 }
 
 void _noop() {}

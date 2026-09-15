@@ -31,11 +31,13 @@ class DashboardService {
           _byProfile[profileId] = PersonalDashboard.fromJson(
             Map<String, dynamic>.from(boardJson),
           );
-        } on FormatException {
+        } on Object {
           // One corrupt dashboard must not break boot or the others.
+          // (Object, not just FormatException: a wrong field type throws
+          // _TypeError, and anything here must fail closed.)
         }
       });
-    } on FormatException {
+    } on Object {
       // Corrupt blob: start fresh rather than breaking boot.
       _byProfile.clear();
     }

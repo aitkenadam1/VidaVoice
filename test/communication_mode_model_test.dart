@@ -149,4 +149,24 @@ void main() {
     expect(backup.predictionEnabled, isTrue);
     expect(backup.nudgePreference, ModeNudgePreference.allowed);
   });
+
+  test('rapidly created profiles get unique ids (no timestamp collision)',
+      () async {
+    // Regression: ids were `p-<millisecondsSinceEpoch>`, so two profiles
+    // created in the same millisecond shared an id — and removeProfile
+    // then wiped BOTH. Ids are now unique per creation.
+    SharedPreferences.setMockInitialValues({'vidavoice.profiles.v1': '[]'});
+    final svc = service();
+    await svc.load();
+    final a = await svc.addProfile('A');
+    final b = await svc.addProfile('B');
+    final ids = svc.profiles.map((p) => p.id).toList();
+    expect(ids.toSet().length, ids.length);
+
+    await svc.removeProfile(b.id);
+    final remaining = svc.profiles.map((p) => p.id).toList();
+    expect(remaining, contains(a.id));
+    expect(remaining, isNot(contains(b.id)));
+    expect(remaining.length, 2); // default + A; only B removed
+  });
 }

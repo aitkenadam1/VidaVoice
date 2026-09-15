@@ -12,6 +12,7 @@ import 'package:onevoz/models/word.dart';
 import 'package:onevoz/screens/build_board_screen.dart';
 import 'package:onevoz/screens/category_screen.dart';
 import 'package:onevoz/screens/home_board_screen.dart';
+import 'package:onevoz/screens/type_board_screen.dart';
 import 'package:onevoz/services/profile_service.dart';
 import 'package:onevoz/services/proxy_client.dart';
 import 'package:onevoz/services/tts_service.dart';
@@ -268,11 +269,13 @@ void main() {
 
       session.buildSpeak();
       expect(tts.spoken, ['hi sweetie']);
-      // Ad-hoc text has no vocabulary id, and HistoryService.record is a
-      // no-op without ids — the same as Tap mode, where custom dashboard
-      // cells speak without a history record. The utterance still counts
-      // in usage activity via the board tap path where applicable.
-      expect(session.history.entries, isEmpty);
+      // Ad-hoc text has no vocabulary id, but the composed message was
+      // intentionally sent to speech, so it IS spoken history (Phase 4:
+      // HistoryService.record stores entries with empty ids). Caregivers
+      // see the full message in activity; only the unit's ids are absent.
+      expect(session.history.entries, hasLength(1));
+      expect(session.history.entries.single.text, 'hi sweetie');
+      expect(session.history.entries.single.ids, isEmpty);
     });
 
     test('dashboard custom text still speaks immediately in tap mode',
@@ -606,12 +609,12 @@ void main() {
       final buildSession = await makeBuildSession(buildTts);
       expect(homeScreenFor(buildSession), isA<BuildBoardScreen>());
 
-      // Type keeps the classic board until Phase 4 ships its screen.
+      // Phase 4 shipped the Type screen: Type profiles get TypeBoardScreen.
       await tapSession.profiles.setCommunicationMode(
         tapSession.profiles.active!.id,
         CommunicationMode.type,
       );
-      expect(homeScreenFor(tapSession), isA<HomeBoardScreen>());
+      expect(homeScreenFor(tapSession), isA<TypeBoardScreen>());
     });
 
     testWidgets('OneVozApp switches surfaces when the mode changes',

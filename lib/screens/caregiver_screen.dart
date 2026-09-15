@@ -7,6 +7,7 @@ import '../state/session_state.dart';
 import '../widgets/activity_summary_section.dart';
 import '../widgets/backup_section.dart';
 import '../widgets/communication_mode_widgets.dart';
+import '../widgets/mode_nudge_card.dart';
 import '../widgets/custom_symbols_section.dart';
 import '../widgets/dashboard_section.dart';
 import '../widgets/device_section.dart';
@@ -625,6 +626,23 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
                       PredictionPrivacyEditor(
                         key: ValueKey(
                           'prediction-${p.id}-${p.predictionEnabled}',
+                        ),
+                        profileId: p.id,
+                      ),
+                      // Phase 5: the ONE caregiver-facing mode-progression
+                      // suggestion. Renders only when the nudge service
+                      // reports eligibility; it never appears on the
+                      // communicator's board, never interrupts, and never
+                      // changes the saved mode.
+                      ModeNudgeCard(profileId: p.id, onChanged: refresh),
+                      // Phase 5: durable progression-suggestion preference
+                      // (On / Paused / Off), so a declined nudge can be
+                      // re-enabled later. Explicit save; keyed on the
+                      // saved value so an external change resets the
+                      // local draft.
+                      NudgePreferenceEditor(
+                        key: ValueKey(
+                          'nudge-pref-${p.id}-${p.modeNudgePreference.name}',
                         ),
                         profileId: p.id,
                       ),

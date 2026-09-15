@@ -1045,3 +1045,122 @@ class _TypeSandboxState extends State<_TypeSandbox> {
     );
   }
 }
+
+/// Per-profile "progression suggestions" preference (Phase 5).
+///
+/// The durable counterpart to the ModeNudgeCard's one-way "Don't suggest
+/// again": a caregiver who declined suggestions can re-enable them here,
+/// or pause them without erasing eligibility state. Uses a local draft +
+/// explicit Save, consistent with the other profile editors in this file.
+class NudgePreferenceEditor extends StatefulWidget {
+  const NudgePreferenceEditor({super.key, required this.profileId});
+
+  final String profileId;
+
+  @override
+  State<NudgePreferenceEditor> createState() => _NudgePreferenceEditorState();
+}
+
+class _NudgePreferenceEditorState extends State<NudgePreferenceEditor> {
+  late ModeNudgePreference _draft;
+  bool _initialized = false;
+  bool _busy = false;
+
+  static String _label(ModeNudgePreference p) => switch (p) {
+        ModeNudgePreference.allowed => 'On',
+        ModeNudgePreference.paused => 'Paused',
+        ModeNudgePreference.off => 'Off',
+      };
+
+  static String _description(ModeNudgePreference p) => switch (p) {
+        ModeNudgePreference.allowed =>
+          'Suggestions are shown in this hub when this profile is ready.',
+        ModeNudgePreference.paused =>
+          'Suggestions are hidden for now. Progress is kept, so they can '
+          'return later.',
+        ModeNudgePreference.off =>
+          'Never suggest a new mode for this profile. Nothing is counted.',
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    final session = context.watch<SessionState>();
+    UserProfile? profile;
+    for (final p in session.profiles.profiles) {
+      if (p.id == widget.profileId) profile = p;
+    }
+    final saved = profile?.modeNudgePreference ?? ModeNudgePreference.allowed;
+    if (!_initialized) {
+      _draft = saved;
+      _initialized = true;
+    }
+    final scheme = Theme.of(context).colorScheme;
+    final dirty = _draft != saved;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Progression suggestions',
+            style: Theme.of(context)
+                .textTheme
+                .titleSmall
+                ?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'Gentle prompts to try the next mode up, shown only here. '
+            'Nothing ever changes the mode automatically.',
+            style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
+          ),
+          const SizedBox(height: 8),
+          SegmentedButton<ModeNudgePreference>(
+            segments: [
+              for (final p in ModeNudgePreference.values)
+                ButtonSegment(value: p, label: Text(_label(p))),
+            ],
+            selected: {_draft},
+            onSelectionChanged: (s) => setState(() => _draft = s.single),
+            style: ButtonStyle(
+              visualDensity:
+                  const VisualDensity(horizontal: -1, vertical: -2),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            _description(_draft),
+            style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: FilledButton(
+              onPressed: (_busy || !dirty)
+                  ? null
+                  : () async {
+                      setState(() => _busy = true);
+                      try {
+                        await session.profiles
+                            .setNudgePreference(widget.profileId, _draft);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Progression suggestions: ${_label(_draft)} '
+                                'for ${profile?.name ?? 'this profile'}.',
+                              ),
+                            ),
+                          );
+                        }
+                      } finally {
+                        if (mounted) setState(() => _busy = false);
+                      }
+                    },
+              child: const Text('Save'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

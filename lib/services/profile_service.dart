@@ -101,6 +101,16 @@ class ProfileService {
 
   String get activeName => active?.name ?? 'My Voice';
 
+  /// Per-process counter mixed into generated profile ids. Profile ids were
+  /// previously `p-<millisecondsSinceEpoch>` alone, so two profiles created
+  /// in the same millisecond (fast devices, tests) collided — and a
+  /// duplicate id makes [removeProfile] wipe both profiles at once.
+  /// Stored ids are opaque strings, so the longer format is compatible.
+  static int _profileIdCounter = 0;
+
+  static String _newProfileId() =>
+      'p-${DateTime.now().microsecondsSinceEpoch}-${_profileIdCounter++}';
+
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
     _profiles.clear();
@@ -115,7 +125,7 @@ class ProfileService {
     if (_profiles.isEmpty) {
       _profiles.add(
         UserProfile(
-          id: 'p-${DateTime.now().millisecondsSinceEpoch}',
+          id: _newProfileId(),
           name: 'My Voice',
         ),
       );
@@ -129,7 +139,7 @@ class ProfileService {
 
   Future<UserProfile> addProfile(String name) async {
     final profile = UserProfile(
-      id: 'p-${DateTime.now().millisecondsSinceEpoch}',
+      id: _newProfileId(),
       name: name,
     );
     _profiles.add(profile);

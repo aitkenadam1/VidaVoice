@@ -22,6 +22,7 @@ import '../services/kokoro_tts_service.dart';
 import '../services/usage_service.dart';
 import '../services/history_service.dart';
 import '../services/prediction_service.dart';
+import '../services/nudge_service.dart';
 import '../services/first_week_plan_service.dart';
 
 enum BootStatus { loading, ready, error }
@@ -38,11 +39,13 @@ class SessionState extends ChangeNotifier {
     ElevenLabsKeyStore? elevenLabsKeys,
     ProxyClient? proxy,
     ProxyAuthStore? proxyAuth,
+    DateTime Function()? nudgeClock,
   }) : _prefsFactory = prefsFactory ?? SharedPreferences.getInstance,
        tts = tts ?? TtsService(),
        elevenLabsKeys = elevenLabsKeys ?? ElevenLabsKeyStore(),
        proxy = proxy ?? ProxyClient(),
-       proxyAuth = proxyAuth ?? ProxyAuthStore() {
+       proxyAuth = proxyAuth ?? ProxyAuthStore(),
+       nudge = ModeNudgeService(clock: nudgeClock) {
     // The managed-voice branch of TtsService.speak needs the server-issued
     // profile id (the proxy contract requires profile_id per request) and
     // the shared proxy client. Wired once here so every speak path —
@@ -76,6 +79,10 @@ class SessionState extends ChangeNotifier {
   /// predictionEnabled is true. See [setPredictionEnabled],
   /// [resetLearningFor], and [clearHistoryFor].
   final PredictionService prediction = PredictionService();
+
+  /// Phase 5: caregiver progression-nudge eligibility counters. Local,
+  /// counts-only, never changes the profile's mode.
+  final ModeNudgeService nudge;
 
   final FirstWeekPlanService plan = FirstWeekPlanService();
   final DashboardService dashboards = DashboardService();
@@ -243,6 +250,9 @@ class SessionState extends ChangeNotifier {
       await usage.load();
       await history.load(profiles.active?.id ?? '');
       await prediction.load(profiles.active?.id ?? '');
+      // Phase 5: nudge counters are profile-agnostic (all profiles in one
+      // blob), so a single load covers profile switches too.
+      await nudge.load();
       await plan.load(profiles.active?.id ?? '');
       // Wire the ElevenLabs cloud backend when the caregiver entered an API
       // key. Best-effort like TTS itself: a missing key only means cloud
@@ -681,6 +691,10 @@ class SessionState extends ChangeNotifier {
     await profiles.removeProfile(id);
     await symbolOverrides.removeProfile(id);
     await elevenLabsVoices.clearProfile(id);
+    // Phase 5: drop the deleted profile's nudge counters (counts only;
+    // the durable "do not suggest" preference lives on the profile blob,
+    // which is already gone with the profile).
+    await nudge.removeProfile(id);
     await reloadProfileData();
     notifyListeners();
   }
@@ -733,6 +747,14 @@ class SessionState extends ChangeNotifier {
     _sentenceIds.add(item.id);
     // Fire-and-forget: usage counts must never block a tap.
     unawaited(usage.recordTap(item.id));
+    // Phase 5: count intentional Tap-mode speaks for nudge eligibility.
+    // tapWord is the Tap-mode speak path (Build routes through buildAdd,
+    // Type through its own screen), so a mode check here is enough.
+    final profileId = profiles.active?.id;
+    if (profileId != null &&
+        profiles.active?.communicationMode == CommunicationMode.tap) {
+      unawaited(nudge.recordTapSpeak(profileId));
+    }
     notifyListeners();
   }
 
@@ -1043,6 +1065,21 @@ class SessionState extends ChangeNotifier {
       text,
       currentLocale,
     );
+    // Phase 5: count intentional full-strip Build speaks for nudge
+    // eligibility. Counts only — the text never reaches the nudge store.
+    // Fire-and-forget: counting must never block or delay speech.
+    final profileId = profiles.active?.id;
+    if (profileId != null) {
+      unawaited(
+        nudge.recordBuildSpeak(
+          profileId: profileId,
+          stripLength: _buildStrip.length,
+          maxLength:
+              profiles.active?.buildMaxSymbols ??
+              ProfileService.defaultBuildMaxSymbols,
+        ),
+      );
+    }
     _announceBuild('Speaking: $text');
     notifyListeners();
   }

@@ -4,7 +4,7 @@
 /// from here rather than hard-coding a string.
 class AppConfig {
   static const String appDisplayName = 'OneVoz';
-  static const String appTagline = 'Every voice matters.';
+  static const String appTagline = 'One voice. A brighter tomorrow.';
   static const String packageId = 'org.vidacarefoundation.vidavoice';
 
   /// Locale codes with a bundled pack under assets/lang/<code>.json.

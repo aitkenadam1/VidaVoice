@@ -397,7 +397,7 @@ class ProfileBackupService {
         '${backup.exportedAt.month.toString().padLeft(2, '0')}'
         '${backup.exportedAt.day.toString().padLeft(2, '0')}';
     final file = File(
-      '${dir.path}/vidavoice-backup-${safeName.isEmpty ? 'profile' : safeName}-$stamp.json',
+      '${dir.path}/onevoz-backup-${safeName.isEmpty ? 'profile' : safeName}-$stamp.json',
     );
     await file.writeAsString(backup.encode(), encoding: utf8);
     return file;

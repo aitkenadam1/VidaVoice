@@ -204,8 +204,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
               title: Text(AppConfig.appDisplayName),
-              subtitle: const Text(
-                'One voice. A brighter tomorrow.\n'
+              subtitle: Text(
+                '${AppConfig.appTagline}\n'
                 'Word symbols: ARASAAC (CC BY-NC-SA), https://arasaac.org',
               ),
               isThreeLine: true,

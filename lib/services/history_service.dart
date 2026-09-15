@@ -42,6 +42,11 @@ class HistoryEntry {
 ///
 /// Newest entries come first from [entries]. The list is capped at
 /// [maxEntries] — old entries are dropped, never persisted beyond that.
+///
+/// Entries may carry an empty [HistoryEntry.ids]: free-typed (Type mode)
+/// messages have no board word ids, but they ARE intentionally-spoken
+/// history — they appear in the history UI, count for on-device
+/// prediction learning, and replay by speaking the stored text.
 class HistoryService {
   static const maxEntries = 50;
 
@@ -49,10 +54,16 @@ class HistoryService {
 
   final List<HistoryEntry> _entries = [];
 
+  /// The profile whose entries are currently in memory, or null before
+  /// the first [load]. Guards [clear] so clearing one profile's history
+  /// can never wipe another profile's in-memory entries.
+  String? _loadedProfileId;
+
   /// Newest first.
   List<HistoryEntry> get entries => List.unmodifiable(_entries);
 
   Future<void> load(String profileId) async {
+    _loadedProfileId = profileId;
     final prefs = await SharedPreferences.getInstance();
     _entries.clear();
     final raw = prefs.getString(_key(profileId));
@@ -63,7 +74,8 @@ class HistoryService {
         final entry = HistoryEntry.fromJson(
           Map<String, dynamic>.from(rawEntry as Map),
         );
-        if (entry.ids.isNotEmpty && entry.text.isNotEmpty) {
+        // Typed entries have no ids — only the text is required.
+        if (entry.text.isNotEmpty) {
           _entries.add(entry);
         }
       }
@@ -84,7 +96,9 @@ class HistoryService {
     String text,
     String locale,
   ) async {
-    if (ids.isEmpty || text.isEmpty) return;
+    // Empty text is never recorded. Empty ids are fine — Type-mode
+    // messages are free text with no board word ids.
+    if (text.trim().isEmpty) return;
     _entries.insert(
       0,
       HistoryEntry(
@@ -105,8 +119,11 @@ class HistoryService {
   }
 
   Future<void> clear(String profileId) async {
-    _entries.clear();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_key(profileId));
+    // Only drop the in-memory entries when they belong to the cleared
+    // profile — the caregiver may clear a non-active profile's history
+    // from the hub, and that must not wipe the active profile's entries.
+    if (_loadedProfileId == profileId) _entries.clear();
   }
 }

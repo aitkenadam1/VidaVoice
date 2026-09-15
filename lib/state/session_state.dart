@@ -21,6 +21,7 @@ import '../services/tts_service.dart';
 import '../services/kokoro_tts_service.dart';
 import '../services/usage_service.dart';
 import '../services/history_service.dart';
+import '../services/prediction_service.dart';
 import '../services/first_week_plan_service.dart';
 
 enum BootStatus { loading, ready, error }
@@ -69,6 +70,13 @@ class SessionState extends ChangeNotifier {
   final ProfileService profiles = ProfileService();
   final UsageService usage = UsageService();
   final HistoryService history = HistoryService();
+
+  /// On-device Type-mode prediction ranks, per profile. Learned ONLY from
+  /// intentionally-spoken messages, and only while the profile's
+  /// predictionEnabled is true. See [setPredictionEnabled],
+  /// [resetLearningFor], and [clearHistoryFor].
+  final PredictionService prediction = PredictionService();
+
   final FirstWeekPlanService plan = FirstWeekPlanService();
   final DashboardService dashboards = DashboardService();
   final SymbolOverrideService symbolOverrides = SymbolOverrideService();
@@ -234,6 +242,7 @@ class SessionState extends ChangeNotifier {
       await symbolOverrides.load();
       await usage.load();
       await history.load(profiles.active?.id ?? '');
+      await prediction.load(profiles.active?.id ?? '');
       await plan.load(profiles.active?.id ?? '');
       // Wire the ElevenLabs cloud backend when the caregiver entered an API
       // key. Best-effort like TTS itself: a missing key only means cloud
@@ -647,10 +656,12 @@ class SessionState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Reload per-profile data (sentence history, first-week plan) for the
-  /// currently active profile. Call after the active profile changes.
+  /// Reload per-profile data (sentence history, prediction ranks,
+  /// first-week plan) for the currently active profile. Call after the
+  /// active profile changes.
   Future<void> reloadProfileData() async {
     await history.load(profiles.active?.id ?? '');
+    await prediction.load(profiles.active?.id ?? '');
     await plan.load(profiles.active?.id ?? '');
   }
 
@@ -732,13 +743,11 @@ class SessionState extends ChangeNotifier {
     tts.speak(item.label);
     // Fire-and-forget: logging must never block or delay speech.
     unawaited(usage.recordTap(item.id));
-    unawaited(
-      history.record(
-        profiles.active?.id ?? '',
-        [item.id],
-        item.label,
-        currentLocale,
-      ),
+    _logSpoken(
+      profiles.active?.id ?? '',
+      [item.id],
+      item.label,
+      currentLocale,
     );
   }
 
@@ -771,25 +780,56 @@ class SessionState extends ChangeNotifier {
     }
   }
 
+  /// Shared spoken-message logging for every mode's speech path.
+  ///
+  /// Records the intentionally-spoken message in the profile's history
+  /// (caregiver-visible activity) AND feeds the on-device prediction
+  /// ranks — but only while that profile's predictionEnabled is true.
+  /// Fire-and-forget: logging must never block or delay speech.
+  ///
+  /// History and learned ranks are INDEPENDENT stores: clearing one never
+  /// touches the other (see [clearHistoryFor] / [resetLearningFor]).
+  void _logSpoken(
+    String profileId,
+    List<String> ids,
+    String text,
+    String locale,
+  ) {
+    unawaited(history.record(profileId, ids, text, locale));
+    final p = profiles.active;
+    if (p != null && p.id == profileId && p.predictionEnabled) {
+      unawaited(prediction.learn(profileId, text, locale));
+    }
+  }
+
   void speakSentence() {
     final text = sentence.map((w) => w.label).join(' ');
     if (text.isEmpty) return;
     tts.speak(text);
-    // Fire-and-forget: history must never block or delay speech.
-    unawaited(
-      history.record(
-        profiles.active?.id ?? '',
-        List.of(_sentenceIds),
-        text,
-        currentLocale,
-      ),
+    _logSpoken(
+      profiles.active?.id ?? '',
+      List.of(_sentenceIds),
+      text,
+      currentLocale,
     );
   }
 
   /// Reload a history entry into the sentence bar and speak it again.
   /// Ids that no longer exist in the current pack are skipped; the pack's
-  /// cells and positions are untouched.
+  /// cells and positions are untouched. Free-typed entries (Type mode,
+  /// empty ids) have no board ids — the stored text is spoken directly.
   void replayHistory(HistoryEntry entry) {
+    if (entry.text.trim().isEmpty) return;
+    if (entry.ids.isEmpty) {
+      tts.speak(entry.text);
+      _logSpoken(
+        profiles.active?.id ?? '',
+        const [],
+        entry.text,
+        currentLocale,
+      );
+      return;
+    }
     _sentenceIds.clear();
     for (final id in entry.ids) {
       try {
@@ -801,6 +841,25 @@ class SessionState extends ChangeNotifier {
     }
     notifyListeners();
     speakSentence();
+  }
+
+  /// Type-mode Speak — the ONLY Type-path method that may touch the TTS
+  /// layer. Speaks [text] exactly as typed, records it in the active
+  /// profile's spoken history (typed entries carry no board ids), and
+  /// feeds the on-device prediction ranks when learning is enabled for
+  /// the profile. Returns a Future so tests can await the recording;
+  /// the UI treats it as fire-and-forget like every other speak path.
+  Future<void> typeSpeak(String text) async {
+    final message = text.trim();
+    if (message.isEmpty) return;
+    final id = profiles.active?.id ?? '';
+    await tts.speak(message);
+    await history.record(id, const [], message, currentLocale);
+    final p = profiles.active;
+    if (p != null && p.predictionEnabled) {
+      await prediction.learn(id, message, currentLocale);
+    }
+    notifyListeners();
   }
 
   void clearSentence() {
@@ -834,6 +893,53 @@ class SessionState extends ChangeNotifier {
   /// (default 4, see [ProfileService.buildMaxSymbols]).
   int get buildMax =>
       profiles.active?.buildMaxSymbols ?? ProfileService.defaultBuildMaxSymbols;
+
+  // --------------------------------------- type mode: prediction --------
+  // Caregiver controls for Type-mode prediction. The three actions are
+  // INDEPENDENT by design (plan acceptance criteria):
+  // * clearing history never touches learned ranks;
+  // * resetting learning never touches history;
+  // * disabling learning stops accumulation AND clears existing ranks.
+
+  /// Whether Type-mode prediction learns from [id]'s spoken messages.
+  /// Turning learning OFF also clears that profile's learned ranks — a
+  /// disabled profile must not keep (or keep growing) a personal language
+  /// model. History is untouched.
+  Future<void> setPredictionEnabled(String id, bool enabled) async {
+    await profiles.setPredictionEnabled(id, enabled);
+    if (!enabled) {
+      await prediction.reset(id);
+    }
+    notifyListeners();
+  }
+
+  /// Clear the profile's spoken-message history. Learned prediction ranks
+  /// are a separate store and are NOT touched.
+  Future<void> clearHistoryFor(String id) async {
+    await history.clear(id);
+    notifyListeners();
+  }
+
+  /// Reset the profile's learned prediction ranks. Spoken history is a
+  /// separate store and is NOT touched.
+  Future<void> resetLearningFor(String id) async {
+    await prediction.reset(id);
+    notifyListeners();
+  }
+
+  final Map<String, List<VocabLabel>> _vocabLabels = {};
+
+  /// 10,000-concept vocabulary labels for Type-mode prediction fallback,
+  /// per locale. Loaded lazily from the bundled compact asset and cached —
+  /// fully offline, no network, and the history-first ranking works even
+  /// when the asset is missing.
+  Future<List<VocabLabel>> vocabLabelsFor(String locale) async {
+    final cached = _vocabLabels[locale];
+    if (cached != null) return cached;
+    final labels = await LanguagePackService.loadVocabLabels(locale);
+    _vocabLabels[locale] = labels;
+    return labels;
+  }
 
   /// True when the strip already holds [buildMax] units.
   bool get buildStripFull => _buildStrip.length >= buildMax;
@@ -931,13 +1037,11 @@ class SessionState extends ChangeNotifier {
     if (text.isEmpty) return;
     tts.speak(text);
     // Fire-and-forget: history must never block or delay speech.
-    unawaited(
-      history.record(
-        profiles.active?.id ?? '',
-        [for (final e in _buildStrip) if (e.wordId != null) e.wordId!],
-        text,
-        currentLocale,
-      ),
+    _logSpoken(
+      profiles.active?.id ?? '',
+      [for (final e in _buildStrip) if (e.wordId != null) e.wordId!],
+      text,
+      currentLocale,
     );
     _announceBuild('Speaking: $text');
     notifyListeners();

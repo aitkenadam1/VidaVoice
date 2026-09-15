@@ -192,6 +192,15 @@ class LanguagePack {
     return null;
   }
 
+  /// Every phrase-type item across all folders, in pack order. Phrases never
+  /// sit on the home grid — [validate] enforces that — so this only scans
+  /// folders. Used by Type mode's saved-phrases picker.
+  List<BoardItem> get phrases => [
+    for (final folder in folders.values)
+      for (final word in folder.words)
+        if (word.isPhrase) word,
+  ];
+
   /// Look up any word (home grid or folder) by its language-independent id.
   BoardItem wordById(String id) {
     for (final item in homeItems) {

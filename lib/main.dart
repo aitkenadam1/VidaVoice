@@ -6,6 +6,7 @@ import 'screens/boot_screen.dart';
 import 'screens/build_board_screen.dart';
 import 'screens/home_board_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'screens/type_board_screen.dart';
 import 'services/profile_service.dart';
 import 'state/session_state.dart';
 
@@ -17,12 +18,15 @@ void main() {
 }
 
 /// Routes the home experience by the active profile's communication mode
-/// (Phase 3 of the modes plan): Build gets the phrase-strip surface; Tap
-/// (and Type, until Phase 4 ships its own screen) keep the classic board.
+/// (Phase 4 of the modes plan): Build gets the phrase-strip surface, Type
+/// gets the keyboard + prediction surface, and Tap (or a missing profile)
+/// keeps the classic board.
 Widget homeScreenFor(SessionState session) =>
-    session.profiles.active?.communicationMode == CommunicationMode.build
-        ? const BuildBoardScreen()
-        : const HomeBoardScreen();
+    switch (session.profiles.active?.communicationMode) {
+      CommunicationMode.build => const BuildBoardScreen(),
+      CommunicationMode.type => const TypeBoardScreen(),
+      _ => const HomeBoardScreen(),
+    };
 
 class OneVozApp extends StatelessWidget {
   const OneVozApp({super.key, required this.session});

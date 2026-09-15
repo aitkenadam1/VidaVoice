@@ -558,6 +558,190 @@ class _BuildLengthEditorState extends State<BuildLengthEditor> {
   }
 }
 
+/// Per-profile Type-mode prediction controls for the caregiver hub's
+/// Communicator profiles section (Phase 4 of the modes plan).
+///
+/// Three INDEPENDENT actions:
+/// * the "Learn from spoken messages" toggle — OFF disables learning and
+///   clears the profile's already-learned ranks (a disabled profile must
+///   not keep a personal language model);
+/// * "Clear message history" — wipes the spoken-history store only;
+/// * "Reset learned predictions" — wipes the learned-ranks store only.
+///
+/// Copy source: the OneVoz Communication Modes plan (prediction data
+/// boundaries + transparent controls sections).
+class PredictionPrivacyEditor extends StatefulWidget {
+  const PredictionPrivacyEditor({super.key, required this.profileId});
+
+  final String profileId;
+
+  @override
+  State<PredictionPrivacyEditor> createState() => _PredictionPrivacyEditorState();
+}
+
+class _PredictionPrivacyEditorState extends State<PredictionPrivacyEditor> {
+  bool _busy = false;
+
+  UserProfile? _profile(SessionState session) {
+    for (final p in session.profiles.profiles) {
+      if (p.id == widget.profileId) return p;
+    }
+    return null;
+  }
+
+  Future<void> _toggle(bool enabled) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      await context.read<SessionState>().setPredictionEnabled(
+        widget.profileId,
+        enabled,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              enabled
+                  ? 'Prediction learning on — new spoken messages will '
+                      'improve suggestions.'
+                  : 'Prediction learning off — learned predictions cleared.',
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _confirmAndRun({
+    required String title,
+    required String body,
+    required String actionLabel,
+    required Future<void> Function(SessionState session) run,
+    required String doneMessage,
+  }) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: Text(body),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(actionLabel),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      await run(context.read<SessionState>());
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(doneMessage)));
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final session = context.watch<SessionState>();
+    final profile = _profile(session);
+    if (profile == null) return const SizedBox.shrink();
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'Prediction privacy',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Predictions learn from messages spoken in this profile and '
+            'stay on this device. Clearing history and resetting learning '
+            'are separate — neither touches the other.',
+            style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
+          ),
+          SwitchListTile(
+            key: ValueKey('prediction-toggle-${widget.profileId}'),
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Learn from spoken messages'),
+            subtitle: Text(
+              profile.predictionEnabled
+                  ? 'On — spoken messages improve suggestions'
+                  : 'Off — no learning; existing learned predictions '
+                      'were cleared',
+              style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
+            ),
+            value: profile.predictionEnabled,
+            onChanged: _busy ? null : _toggle,
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  key: ValueKey(
+                    'prediction-clear-history-${widget.profileId}',
+                  ),
+                  onPressed: _busy
+                      ? null
+                      : () => _confirmAndRun(
+                          title: 'Clear message history?',
+                          body:
+                              'This deletes every spoken message recorded for '
+                              '${profile.name}. Learned predictions are kept — '
+                              'use “Reset learned predictions” to clear those '
+                              'too.',
+                          actionLabel: 'Clear history',
+                          run: (s) => s.clearHistoryFor(widget.profileId),
+                          doneMessage:
+                              'Message history cleared for ${profile.name}.',
+                        ),
+                  icon: const Icon(Icons.delete_outline, size: 18),
+                  label: const Text('Clear message history'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton.icon(
+                  key: ValueKey('prediction-reset-${widget.profileId}'),
+                  onPressed: _busy
+                      ? null
+                      : () => _confirmAndRun(
+                          title: 'Reset learned predictions?',
+                          body:
+                              'This forgets everything prediction learned from '
+                              '${profile.name}\u2019s spoken messages. The '
+                              'message history itself is kept.',
+                          actionLabel: 'Reset learning',
+                          run: (s) => s.resetLearningFor(widget.profileId),
+                          doneMessage:
+                              'Learned predictions reset for ${profile.name}.',
+                        ),
+                  icon: const Icon(Icons.psychology_outlined, size: 18),
+                  label: const Text('Reset learned predictions'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Opens the safe sandbox preview for [mode]. The preview is a static,
 /// local-state-only mock of the mode's main screen: tiles and chips react
 /// visually, the Speak action is disabled, and the dialog never references

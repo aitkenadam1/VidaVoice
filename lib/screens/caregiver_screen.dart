@@ -617,6 +617,17 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
                         ),
                         profileId: p.id,
                       ),
+                      // Per-profile Type prediction privacy controls
+                      // (Phase 4): the learning toggle plus the two
+                      // independent clear-history / reset-learning actions.
+                      // Keyed on the saved toggle so an external change
+                      // (e.g. backup import) resets the local switch.
+                      PredictionPrivacyEditor(
+                        key: ValueKey(
+                          'prediction-${p.id}-${p.predictionEnabled}',
+                        ),
+                        profileId: p.id,
+                      ),
                     ],
                   ),
                 ),

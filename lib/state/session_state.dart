@@ -31,8 +31,10 @@ class SessionState extends ChangeNotifier {
   SessionState({
     Future<SharedPreferences> Function()? prefsFactory,
     TtsService? tts,
+    ElevenLabsKeyStore? elevenLabsKeys,
   }) : _prefsFactory = prefsFactory ?? SharedPreferences.getInstance,
-       tts = tts ?? TtsService();
+       tts = tts ?? TtsService(),
+       elevenLabsKeys = elevenLabsKeys ?? ElevenLabsKeyStore();
 
   final Future<SharedPreferences> Function() _prefsFactory;
   final TtsService tts;
@@ -46,7 +48,7 @@ class SessionState extends ChangeNotifier {
 
   /// The caregiver's own ElevenLabs API key (secure storage) and the
   /// per-profile saved cloud voices. Null key = cloud voices unavailable.
-  final ElevenLabsKeyStore elevenLabsKeys = ElevenLabsKeyStore();
+  final ElevenLabsKeyStore elevenLabsKeys;
   final ElevenLabsVoiceStore elevenLabsVoices = ElevenLabsVoiceStore();
 
   BootStatus status = BootStatus.loading;

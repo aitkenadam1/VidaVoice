@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_tts/flutter_tts.dart';
 
@@ -85,6 +87,22 @@ class TtsService {
   /// Player for cloud-voice audio. A settable seam so tests can observe
   /// routing without platform channels.
   ElevenLabsAudioPlayer elevenAudioPlayer = ElevenLabsAudioPlayer();
+
+  /// Cache of cloud-synthesized utterances, keyed by "$voiceId::$text".
+  /// Every ElevenLabs call is billed per character, and board taps repeat
+  /// the same short labels constantly — without this, re-tapping "more" a
+  /// hundred times bills a hundred syntheses. Bounded FIFO: the core
+  /// vocabulary is a few hundred short strings.
+  static const _cloudCacheMax = 300;
+  final Map<String, Uint8List> _cloudAudioCache = <String, Uint8List>{};
+
+  void _storeCloudAudio(String key, Uint8List bytes) {
+    _cloudAudioCache.remove(key);
+    while (_cloudAudioCache.length >= _cloudCacheMax) {
+      _cloudAudioCache.remove(_cloudAudioCache.keys.first);
+    }
+    _cloudAudioCache[key] = bytes;
+  }
 
   double rate = AppConfig.defaultSpeechRate;
   double pitch = AppConfig.defaultSpeechPitch;
@@ -179,15 +197,24 @@ class TtsService {
       final svc = elevenLabs;
       if (svc != null) {
         try {
+          // Billed per character: serve repeats from the cache so a child
+          // re-tapping the same button doesn't re-bill the same utterance.
+          final cacheKey = '${voice.elevenLabsVoiceId}::$text';
+          final cached = _cloudAudioCache[cacheKey];
+          if (cached != null) {
+            await elevenAudioPlayer.playBytes(cached);
+            return;
+          }
           final audio = await svc.synthesize(
             text: text,
             voiceId: voice.elevenLabsVoiceId!,
           );
+          _storeCloudAudio(cacheKey, audio);
           await elevenAudioPlayer.playBytes(audio);
           return;
         } catch (_) {
-          // Cloud voice unavailable (no internet, bad key, quota): fall
-          // through to the on-device voices rather than going silent.
+          // Cloud voice unavailable (no internet, bad key, quota, timeout):
+          // fall through to the on-device voices rather than going silent.
         }
       }
     }

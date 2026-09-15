@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
@@ -14,6 +15,31 @@ import 'elevenlabs_service.dart';
 class VoiceSampleRecorder {
   VoiceSampleRecorder({AudioRecorder Function()? recorderFactory})
     : _recorderFactory = recorderFactory ?? AudioRecorder.new;
+
+  /// Test-only seam: widget tests set this so the clone dialog can record
+  /// samples without the platform microphone. Always null in production.
+  @visibleForTesting
+  static VoiceSampleRecorder Function()? debugFactory;
+
+  /// Test-only seam: widget tests set this so clone-dialog sample cleanup
+  /// doesn't touch the real filesystem (dart:io file ops never complete
+  /// inside the flutter_test fake-async zone on some hosts, which would
+  /// hang the dialog's post-upload cleanup). Tests use it to record which
+  /// paths would have been deleted. Always null in production.
+  @visibleForTesting
+  static Future<void> Function(String path)? debugDeleteSampleFile;
+
+  /// Creates a recorder for the clone dialog, honoring [debugFactory] when
+  /// tests set it. Lives in this library so production widgets can use the
+  /// test seam without tripping `invalid_use_of_visible_for_testing_member`.
+  static VoiceSampleRecorder createForDialog() =>
+      debugFactory?.call() ?? VoiceSampleRecorder();
+
+  /// The test-only sample-file deleter, if tests set [debugDeleteSampleFile].
+  /// Lives in this library so production widgets can use the test seam
+  /// without tripping `invalid_use_of_visible_for_testing_member`.
+  static Future<void> Function(String path)? debugDeleterForDialog() =>
+      debugDeleteSampleFile;
 
   final AudioRecorder Function() _recorderFactory;
   AudioRecorder? _recorder;

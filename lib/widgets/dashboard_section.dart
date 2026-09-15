@@ -113,9 +113,7 @@ class _DashboardSectionState extends State<DashboardSection> {
 
   /// Most-used words that aren't on the dashboard yet, one tap to add.
   Widget _suggestions(SessionState session, PersonalDashboard dashboard) {
-    final onBoard = {
-      for (final c in dashboard.cells) c.wordId,
-    }..remove(null);
+    final onBoard = {for (final c in dashboard.cells) c.wordId}..remove(null);
     final suggestions = <WordMatch>[];
     for (final entry in session.usage.top(10)) {
       if (suggestions.length >= 5) break;
@@ -207,8 +205,7 @@ class _DashboardSectionState extends State<DashboardSection> {
                 IconButton(
                   tooltip: 'Edit',
                   icon: const Icon(Icons.edit_outlined),
-                  onPressed: () =>
-                      _editCustomDialog(session, dashboard, index),
+                  onPressed: () => _editCustomDialog(session, dashboard, index),
                 ),
               IconButton(
                 tooltip: 'Remove',
@@ -298,84 +295,83 @@ class _DashboardSectionState extends State<DashboardSection> {
     final added = <String>{};
     await showDialog(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) {
-          final hits = findWords(session.pack, query.text).take(30).toList();
-          return AlertDialog(
-            title: const Text('Add words'),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: query,
-                    autofocus: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Search words',
-                      prefixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(),
+      builder: (ctx) => _DisposeOnUnmount(
+        onDispose: query.dispose,
+        child: StatefulBuilder(
+          builder: (ctx, setDialogState) {
+            final hits = findWords(session.pack, query.text).take(30).toList();
+            return AlertDialog(
+              title: const Text('Add words'),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: query,
+                      autofocus: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Search words',
+                        prefixIcon: Icon(Icons.search),
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (_) => setDialogState(() {}),
                     ),
-                    onChanged: (_) => setDialogState(() {}),
-                  ),
-                  const SizedBox(height: 8),
-                  Flexible(
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: hits.length,
-                      itemBuilder: (ctx, i) {
-                        final hit = hits[i];
-                        final wasAdded = added.contains(hit.item.id);
-                        return ListTile(
-                          dense: true,
-                          title: Text(hit.item.label),
-                          subtitle: Text(hit.location),
-                          trailing: wasAdded
-                              ? const Icon(
-                                  Icons.check,
-                                  color: Colors.green,
-                                )
-                              : const Icon(Icons.add),
-                          onTap: wasAdded
-                              ? null
-                              : () async {
-                                  final dashboard =
-                                      session.dashboards.ensureFor(profileId);
-                                  dashboard.cells.add(
-                                    DashboardCell(
-                                      id: session.dashboards.newCellId(
-                                        dashboard,
+                    const SizedBox(height: 8),
+                    Flexible(
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: hits.length,
+                        itemBuilder: (ctx, i) {
+                          final hit = hits[i];
+                          final wasAdded = added.contains(hit.item.id);
+                          return ListTile(
+                            dense: true,
+                            title: Text(hit.item.label),
+                            subtitle: Text(hit.location),
+                            trailing: wasAdded
+                                ? const Icon(Icons.check, color: Colors.green)
+                                : const Icon(Icons.add),
+                            onTap: wasAdded
+                                ? null
+                                : () async {
+                                    final dashboard = session.dashboards
+                                        .ensureFor(profileId);
+                                    dashboard.cells.add(
+                                      DashboardCell(
+                                        id: session.dashboards.newCellId(
+                                          dashboard,
+                                        ),
+                                        wordId: hit.item.id,
+                                        // Stored fallback: if the word ever
+                                        // leaves the pack, the tile still
+                                        // shows and speaks this.
+                                        label: hit.item.label,
                                       ),
-                                      wordId: hit.item.id,
-                                      // Stored fallback: if the word ever
-                                      // leaves the pack, the tile still
-                                      // shows and speaks this.
-                                      label: hit.item.label,
-                                    ),
-                                  );
-                                  await session.dashboards.save(dashboard);
-                                  added.add(hit.item.id);
-                                  setDialogState(() {});
-                                  widget.refresh();
-                                },
-                        );
-                      },
+                                    );
+                                    await session.dashboards.save(dashboard);
+                                    added.add(hit.item.id);
+                                    setDialogState(() {});
+                                    widget.refresh();
+                                  },
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Done'),
-              ),
-            ],
-          );
-        },
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text('Done'),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
-    query.dispose();
   }
 
   // ----------------------------------------------------------- add custom ---
@@ -455,58 +451,63 @@ class _DashboardSectionState extends State<DashboardSection> {
     String? imageData;
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          title: const Text('Custom button'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'A button that speaks immediately when tapped — '
-                  'for phrases like "I need a break".',
-                  style: TextStyle(fontSize: 13),
-                ),
-                const SizedBox(height: 12),
-                _imagePickRow(
-                  imageData,
-                  (v) => imageData = v,
-                  setDialogState,
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: label,
-                  autofocus: true,
-                  textCapitalization: TextCapitalization.sentences,
-                  decoration: const InputDecoration(
-                    labelText: 'Button label',
-                    border: OutlineInputBorder(),
+      builder: (ctx) => _DisposeOnUnmount(
+        onDispose: () {
+          label.dispose();
+          speak.dispose();
+        },
+        child: StatefulBuilder(
+          builder: (ctx, setDialogState) => AlertDialog(
+            title: const Text('Custom button'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'A button that speaks immediately when tapped — '
+                    'for phrases like "I need a break".',
+                    style: TextStyle(fontSize: 13),
                   ),
-                ),
-                const SizedBox(height: 12),
-            TextField(
-              controller: speak,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(
-                labelText: 'Says (optional — defaults to the label)',
-                border: OutlineInputBorder(),
+                  const SizedBox(height: 12),
+                  _imagePickRow(
+                    imageData,
+                    (v) => imageData = v,
+                    setDialogState,
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: label,
+                    autofocus: true,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: const InputDecoration(
+                      labelText: 'Button label',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: speak,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: const InputDecoration(
+                      labelText: 'Says (optional — defaults to the label)',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () =>
+                    Navigator.of(ctx).pop(label.text.trim().isNotEmpty),
+                child: const Text('Add'),
+              ),
+            ],
           ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(
-              label.text.trim().isNotEmpty,
-            ),
-            child: const Text('Add'),
-          ),
-        ],
         ),
       ),
     );
@@ -524,8 +525,6 @@ class _DashboardSectionState extends State<DashboardSection> {
       await session.dashboards.save(dashboard);
       widget.refresh();
     }
-    label.dispose();
-    speak.dispose();
   }
 
   // ---------------------------------------------------------- edit custom ---
@@ -545,51 +544,56 @@ class _DashboardSectionState extends State<DashboardSection> {
     String? imageData = cell.imageData;
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          title: const Text('Edit button'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _imagePickRow(
-                  imageData,
-                  (v) => imageData = v,
-                  setDialogState,
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: label,
-                  textCapitalization: TextCapitalization.sentences,
-                  decoration: const InputDecoration(
-                    labelText: 'Button label',
-                    border: OutlineInputBorder(),
+      builder: (ctx) => _DisposeOnUnmount(
+        onDispose: () {
+          label.dispose();
+          speak.dispose();
+        },
+        child: StatefulBuilder(
+          builder: (ctx, setDialogState) => AlertDialog(
+            title: const Text('Edit button'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _imagePickRow(
+                    imageData,
+                    (v) => imageData = v,
+                    setDialogState,
                   ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: speak,
-                  textCapitalization: TextCapitalization.sentences,
-                  decoration: const InputDecoration(
-                    labelText: 'Says (optional — defaults to the label)',
-                    border: OutlineInputBorder(),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: label,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: const InputDecoration(
+                      labelText: 'Button label',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(ctx).pop(
-                label.text.trim().isNotEmpty,
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: speak,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: const InputDecoration(
+                      labelText: 'Says (optional — defaults to the label)',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ],
               ),
-              child: const Text('Save'),
             ),
-          ],
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () =>
+                    Navigator.of(ctx).pop(label.text.trim().isNotEmpty),
+                child: const Text('Save'),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -605,8 +609,6 @@ class _DashboardSectionState extends State<DashboardSection> {
       await session.dashboards.save(dashboard);
       widget.refresh();
     }
-    label.dispose();
-    speak.dispose();
   }
 
   // --------------------------------------------------------------- import ---
@@ -638,8 +640,7 @@ class _DashboardSectionState extends State<DashboardSection> {
       );
       if (!mounted) return;
       final existing = session.dashboards.forProfile(profileId);
-      final hasExisting =
-          existing != null && existing.cells.isNotEmpty;
+      final hasExisting = existing != null && existing.cells.isNotEmpty;
       final confirm = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -740,5 +741,32 @@ class _DashboardSectionState extends State<DashboardSection> {
         ],
       ),
     );
+  }
+}
+
+/// Runs [onDispose] when unmounted. Dialogs that create their
+/// TextEditingControllers outside the dialog widget use this so the
+/// controllers are disposed only after the pop transition finishes: the
+/// dialog subtree keeps rebuilding (including TextField cursor animations
+/// that listen to the controller) until the route is fully removed, so
+/// disposing right when [showDialog] returns is a use-after-dispose.
+class _DisposeOnUnmount extends StatefulWidget {
+  const _DisposeOnUnmount({required this.onDispose, required this.child});
+
+  final VoidCallback onDispose;
+  final Widget child;
+
+  @override
+  State<_DisposeOnUnmount> createState() => _DisposeOnUnmountState();
+}
+
+class _DisposeOnUnmountState extends State<_DisposeOnUnmount> {
+  @override
+  Widget build(BuildContext context) => widget.child;
+
+  @override
+  void dispose() {
+    widget.onDispose();
+    super.dispose();
   }
 }

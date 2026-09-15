@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -6,7 +9,7 @@ import '../services/tts_service.dart';
 import '../services/voice_sample_recorder.dart';
 import '../state/session_state.dart';
 
-/// ElevenLabs cloud voices (bring-your-own-key).
+/// ElevenLabs cloud voices (bring-your-own-key, advanced option).
 ///
 /// Optional and off by default: the caregiver pastes their own ElevenLabs
 /// API key (stored in the platform keychain, never in backups or logs),
@@ -147,12 +150,65 @@ class _ElevenLabsSectionState extends State<ElevenLabsSection> {
   Future<void> _removeSaved(SavedElevenLabsVoice voice) async {
     final id = _session.profiles.active?.id;
     if (id == null) return;
+    // Voices this app cloned can also be deleted from the ElevenLabs
+    // account (after confirmation). Account/library voices are only ever
+    // removed locally — the app must never delete those from the cloud.
+    final svc = _session.tts.elevenLabs;
+    if (voice.createdByApp && svc != null) {
+      final choice = await _confirmRemove(context, voice);
+      if (choice == null || !mounted) return; // cancelled
+      if (choice) {
+        try {
+          await svc.deleteVoice(voice.id);
+        } on ElevenLabsException catch (e) {
+          if (mounted) {
+            setState(
+              () => _error =
+                  'Removed here, but could not delete it from ElevenLabs: ${e.message}',
+            );
+          }
+        }
+      }
+    }
     await _session.elevenLabsVoices.remove(id, voice.id);
     if (_session.currentVoice?.elevenLabsVoiceId == voice.id) {
       await _session.clearVoice();
     }
     await _loadSaved();
     widget.onVoicesChanged();
+  }
+
+  /// For app-created clones: null = cancelled, false = remove locally only,
+  /// true = also delete the clone from the ElevenLabs account.
+  Future<bool?> _confirmRemove(
+    BuildContext context,
+    SavedElevenLabsVoice voice,
+  ) {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Remove "${voice.name}"?'),
+        content: const Text(
+          'Remove this voice from the profile? You can also delete the '
+          'clone from your ElevenLabs account so it no longer exists in '
+          'the cloud.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Remove here only'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Delete everywhere'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _useVoice(SavedElevenLabsVoice voice) async {
@@ -193,17 +249,19 @@ class _ElevenLabsSectionState extends State<ElevenLabsSection> {
                 Icon(Icons.cloud_outlined),
                 SizedBox(width: 8),
                 Text(
-                  'AI cloud voices (ElevenLabs)',
+                  'AI cloud voices (ElevenLabs) · advanced',
                   style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                 ),
               ],
             ),
             const SizedBox(height: 8),
             const Text(
-              'Optional. Clone a custom voice — for example the '
-              "communicator's own voice — with your own ElevenLabs account. "
-              'Usage is billed by ElevenLabs and needs internet; everything '
-              'else in the app keeps working offline.',
+              'Optional, advanced. Clone a custom voice — for example the '
+              "communicator's own voice — with your own ElevenLabs account "
+              'and API key. ElevenLabs bills per character spoken and needs '
+              'internet; repeated taps of the same button are cached so '
+              'they are not billed twice. Everything else in the app keeps '
+              'working offline.',
               style: TextStyle(fontSize: 12),
             ),
             const SizedBox(height: 12),
@@ -326,8 +384,10 @@ class _ElevenLabsSectionState extends State<ElevenLabsSection> {
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.cloud_done_outlined, size: 20),
                   title: Text(v.name, style: const TextStyle(fontSize: 13)),
-                  subtitle: const Text(
-                    'ElevenLabs · cloud voice',
+                  subtitle: Text(
+                    v.createdByApp
+                        ? 'ElevenLabs · cloned in this app'
+                        : 'ElevenLabs · cloud voice',
                     style: TextStyle(fontSize: 11),
                   ),
                   trailing: Row(
@@ -384,7 +444,9 @@ class _CloneVoiceDialog extends StatefulWidget {
 
 class _CloneVoiceDialogState extends State<_CloneVoiceDialog> {
   final _nameController = TextEditingController();
-  final _recorder = VoiceSampleRecorder();
+  // Test seam lives in VoiceSampleRecorder.createForDialog: widget tests
+  // inject a fake recorder so the dialog works without a microphone.
+  final _recorder = VoiceSampleRecorder.createForDialog();
   final _samples = <VoiceSample>[];
   bool _recording = false;
   bool _busy = false;
@@ -394,6 +456,9 @@ class _CloneVoiceDialogState extends State<_CloneVoiceDialog> {
   void dispose() {
     _nameController.dispose();
     _recorder.cancelSample();
+    // The dialog is going away without a successful clone: purge any
+    // recordings already made so temp files never linger on the device.
+    unawaited(_purgeSampleFiles(_samples));
     super.dispose();
   }
 
@@ -445,6 +510,27 @@ class _CloneVoiceDialogState extends State<_CloneVoiceDialog> {
 
   void _deleteSample(VoiceSample sample) {
     setState(() => _samples.remove(sample));
+    // Deleting a sample must also remove its recording from the device —
+    // removing the list entry alone would orphan the temp file.
+    unawaited(_purgeSampleFiles([sample]));
+  }
+
+  /// Best-effort deletion of sample files. Used when a sample is removed
+  /// individually, when the dialog is dismissed without cloning, and after
+  /// a successful upload.
+  static Future<void> _purgeSampleFiles(Iterable<VoiceSample> samples) async {
+    final debugDelete = VoiceSampleRecorder.debugDeleterForDialog();
+    for (final s in samples) {
+      try {
+        if (debugDelete != null) {
+          await debugDelete(s.path);
+        } else {
+          await File(s.path).delete();
+        }
+      } catch (_) {
+        // Best effort — a leftover temp file is harmless.
+      }
+    }
   }
 
   Future<void> _create() async {
@@ -459,6 +545,10 @@ class _CloneVoiceDialogState extends State<_CloneVoiceDialog> {
       setState(() => _error = 'Enter an API key first.');
       return;
     }
+    // Consent gate: a child's voice leaves the device here. Say exactly
+    // what is uploaded, to whom, and how to undo it.
+    final consented = await _confirmUpload(context, _samples.length, _total);
+    if (consented != true || !mounted) return;
     setState(() {
       _busy = true;
       _error = null;
@@ -472,17 +562,86 @@ class _CloneVoiceDialogState extends State<_CloneVoiceDialog> {
         id: voiceId,
         name: _nameController.text.trim(),
         locale: session.currentLocale,
+        createdByApp: true,
       );
       await session.elevenLabsVoices.add(profileId, saved);
+      // The recordings served their purpose — delete them from the device.
+      await _deleteLocalSamples();
       if (!mounted) return;
       Navigator.of(context).pop(saved);
     } on ElevenLabsException catch (e) {
       if (!mounted) return;
-      setState(() {
-        _busy = false;
-        _error = e.message;
-      });
+      setState(() => _error = e.message);
+    } catch (_) {
+      // cloneVoice only throws ElevenLabsException today; this is a
+      // backstop so an unexpected error can never freeze the dialog.
+      if (!mounted) return;
+      setState(() => _error = 'Something went wrong. Please try again.');
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
+  }
+
+  /// Deletes the local sample files after a successful upload.
+  Future<void> _deleteLocalSamples() async {
+    await _purgeSampleFiles(_samples);
+    _samples.clear();
+  }
+
+  /// Consent screen shown before any audio leaves the device. Returns true
+  /// when the caregiver explicitly taps "Upload & create".
+  Future<bool?> _confirmUpload(
+    BuildContext context,
+    int sampleCount,
+    Duration total,
+  ) {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Upload recordings to ElevenLabs?'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'The $sampleCount recording(s) (about ${_formatDuration(total)} '
+                'total) will be uploaded to ElevenLabs (elevenlabs.io) to '
+                'create a voice clone on YOUR ElevenLabs account.',
+                style: const TextStyle(fontSize: 13),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                '• The clone is stored on ElevenLabs\u2019 servers under your '
+                'account and counts toward your plan\u2019s voice limit.\n'
+                '• Speech with this voice is billed per character by '
+                'ElevenLabs.\n'
+                '• The recordings are deleted from this device after upload.\n'
+                '• You can delete the cloned voice from ElevenLabs at any '
+                'time from this screen.',
+                style: TextStyle(fontSize: 13),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Only clone a voice you have the right to use (your child\u2019s '
+                'or your own).',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Upload & create'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -501,9 +660,10 @@ class _CloneVoiceDialogState extends State<_CloneVoiceDialog> {
           children: [
             const Text(
               'Record clear speech — reading the phrases below works well. '
-              'Aim for at least a minute total across 1–3 clips; more is '
-              'better. The audio is uploaded to ElevenLabs only when you '
-              'tap \u201cCreate voice\u201d.',
+              'ElevenLabs needs at least 30 seconds total across 1–3 clips '
+              '(a minute or more is better). The audio is uploaded to '
+              'ElevenLabs only after you review and confirm on the next '
+              'screen.',
               style: TextStyle(fontSize: 12),
             ),
             const SizedBox(height: 8),
@@ -547,9 +707,20 @@ class _CloneVoiceDialogState extends State<_CloneVoiceDialog> {
                       : null,
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  'Total: ${_formatDuration(_total)}',
-                  style: const TextStyle(fontSize: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Total: ${_formatDuration(_total)}',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    if (_samples.isNotEmpty &&
+                        _total < const Duration(seconds: 30))
+                      const Text(
+                        'Under 30s — the clone may fail or sound poor.',
+                        style: TextStyle(fontSize: 11, color: Colors.orange),
+                      ),
+                  ],
                 ),
               ],
             ),

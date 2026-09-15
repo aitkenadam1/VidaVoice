@@ -35,12 +35,16 @@ import UIKit
       }
       if #available(iOS 17.0, *) {
         AVSpeechSynthesizer.requestPersonalVoiceAuthorization { status in
-          switch status {
-          case .authorized: result("authorized")
-          case .denied: result("denied")
-          case .notDetermined: result("notDetermined")
-          case .unsupported: result("unsupported")
-          @unknown default: result("unknown")
+          // FlutterResult must be invoked on the platform thread; Apple does
+          // not document which queue this callback runs on.
+          DispatchQueue.main.async {
+            switch status {
+            case .authorized: result("authorized")
+            case .denied: result("denied")
+            case .notDetermined: result("notDetermined")
+            case .unsupported: result("unsupported")
+            @unknown default: result("unknown")
+            }
           }
         }
       } else {

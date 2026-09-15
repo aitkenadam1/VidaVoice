@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -34,6 +35,7 @@ class SavedElevenLabsVoice {
     required this.id,
     required this.name,
     required this.locale,
+    this.createdByApp = false,
   });
 
   final String id;
@@ -43,7 +45,17 @@ class SavedElevenLabsVoice {
   /// that was spoken), used to filter the voice picker per language.
   final String locale;
 
-  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'locale': locale};
+  /// True when this voice was created by VidaVoice's clone flow (so "remove"
+  /// may also delete it from the ElevenLabs account). Account/library voices
+  /// are never deleted from ElevenLabs by the app.
+  final bool createdByApp;
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'locale': locale,
+    'createdByApp': createdByApp,
+  };
 
   factory SavedElevenLabsVoice.fromJson(Map<String, dynamic> json) {
     final id = json['id'];
@@ -56,6 +68,7 @@ class SavedElevenLabsVoice {
       id: id,
       name: name,
       locale: locale is String && locale.isNotEmpty ? locale : 'en',
+      createdByApp: json['createdByApp'] == true,
     );
   }
 }
@@ -76,11 +89,24 @@ class ElevenLabsException implements Exception {
 /// any failure as "cloud voice unavailable" and fall back to on-device
 /// voices, never silence.
 class ElevenLabsService {
+  // The API key stays a private field on purpose: it is the credential this
+  // service needs to sign requests, and it must not be readable from
+  // callers, logs, or backups.
   ElevenLabsService({required String apiKey, http.Client? httpClient})
+    // ignore: prefer_initializing_formals
     : _apiKey = apiKey,
       _client = httpClient ?? http.Client();
 
   static const _base = 'https://api.elevenlabs.io';
+
+  /// Bounds every network call: a stalled connection must surface as an
+  /// error (so the on-device fallback runs) rather than hang a button
+  /// forever. Cloning uploads audio and waits on server-side processing,
+  /// so it gets a longer budget.
+  static const _listTimeout = Duration(seconds: 10);
+  static const _synthesizeTimeout = Duration(seconds: 5);
+  static const _cloneTimeout = Duration(seconds: 90);
+  static const _deleteTimeout = Duration(seconds: 10);
 
   final String _apiKey;
   final http.Client _client;
@@ -94,6 +120,7 @@ class ElevenLabsService {
   Future<List<ElevenLabsVoice>> listVoices() async {
     final res = await _guard(
       () => _client.get(Uri.parse('$_base/v1/voices'), headers: _headers),
+      timeout: _listTimeout,
     );
     _check(res.statusCode, res.body);
     final decoded = json.decode(res.body);
@@ -135,6 +162,7 @@ class ElevenLabsService {
           'model_id': 'eleven_multilingual_v2',
         }),
       ),
+      timeout: _synthesizeTimeout,
     );
     _check(res.statusCode, res.body);
     return res.bodyBytes;
@@ -142,7 +170,10 @@ class ElevenLabsService {
 
   /// Creates an instant-cloned voice from recorded samples and returns its
   /// id. The audio files are uploaded to ElevenLabs — call only after the
-  /// caregiver explicitly taps "Create voice".
+  /// caregiver explicitly consents ("Create voice"). Everything that can
+  /// throw here — building the multipart body, reading sample files,
+  /// sending, reading the response — runs inside [_guard] so callers only
+  /// ever see [ElevenLabsException].
   Future<String> cloneVoice({
     required String name,
     required List<VoiceSample> samples,
@@ -156,24 +187,27 @@ class ElevenLabsService {
         'Record at least one voice sample first.',
       );
     }
-    final request = http.MultipartRequest(
-      'POST',
-      Uri.parse('$_base/v1/voices/add'),
-    );
-    request.headers['xi-api-key'] = _apiKey;
-    request.fields['name'] = trimmed;
-    for (var i = 0; i < samples.length; i++) {
-      request.files.add(
-        await http.MultipartFile.fromPath(
-          'files',
-          samples[i].path,
-          filename: 'sample_${i + 1}.wav',
-        ),
+    final body = await _guard(() async {
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$_base/v1/voices/add'),
       );
-    }
-    final streamed = await _guard(() => _client.send(request));
-    final body = await streamed.stream.bytesToString();
-    _check(streamed.statusCode, body);
+      request.headers['xi-api-key'] = _apiKey;
+      request.fields['name'] = trimmed;
+      for (var i = 0; i < samples.length; i++) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'files',
+            samples[i].path,
+            filename: 'sample_${i + 1}.wav',
+          ),
+        );
+      }
+      final streamed = await _client.send(request);
+      final text = await streamed.stream.bytesToString();
+      _check(streamed.statusCode, text);
+      return text;
+    }, timeout: _cloneTimeout);
     final decoded = json.decode(body);
     final voiceId = decoded is Map ? decoded['voice_id']?.toString() : null;
     if (voiceId == null || voiceId.isEmpty) {
@@ -182,12 +216,37 @@ class ElevenLabsService {
     return voiceId;
   }
 
-  /// Maps transport failures to caregiver-readable errors.
-  Future<T> _guard<T>(Future<T> Function() call) async {
+  /// Deletes a voice from the ElevenLabs account. Only call for voices this
+  /// app created ([SavedElevenLabsVoice.createdByApp]) after the caregiver
+  /// confirms — account/library voices must never be deleted by the app.
+  Future<void> deleteVoice(String voiceId) async {
+    final res = await _guard(
+      () => _client.delete(
+        Uri.parse('$_base/v1/voices/$voiceId'),
+        headers: _headers,
+      ),
+      timeout: _deleteTimeout,
+    );
+    _check(res.statusCode, res.body);
+  }
+
+  /// Maps transport failures to caregiver-readable errors. The [timeout]
+  /// bounds the whole call: a stalled connection becomes an
+  /// [ElevenLabsException] so the on-device speech fallback runs instead of
+  /// hanging the button.
+  Future<T> _guard<T>(
+    Future<T> Function() call, {
+    required Duration timeout,
+  }) async {
     try {
-      return await call();
-    } catch (e) {
-      if (e is ElevenLabsException) rethrow;
+      return await call().timeout(timeout);
+    } on TimeoutException {
+      throw const ElevenLabsException(
+        'ElevenLabs took too long to respond. Check the connection and try again.',
+      );
+    } on ElevenLabsException {
+      rethrow;
+    } catch (_) {
       throw const ElevenLabsException(
         "Couldn't reach ElevenLabs. Check the internet connection and try again.",
       );

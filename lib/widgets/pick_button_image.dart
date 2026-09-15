@@ -1,6 +1,5 @@
-import 'dart:typed_data';
-
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 
 import '../services/button_image.dart';
 
@@ -13,11 +12,18 @@ class ButtonImageException implements Exception {
   String toString() => 'ButtonImageException: $message';
 }
 
+/// Test-only seam: widget tests set this to bypass the platform photo
+/// picker. Always null in production.
+@visibleForTesting
+Future<String?> Function()? debugPickButtonImage;
+
 /// Opens the photo picker and returns the picked image prepared for button
 /// storage (downscaled, base64). Returns null when the caregiver cancels.
 /// Throws [ButtonImageException] with a plain-language message when the
 /// picked file can't be used.
 Future<String?> pickButtonImage() async {
+  final debug = debugPickButtonImage;
+  if (debug != null) return debug();
   final List<PlatformFile> files;
   try {
     files = await FilePicker.pickFiles(type: FileType.image);

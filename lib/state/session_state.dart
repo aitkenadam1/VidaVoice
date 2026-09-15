@@ -3,7 +3,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 
 import '../app_config.dart';
+import '../models/dashboard.dart';
 import '../models/word.dart';
+import '../services/dashboard_service.dart';
 import '../services/language_pack_service.dart';
 import '../services/profile_service.dart';
 import '../services/symbol_service.dart';
@@ -32,6 +34,7 @@ class SessionState extends ChangeNotifier {
   final UsageService usage = UsageService();
   final HistoryService history = HistoryService();
   final FirstWeekPlanService plan = FirstWeekPlanService();
+  final DashboardService dashboards = DashboardService();
 
   BootStatus status = BootStatus.loading;
   String bootError = '';
@@ -66,6 +69,29 @@ class SessionState extends ChangeNotifier {
   /// fills in empty cells — no word already on the board moves.
   int unlockedLevel = LanguagePack.minSupportedLevel;
 
+  /// Whether the active profile's personal dashboard replaces the home
+  /// board. An enabled but empty dashboard never takes over — the user
+  /// must never be stranded on a blank board.
+  bool get showDashboard {
+    if (_dashboardBypassed) return false;
+    final id = profiles.active?.id;
+    if (id == null) return false;
+    final dashboard = dashboards.forProfile(id);
+    return dashboard != null &&
+        dashboard.enabled &&
+        dashboard.cells.isNotEmpty;
+  }
+
+  /// Session-only escape hatch: the communicator asked for the full board.
+  /// The caregiver's enable/disable setting is untouched and rules again
+  /// on profile switch, language switch, or next boot.
+  bool _dashboardBypassed = false;
+
+  void bypassDashboard() {
+    _dashboardBypassed = true;
+    notifyListeners();
+  }
+
   SharedPreferences? _prefs;
 
   Future<void> boot() async {
@@ -92,6 +118,7 @@ class SessionState extends ChangeNotifier {
       pack.validate();
       await symbols.load();
       await profiles.load();
+      await dashboards.load();
       await usage.load();
       await history.load(profiles.active?.id ?? '');
       await plan.load(profiles.active?.id ?? '');
@@ -271,6 +298,7 @@ class SessionState extends ChangeNotifier {
     }
     currentLocale = locale;
     _sentenceIds.clear();
+    _dashboardBypassed = false;
     pack = await LanguagePackService.loadPack(locale);
     await tts.setLanguage(pack.ttsLocale);
     // A voice choice is per-language: apply the saved one for the new
@@ -292,6 +320,7 @@ class SessionState extends ChangeNotifier {
   /// (sentence history, first-week plan) for them.
   Future<void> switchProfile(String id) async {
     await profiles.setActive(id);
+    _dashboardBypassed = false;
     await reloadProfileData();
     notifyListeners();
   }
@@ -351,6 +380,28 @@ class SessionState extends ChangeNotifier {
   }
 
   Future<void> speakText(String text) => tts.speak(text);
+
+  /// Taps a personal-dashboard cell. Vocabulary cells behave exactly as on
+  /// the standard board (words join the sentence bar, phrases speak whole,
+  /// taps count toward "most used"). Custom buttons are atomic: they speak
+  /// their stored text immediately and never join the sentence bar — the
+  /// sentence bar only holds vocabulary ids. A vocab reference whose word
+  /// vanished from a newer pack falls back to its stored text instead of
+  /// doing nothing.
+  void tapDashboardCell(DashboardCell cell) {
+    final wordId = cell.wordId;
+    if (wordId != null) {
+      try {
+        tapWord(pack.wordById(wordId));
+        return;
+      } on Object {
+        // Word removed from the pack — fall through to stored text.
+      }
+    }
+    final text = cell.customText;
+    if (text.isEmpty) return;
+    tts.speak(text);
+  }
 
   void speakSentence() {
     final text = sentence.map((w) => w.label).join(' ');

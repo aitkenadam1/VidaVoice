@@ -6,6 +6,7 @@ import '../models/word.dart';
 import '../state/session_state.dart';
 import '../widgets/activity_summary_section.dart';
 import '../widgets/backup_section.dart';
+import '../widgets/dashboard_section.dart';
 import '../widgets/first_week_plan_section.dart';
 import '../widgets/word_finder_section.dart';
 
@@ -581,6 +582,26 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
             ],
           );
         },
+      ),
+      _Section(
+        id: 'dashboard',
+        title: 'Personal dashboard',
+        icon: Icons.dashboard_outlined,
+        summary: (session) {
+          final id = session.profiles.active?.id;
+          if (id == null) return 'No profile yet';
+          final dashboard = session.dashboards.forProfile(id);
+          if (dashboard == null || dashboard.cells.isEmpty) {
+            return 'Not set up';
+          }
+          final state = dashboard.enabled ? 'On' : 'Off';
+          final n = dashboard.cells.length;
+          return '$state · $n button${n == 1 ? '' : 's'}';
+        },
+        content: (context, session, refresh) => DashboardSection(
+          key: ValueKey(session.profiles.active?.id ?? 'none'),
+          refresh: refresh,
+        ),
       ),
       _Section(
         id: 'plan',

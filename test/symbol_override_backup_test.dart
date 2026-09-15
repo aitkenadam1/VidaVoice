@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:voicesimple/services/profile_backup_service.dart';
-import 'package:voicesimple/services/symbol_override_service.dart';
+import 'package:onevoz/services/profile_backup_service.dart';
+import 'package:onevoz/services/symbol_override_service.dart';
 
 /// Custom button images ride along with profile backup/restore and are
 /// cleaned up when a profile is deleted.

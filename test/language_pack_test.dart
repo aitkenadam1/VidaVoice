@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:voicesimple/models/word.dart';
+import 'package:onevoz/models/word.dart';
 
 /// Guards the motor-planning invariant: every shipped language pack must
 /// parse, validate (2-tap budget), and keep every core word at a FIXED

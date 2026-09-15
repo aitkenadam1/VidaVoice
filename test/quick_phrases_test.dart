@@ -3,9 +3,9 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:voicesimple/models/word.dart';
-import 'package:voicesimple/services/tts_service.dart';
-import 'package:voicesimple/state/session_state.dart';
+import 'package:onevoz/models/word.dart';
+import 'package:onevoz/services/tts_service.dart';
+import 'package:onevoz/state/session_state.dart';
 
 /// TTS double: never touches the platform channel, records speech.
 class _FakeTts extends TtsService {

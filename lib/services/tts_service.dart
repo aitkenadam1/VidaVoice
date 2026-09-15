@@ -61,7 +61,7 @@ class CloudCircuitBreaker {
 /// account ([elevenLabsVoiceId] is the voice id); they need an API key and
 /// internet, and any failure falls back to the on-device voices. Managed
 /// ("included") cloud voices ([proxyVoiceId] is the opaque voice id from
-/// the family's proxy entitlement) need a signed-in VoiceSimple account and
+/// the family's proxy entitlement) need a signed-in OneVoz account and
 /// internet; any failure falls back to the on-device voices.
 class TtsVoice {
   const TtsVoice({

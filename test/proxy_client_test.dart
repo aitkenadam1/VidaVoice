@@ -6,8 +6,8 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:voicesimple/services/elevenlabs_key_store.dart';
-import 'package:voicesimple/services/proxy_client.dart';
+import 'package:onevoz/services/elevenlabs_key_store.dart';
+import 'package:onevoz/services/proxy_client.dart';
 
 /// In-memory keychain double for ProxyAuthStore.
 class _FakeSecureStore implements SecureValueStore {

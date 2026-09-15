@@ -3,11 +3,11 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:voicesimple/models/dashboard.dart';
-import 'package:voicesimple/models/word.dart';
-import 'package:voicesimple/services/dashboard_service.dart';
-import 'package:voicesimple/services/tts_service.dart';
-import 'package:voicesimple/state/session_state.dart';
+import 'package:onevoz/models/dashboard.dart';
+import 'package:onevoz/models/word.dart';
+import 'package:onevoz/services/dashboard_service.dart';
+import 'package:onevoz/services/tts_service.dart';
+import 'package:onevoz/state/session_state.dart';
 
 /// TTS double that records what it was asked to speak.
 class _RecordingTts extends TtsService {

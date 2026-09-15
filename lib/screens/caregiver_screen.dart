@@ -85,7 +85,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
   static const _tips = [
     (
       'Model, don\u2019t quiz',
-      'Use VoiceSimple to talk WITH them, not test them. When you hand them '
+      'Use OneVoz to talk WITH them, not test them. When you hand them '
           'juice, tap \u201cI want juice\u201d yourself. They learn by watching you use it.',
     ),
     (

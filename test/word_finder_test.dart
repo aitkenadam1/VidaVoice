@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:voicesimple/models/word.dart';
-import 'package:voicesimple/services/word_finder.dart';
+import 'package:onevoz/models/word.dart';
+import 'package:onevoz/services/word_finder.dart';
 
 /// Word finder search logic. Run from the project root: `flutter test`.
 void main() {

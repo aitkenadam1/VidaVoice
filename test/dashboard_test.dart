@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:voicesimple/models/dashboard.dart';
-import 'package:voicesimple/services/dashboard_service.dart';
+import 'package:onevoz/models/dashboard.dart';
+import 'package:onevoz/services/dashboard_service.dart';
 
 /// Unit tests for the personal-dashboard model and store.
 /// Run from the project root: `flutter test test/dashboard_test.dart`.

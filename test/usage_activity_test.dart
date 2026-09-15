@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:voicesimple/services/usage_service.dart';
+import 'package:onevoz/services/usage_service.dart';
 
 /// Unit tests for the daily activity aggregation (taps today, words today,
 /// day streak, top words this week). The clock is injectable so day

@@ -45,7 +45,7 @@ class SavedElevenLabsVoice {
   /// that was spoken), used to filter the voice picker per language.
   final String locale;
 
-  /// True when this voice was created by VoiceSimple's clone flow (so "remove"
+  /// True when this voice was created by OneVoz's clone flow (so "remove"
   /// may also delete it from the ElevenLabs account). Account/library voices
   /// are never deleted from ElevenLabs by the app.
   final bool createdByApp;

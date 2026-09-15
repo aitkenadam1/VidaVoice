@@ -8,7 +8,7 @@ import '../state/session_state.dart';
 String proxyErrorMessage(ProxyException e) {
   switch (e.code) {
     case 'unreachable':
-      return 'Couldn\u2019t reach the VoiceSimple service. Check your '
+      return 'Couldn\u2019t reach the OneVoz service. Check your '
           'connection and try again.';
     case 'invalid_email':
       return 'That email doesn\u2019t look right \u2014 check it and try again.';

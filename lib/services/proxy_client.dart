@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 
 import 'elevenlabs_key_store.dart';
 
-/// Base URL of the managed VoiceSimple voice backend.
+/// Base URL of the managed OneVoz voice backend.
 ///
 /// PLACEHOLDER — MUST-REPLACE before any public build: the company domain
 /// is TBD and this host has no DNS record, so a build pointed here fails
@@ -302,7 +302,7 @@ class ProxyDeviceList {
   }
 }
 
-/// HTTP client for the managed VoiceSimple voice backend.
+/// HTTP client for the managed OneVoz voice backend.
 ///
 /// Every call carries `Authorization: Bearer <token>` (once signed in) and
 /// a 5-second timeout. The backend is optional infrastructure: when it is
@@ -366,7 +366,7 @@ class ProxyClient {
       );
     } catch (_) {
       throw ProxyException(
-        'Could not reach the VoiceSimple service.',
+        'Could not reach the OneVoz service.',
         code: 'unreachable',
         fallbackAllowed: true,
       );
@@ -388,7 +388,7 @@ class ProxyClient {
       );
     } catch (_) {
       throw ProxyException(
-        'Could not reach the VoiceSimple service.',
+        'Could not reach the OneVoz service.',
         code: 'unreachable',
         fallbackAllowed: true,
       );
@@ -410,7 +410,7 @@ class ProxyClient {
       );
     } catch (_) {
       throw ProxyException(
-        'Could not reach the VoiceSimple service.',
+        'Could not reach the OneVoz service.',
         code: 'unreachable',
         fallbackAllowed: true,
       );

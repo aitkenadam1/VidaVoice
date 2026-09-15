@@ -9,13 +9,13 @@ import 'state/session_state.dart';
 
 void main() {
   final session = SessionState();
-  runApp(VoiceSimpleApp(session: session));
+  runApp(OneVozApp(session: session));
   // Async on purpose: the UI reacts to BootStatus changes.
   session.boot();
 }
 
-class VoiceSimpleApp extends StatelessWidget {
-  const VoiceSimpleApp({super.key, required this.session});
+class OneVozApp extends StatelessWidget {
+  const OneVozApp({super.key, required this.session});
 
   final SessionState session;
 

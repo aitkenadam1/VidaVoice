@@ -64,8 +64,8 @@ class _BackupSectionState extends State<BackupSection> {
     await SharePlus.instance.share(
       ShareParams(
         files: [XFile(path)],
-        subject: 'VoiceSimple profile backup',
-        text: 'VoiceSimple profile backup — keep this file somewhere safe.',
+        subject: 'OneVoz profile backup',
+        text: 'OneVoz profile backup — keep this file somewhere safe.',
       ),
     );
   }

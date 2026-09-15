@@ -4,11 +4,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:voicesimple/main.dart';
-import 'package:voicesimple/models/word.dart';
-import 'package:voicesimple/services/history_service.dart';
-import 'package:voicesimple/services/tts_service.dart';
-import 'package:voicesimple/state/session_state.dart';
+import 'package:onevoz/main.dart';
+import 'package:onevoz/models/word.dart';
+import 'package:onevoz/services/history_service.dart';
+import 'package:onevoz/services/tts_service.dart';
+import 'package:onevoz/state/session_state.dart';
 
 class _FakeTts extends TtsService {
   int speakCalls = 0;
@@ -190,7 +190,7 @@ void main() {
       await session.history.load('p1');
       await session.profiles.load();
 
-      await tester.pumpWidget(VoiceSimpleApp(session: session));
+      await tester.pumpWidget(OneVozApp(session: session));
       await tester.pump();
 
       // Build a sentence and speak it.

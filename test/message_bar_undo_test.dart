@@ -4,10 +4,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:voicesimple/main.dart';
-import 'package:voicesimple/models/word.dart';
-import 'package:voicesimple/services/tts_service.dart';
-import 'package:voicesimple/state/session_state.dart';
+import 'package:onevoz/main.dart';
+import 'package:onevoz/models/word.dart';
+import 'package:onevoz/services/tts_service.dart';
+import 'package:onevoz/state/session_state.dart';
 
 /// TTS double: never touches the platform channel.
 class _FakeTts extends TtsService {
@@ -81,7 +81,7 @@ void main() {
     final session = await makeSession();
     await session.setUnlockedLevel(LanguagePack.maxSupportedLevel);
 
-    await tester.pumpWidget(VoiceSimpleApp(session: session));
+    await tester.pumpWidget(OneVozApp(session: session));
     await tester.pump();
 
     // Build "want you" from the home board ('want' is unique until tapped).
@@ -110,7 +110,7 @@ void main() {
     final session = await makeSession();
     await session.setUnlockedLevel(LanguagePack.maxSupportedLevel);
 
-    await tester.pumpWidget(VoiceSimpleApp(session: session));
+    await tester.pumpWidget(OneVozApp(session: session));
     await tester.pump();
 
     await tester.tap(find.text('want'));

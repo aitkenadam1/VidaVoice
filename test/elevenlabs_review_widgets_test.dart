@@ -5,16 +5,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:voicesimple/models/dashboard.dart';
-import 'package:voicesimple/services/button_image.dart';
-import 'package:voicesimple/services/elevenlabs_key_store.dart';
-import 'package:voicesimple/services/elevenlabs_service.dart';
-import 'package:voicesimple/services/tts_service.dart';
-import 'package:voicesimple/services/voice_sample_recorder.dart';
-import 'package:voicesimple/state/session_state.dart';
-import 'package:voicesimple/widgets/dashboard_section.dart';
-import 'package:voicesimple/widgets/elevenlabs_section.dart';
-import 'package:voicesimple/widgets/pick_button_image.dart';
+import 'package:onevoz/models/dashboard.dart';
+import 'package:onevoz/services/button_image.dart';
+import 'package:onevoz/services/elevenlabs_key_store.dart';
+import 'package:onevoz/services/elevenlabs_service.dart';
+import 'package:onevoz/services/tts_service.dart';
+import 'package:onevoz/services/voice_sample_recorder.dart';
+import 'package:onevoz/state/session_state.dart';
+import 'package:onevoz/widgets/dashboard_section.dart';
+import 'package:onevoz/widgets/elevenlabs_section.dart';
+import 'package:onevoz/widgets/pick_button_image.dart';
 
 /// TTS double: never touches the platform channel.
 class _FakeTts extends TtsService {

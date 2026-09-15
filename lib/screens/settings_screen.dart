@@ -205,7 +205,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               title: Text(AppConfig.appDisplayName),
               subtitle: const Text(
-                'Starter build.\n'
+                'One voice. A brighter tomorrow.\n'
                 'Word symbols: ARASAAC (CC BY-NC-SA), https://arasaac.org',
               ),
               isThreeLine: true,

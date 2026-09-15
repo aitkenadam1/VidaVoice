@@ -94,7 +94,7 @@ class ProfileBackup {
   /// must show the error and touch nothing.
   factory ProfileBackup.fromJson(Map<String, dynamic> json) {
     String req(String what) => throw BackupFormatException(
-      'Backup is not a VoiceSimple profile backup ($what).',
+      'Backup is not a OneVoz profile backup ($what).',
     );
     if (json['format'] != format) req('missing format marker');
     if (json['version'] != version) {
@@ -253,7 +253,7 @@ class ProfileBackup {
   int get totalTaps => usageCounts.values.fold(0, (a, b) => a + b);
 }
 
-/// Thrown when an import file is corrupt or not a VoiceSimple backup.
+/// Thrown when an import file is corrupt or not a OneVoz backup.
 /// Carries a message safe to show the caregiver.
 class BackupFormatException implements Exception {
   const BackupFormatException(this.message);

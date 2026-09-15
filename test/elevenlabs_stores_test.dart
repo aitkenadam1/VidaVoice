@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:voicesimple/services/elevenlabs_key_store.dart';
-import 'package:voicesimple/services/elevenlabs_service.dart';
-import 'package:voicesimple/services/elevenlabs_voice_store.dart';
+import 'package:onevoz/services/elevenlabs_key_store.dart';
+import 'package:onevoz/services/elevenlabs_service.dart';
+import 'package:onevoz/services/elevenlabs_voice_store.dart';
 
 /// In-memory stand-in for the platform secure storage.
 class _FakeSecureStore implements SecureValueStore {

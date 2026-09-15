@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:voicesimple/services/profile_backup_service.dart';
-import 'package:voicesimple/state/session_state.dart';
-import 'package:voicesimple/widgets/backup_section.dart';
+import 'package:onevoz/services/profile_backup_service.dart';
+import 'package:onevoz/state/session_state.dart';
+import 'package:onevoz/widgets/backup_section.dart';
 
 /// Tests for profile backup/restore: serialization, validation of corrupt
 /// files, replace/merge import, and the widget import flow with a fake

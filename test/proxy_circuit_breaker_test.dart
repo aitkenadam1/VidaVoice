@@ -4,12 +4,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:voicesimple/services/elevenlabs_audio.dart';
-import 'package:voicesimple/services/elevenlabs_key_store.dart';
-import 'package:voicesimple/services/elevenlabs_service.dart';
-import 'package:voicesimple/services/proxy_client.dart';
-import 'package:voicesimple/services/tts_service.dart';
-import 'package:voicesimple/state/session_state.dart';
+import 'package:onevoz/services/elevenlabs_audio.dart';
+import 'package:onevoz/services/elevenlabs_key_store.dart';
+import 'package:onevoz/services/elevenlabs_service.dart';
+import 'package:onevoz/services/proxy_client.dart';
+import 'package:onevoz/services/tts_service.dart';
+import 'package:onevoz/state/session_state.dart';
 
 /// Player double: never touches a platform channel.
 class _FakeElevenAudio extends ElevenLabsAudioPlayer {

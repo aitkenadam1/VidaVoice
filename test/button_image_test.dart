@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
-import 'package:voicesimple/services/button_image.dart';
+import 'package:onevoz/services/button_image.dart';
 
 /// Builds a solid-color test image of the given size.
 List<int> makePng(int w, int h) {

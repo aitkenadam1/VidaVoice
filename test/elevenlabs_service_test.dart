@@ -5,7 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:voicesimple/services/elevenlabs_service.dart';
+import 'package:onevoz/services/elevenlabs_service.dart';
 
 void main() {
   /// Fake HTTP client that can return streamed responses (needed for the

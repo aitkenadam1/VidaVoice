@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:onevoz/services/profile_backup_service.dart';
+import 'package:onevoz/services/profile_service.dart';
 import 'package:onevoz/state/session_state.dart';
 import 'package:onevoz/widgets/backup_section.dart';
 
@@ -40,6 +41,10 @@ void main() {
     planDays: [1, 2],
     customSymbols: const {},
     elevenLabsVoices: const [],
+    communicationMode: CommunicationMode.tap,
+    buildMaxSymbols: 4,
+    predictionEnabled: true,
+    nudgePreference: ModeNudgePreference.allowed,
   );
 
   Map<String, Object> seedPrefs() => {

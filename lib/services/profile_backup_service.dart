@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'elevenlabs_service.dart';
 import 'elevenlabs_voice_store.dart';
+import 'profile_service.dart';
 import 'symbol_override_service.dart';
 
 /// One exported profile backup: everything needed to restore a communicator
@@ -31,6 +32,10 @@ class ProfileBackup {
     required this.planDays,
     required this.customSymbols,
     required this.elevenLabsVoices,
+    required this.communicationMode,
+    required this.buildMaxSymbols,
+    required this.predictionEnabled,
+    required this.nudgePreference,
   });
 
   static const format = 'vidavoice-profile-backup';
@@ -69,11 +74,32 @@ class ProfileBackup {
   /// one they are inert and speech falls back on-device.
   final List<SavedElevenLabsVoice> elevenLabsVoices;
 
+  /// The profile's communication mode at export time. Restored onto the
+  /// profile list on import; defaults to [CommunicationMode.tap] for
+  /// backups written before the modes feature.
+  final CommunicationMode communicationMode;
+
+  /// The caregiver's Build-mode maximum phrase length for this profile.
+  final int buildMaxSymbols;
+
+  /// Whether Type-mode prediction learns from this profile's history.
+  final bool predictionEnabled;
+
+  /// The caregiver's mode-nudge preference for this profile.
+  final ModeNudgePreference nudgePreference;
+
   Map<String, dynamic> toJson() => {
     'format': format,
     'version': version,
     'exportedAt': exportedAt.millisecondsSinceEpoch,
-    'profile': {'id': profileId, 'name': profileName},
+    'profile': {
+      'id': profileId,
+      'name': profileName,
+      'mode': communicationMode.name,
+      'buildMaxSymbols': buildMaxSymbols,
+      'predictionEnabled': predictionEnabled,
+      'nudgePreference': nudgePreference.name,
+    },
     'settings': {
       'locale': locale,
       'speechRate': speechRate,
@@ -231,8 +257,35 @@ class ProfileBackup {
       planDays: planDays,
       customSymbols: customSymbols,
       elevenLabsVoices: elevenLabsVoices,
+      // Optional so backups written before the modes feature still decode:
+      // those restore with the safe defaults.
+      communicationMode: _modeOf(profile['mode']),
+      buildMaxSymbols: _buildMaxOf(profile['buildMaxSymbols']),
+      predictionEnabled: profile['predictionEnabled'] is bool
+          ? profile['predictionEnabled'] as bool
+          : true,
+      nudgePreference: _nudgeOf(profile['nudgePreference']),
     );
   }
+
+  static CommunicationMode _modeOf(dynamic raw) => switch (raw) {
+    'build' => CommunicationMode.build,
+    'type' => CommunicationMode.type,
+    _ => CommunicationMode.tap,
+  };
+
+  static int _buildMaxOf(dynamic raw) => raw is int
+      ? raw.clamp(
+          ProfileService.minBuildMaxSymbols,
+          ProfileService.maxBuildMaxSymbols,
+        )
+      : ProfileService.defaultBuildMaxSymbols;
+
+  static ModeNudgePreference _nudgeOf(dynamic raw) => switch (raw) {
+    'paused' => ModeNudgePreference.paused,
+    'off' => ModeNudgePreference.off,
+    _ => ModeNudgePreference.allowed,
+  };
 
   String encode() => json.encode(toJson());
 
@@ -293,7 +346,8 @@ class ProfileBackupService {
   /// Reads everything that belongs to [profileId] into a backup.
   Future<ProfileBackup> build(String profileId) async {
     final prefs = await _prefsFactory();
-    final profileName = _profileName(prefs, profileId) ?? 'My Voice';
+    final profile = _profileFor(prefs, profileId);
+    final profileName = profile?.name ?? 'My Voice';
 
     List<Map<String, dynamic>> history = [];
     final rawHistory = prefs.getString(_historyKey(profileId));
@@ -371,6 +425,12 @@ class ProfileBackupService {
       elevenLabsVoices: await ElevenLabsVoiceStore(
         prefsFactory: () async => prefs,
       ).load(profileId),
+      communicationMode: profile?.communicationMode ?? CommunicationMode.tap,
+      buildMaxSymbols:
+          profile?.buildMaxSymbols ?? ProfileService.defaultBuildMaxSymbols,
+      predictionEnabled: profile?.predictionEnabled ?? true,
+      nudgePreference:
+          profile?.modeNudgePreference ?? ModeNudgePreference.allowed,
     );
   }
 
@@ -465,13 +525,16 @@ class ProfileBackupService {
     ]);
   }
 
-  String? _profileName(SharedPreferences prefs, String profileId) {
+  /// The profile list entry as a [UserProfile], or null when the id is
+  /// unknown. [UserProfile.fromJson] is migration-safe, so entries written
+  /// by older app versions parse with the safe defaults.
+  UserProfile? _profileFor(SharedPreferences prefs, String profileId) {
     final raw = prefs.getString(_kProfiles);
     if (raw == null) return null;
     try {
       for (final e in json.decode(raw) as List) {
         final m = Map<String, dynamic>.from(e as Map);
-        if (m['id'] == profileId) return m['name'] as String?;
+        if (m['id'] == profileId) return UserProfile.fromJson(m);
       }
     } on FormatException {
       return null;
@@ -495,10 +558,25 @@ class ProfileBackupService {
         list = [];
       }
     }
-    if (!list.any((m) => m['id'] == backup.profileId)) {
-      list.add({'id': backup.profileId, 'name': backup.profileName});
-      await prefs.setString(_kProfiles, json.encode(list));
+    // The backup carries this profile's own mode fields: restore them
+    // onto the profile list entry (both merge and replace import the same
+    // profile, so the fields always apply). Nothing from another profile
+    // is touched.
+    final entry = {
+      'id': backup.profileId,
+      'name': backup.profileName,
+      'mode': backup.communicationMode.name,
+      'buildMaxSymbols': backup.buildMaxSymbols,
+      'predictionEnabled': backup.predictionEnabled,
+      'nudgePreference': backup.nudgePreference.name,
+    };
+    final index = list.indexWhere((m) => m['id'] == backup.profileId);
+    if (index >= 0) {
+      list[index] = entry;
+    } else {
+      list.add(entry);
     }
+    await prefs.setString(_kProfiles, json.encode(list));
   }
 
   Future<void> _mergeUsage(

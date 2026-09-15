@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:onevoz/services/elevenlabs_service.dart';
 import 'package:onevoz/services/elevenlabs_voice_store.dart';
 import 'package:onevoz/services/profile_backup_service.dart';
+import 'package:onevoz/services/profile_service.dart';
 
 void main() {
   const maya = SavedElevenLabsVoice(id: 'cv-1', name: 'Maya', locale: 'en');
@@ -34,6 +35,10 @@ void main() {
         planDays: const [],
         customSymbols: const {},
         elevenLabsVoices: voices,
+        communicationMode: CommunicationMode.tap,
+        buildMaxSymbols: 4,
+        predictionEnabled: true,
+        nudgePreference: ModeNudgePreference.allowed,
       );
 
   setUp(() {

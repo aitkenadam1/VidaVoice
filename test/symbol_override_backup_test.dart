@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:onevoz/services/profile_backup_service.dart';
+import 'package:onevoz/services/profile_service.dart';
 import 'package:onevoz/services/symbol_override_service.dart';
 
 /// Custom button images ride along with profile backup/restore and are
@@ -31,6 +32,10 @@ void main() {
     planDays: const [],
     customSymbols: symbols,
     elevenLabsVoices: const [],
+    communicationMode: CommunicationMode.tap,
+    buildMaxSymbols: 4,
+    predictionEnabled: true,
+    nudgePreference: ModeNudgePreference.allowed,
   );
 
   test('build captures only the profile\'s custom symbols', () async {

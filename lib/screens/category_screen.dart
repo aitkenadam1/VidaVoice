@@ -3,13 +3,14 @@ import 'package:provider/provider.dart';
 
 import '../models/word.dart';
 import '../state/session_state.dart';
-import '../widgets/message_bar.dart';
+import '../widgets/build_strip_bar.dart';
 import '../widgets/tts_banner.dart';
 import '../widgets/word_button.dart';
 
-/// Inside a category folder: tap a word to speak it and add it to the
-/// message bar (2nd tap). The message bar stays visible so sentences can
-/// be finished and replayed without leaving the folder.
+/// Inside a category folder. Tap mode: tap a word to speak it and add it
+/// to the message bar. Build mode: taps collect into the phrase strip —
+/// nothing speaks until the communicator presses Speak (the strip travels
+/// with the screen via [CompositionBar]).
 class CategoryScreen extends StatelessWidget {
   const CategoryScreen({super.key, required this.folderId});
 
@@ -54,12 +55,12 @@ class CategoryScreen extends StatelessWidget {
                       scale: scale,
                       hasSymbol: session.symbols.hasSymbol(word.id),
                       imageOverride: session.symbolOverrideFor(word.id),
-                      onTap: () => session.tapWord(word),
+                      onTap: () => session.tapBoardItem(word),
                     ),
               ],
             ),
           ),
-          const MessageBar(),
+          const CompositionBar(),
         ],
       ),
     );

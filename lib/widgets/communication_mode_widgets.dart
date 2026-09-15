@@ -442,6 +442,122 @@ class _ProfileModeEditorState extends State<ProfileModeEditor> {
   }
 }
 
+/// Per-profile "Maximum phrase length" (Build mode) editor for the
+/// caregiver hub's Communicator profiles section. The slider drafts
+/// locally; nothing is written until the explicit Save, which goes only
+/// through [ProfileService.setBuildMaxSymbols] — the same explicit-save
+/// contract as the mode picker. The value clamps to
+/// [ProfileService.minBuildMaxSymbols]..[ProfileService.maxBuildMaxSymbols]
+/// (2..12) on both ends.
+class BuildLengthEditor extends StatefulWidget {
+  const BuildLengthEditor({super.key, required this.profileId});
+
+  final String profileId;
+
+  @override
+  State<BuildLengthEditor> createState() => _BuildLengthEditorState();
+}
+
+class _BuildLengthEditorState extends State<BuildLengthEditor> {
+  late double _draft;
+  bool _saved = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _draft =
+        (_currentValue() ?? ProfileService.defaultBuildMaxSymbols).toDouble();
+  }
+
+  int? _currentValue() {
+    final profiles = context.read<SessionState>().profiles.profiles;
+    for (final p in profiles) {
+      if (p.id == widget.profileId) return p.buildMaxSymbols;
+    }
+    return null;
+  }
+
+  Future<void> _save() async {
+    final session = context.read<SessionState>();
+    await session.profiles.setBuildMaxSymbols(
+      widget.profileId,
+      _draft.round(),
+    );
+    if (!mounted) return;
+    setState(() => _saved = true);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Maximum phrase length saved: ${_draft.round()} symbols',
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final session = context.watch<SessionState>();
+    UserProfile? profile;
+    for (final p in session.profiles.profiles) {
+      if (p.id == widget.profileId) profile = p;
+    }
+    if (profile == null) return const SizedBox.shrink();
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'Maximum phrase length',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'How many symbols fit in this profile\u2019s Build-mode phrase '
+            'strip. Applies to Build mode only.',
+            style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Current: ${profile.buildMaxSymbols} symbols',
+            style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
+          ),
+          Semantics(
+            label: 'Maximum phrase length, ${_draft.round()} symbols',
+            child: Slider(
+              value: _draft,
+              min: ProfileService.minBuildMaxSymbols.toDouble(),
+              max: ProfileService.maxBuildMaxSymbols.toDouble(),
+              divisions:
+                  ProfileService.maxBuildMaxSymbols -
+                  ProfileService.minBuildMaxSymbols,
+              label: '${_draft.round()} symbols',
+              onChanged: (v) => setState(() {
+                _draft = v;
+                _saved = false;
+              }),
+            ),
+          ),
+          FilledButton(
+            onPressed: _save,
+            child: const Text('Save maximum'),
+          ),
+          if (_saved)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                'Saved: ${_draft.round()} symbols',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Opens the safe sandbox preview for [mode]. The preview is a static,
 /// local-state-only mock of the mode's main screen: tiles and chips react
 /// visually, the Speak action is disabled, and the dialog never references

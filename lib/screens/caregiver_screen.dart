@@ -608,6 +608,15 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
                         ),
                         profileId: p.id,
                       ),
+                      // Per-profile Build length limit (Phase 3). Keyed on
+                      // the saved value so an external change (e.g. backup
+                      // import) resets the local draft.
+                      BuildLengthEditor(
+                        key: ValueKey(
+                          'build-length-${p.id}-${p.buildMaxSymbols}',
+                        ),
+                        profileId: p.id,
+                      ),
                     ],
                   ),
                 ),

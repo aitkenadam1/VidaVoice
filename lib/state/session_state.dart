@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/semantics.dart';
+import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'dart:async';
@@ -696,6 +698,20 @@ class SessionState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Mode-aware board tap used by every board surface (home grid, folders,
+  /// dashboards). In Build mode a tap collects the symbol into the phrase
+  /// strip and NEVER speaks; in Tap mode behavior is exactly the old
+  /// [tapWord] (words speak immediately and accumulate; phrases speak whole
+  /// immediately). Folder tiles never reach here (the UI navigates).
+  void tapBoardItem(BoardItem item) {
+    if (item.type == BoardItemType.folder) return;
+    if (profiles.active?.communicationMode == CommunicationMode.build) {
+      buildAdd(item);
+    } else {
+      tapWord(item);
+    }
+  }
+
   void tapWord(BoardItem item) {
     if (item.type == BoardItemType.folder) return;
     if (item.type == BoardItemType.phrase) {
@@ -729,17 +745,18 @@ class SessionState extends ChangeNotifier {
   Future<void> speakText(String text) => tts.speak(text);
 
   /// Taps a personal-dashboard cell. Vocabulary cells behave exactly as on
-  /// the standard board (words join the sentence bar, phrases speak whole,
-  /// taps count toward "most used"). Custom buttons are atomic: they speak
-  /// their stored text immediately and never join the sentence bar — the
-  /// sentence bar only holds vocabulary ids. A vocab reference whose word
-  /// vanished from a newer pack falls back to its stored text instead of
-  /// doing nothing.
+  /// the standard board in the active mode ([tapBoardItem]: Build adds to
+  /// the strip without speaking, Tap speaks immediately and joins the
+  /// sentence bar). Custom buttons are atomic: their stored text either
+  /// joins the Build strip as one unit or — in other modes — speaks
+  /// immediately, exactly as before. A vocab reference whose word vanished
+  /// from a newer pack falls back to its stored text instead of doing
+  /// nothing.
   void tapDashboardCell(DashboardCell cell) {
     final wordId = cell.wordId;
     if (wordId != null) {
       try {
-        tapWord(pack.wordById(wordId));
+        tapBoardItem(pack.wordById(wordId));
         return;
       } on Object {
         // Word removed from the pack — fall through to stored text.
@@ -747,7 +764,11 @@ class SessionState extends ChangeNotifier {
     }
     final text = cell.customText;
     if (text.isEmpty) return;
-    tts.speak(text);
+    if (profiles.active?.communicationMode == CommunicationMode.build) {
+      buildAddText(text);
+    } else {
+      tts.speak(text);
+    }
   }
 
   void speakSentence() {
@@ -793,4 +814,143 @@ class SessionState extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  // ------------------------------------------------- build mode strip -----
+  // The Build-mode composition surface: symbols collect in a visible,
+  // ordered strip and NOTHING speaks until the communicator presses Speak
+  // ([buildSpeak]). No other method on this path touches the TTS layer.
+  //
+  // DOCUMENTED DESIGN CHOICE — phrase-type items (isPhrase): a phrase
+  // joins the strip as ONE unit and speaks only with the composed
+  // message. Speaking it immediately would break Build mode's defining
+  // contract (speech only after an intentional Speak), so it behaves as a
+  // single composed symbol rather than the Tap-mode atomic utterance.
+  final List<BuildStripEntry> _buildStrip = [];
+
+  /// The Build-mode phrase strip in order. Unmodifiable.
+  List<BuildStripEntry> get buildStrip => List.unmodifiable(_buildStrip);
+
+  /// The caregiver-set maximum phrase length for the active profile
+  /// (default 4, see [ProfileService.buildMaxSymbols]).
+  int get buildMax =>
+      profiles.active?.buildMaxSymbols ?? ProfileService.defaultBuildMaxSymbols;
+
+  /// True when the strip already holds [buildMax] units.
+  bool get buildStripFull => _buildStrip.length >= buildMax;
+
+  /// Accessible feedback about the last strip interaction — currently only
+  /// the full-strip rejection. Null when there is nothing to report. The
+  /// UI renders it as text AND the session announces it for screen
+  /// readers, so the limit is never communicated by speaking the rejected
+  /// word and never by adding it silently.
+  String? buildNotice;
+
+  void _announceBuild(String message) {
+    // SessionState is not a widget, so it has no BuildContext to resolve a
+    // view from — take the first platform view instead. Silent when no
+    // view exists (e.g. a headless unit test); the strip state and
+    // buildNotice still carry the information.
+    final views = WidgetsBinding.instance.platformDispatcher.views;
+    if (views.isEmpty) return;
+    unawaited(
+      SemanticsService.sendAnnouncement(
+        views.first,
+        message,
+        TextDirection.ltr,
+      ),
+    );
+  }
+
+  /// Adds [item] to the strip. Returns false and leaves the strip (and the
+  /// TTS layer) untouched when the strip is full — the limit is
+  /// communicated via [buildNotice] + a screen-reader announcement, never
+  /// by speaking the rejected word and never by adding it silently.
+  bool buildAdd(BoardItem item) {
+    final max = buildMax;
+    if (_buildStrip.length >= max) {
+      buildNotice =
+          'Phrase strip is full — ${_buildStrip.length} of $max symbols.';
+      _announceBuild(buildNotice!);
+      notifyListeners();
+      return false;
+    }
+    _buildStrip.add(BuildStripEntry(wordId: item.id, text: item.label));
+    buildNotice = null;
+    _announceBuild('Added ${item.label}. ${_buildStrip.length} of $max.');
+    // Fire-and-forget: usage counts must never block a tap.
+    unawaited(usage.recordTap(item.id));
+    notifyListeners();
+    return true;
+  }
+
+  /// Adds ad-hoc text (e.g. a dashboard custom button) as one strip unit.
+  /// Same full-strip contract as [buildAdd].
+  bool buildAddText(String text) {
+    final max = buildMax;
+    if (_buildStrip.length >= max) {
+      buildNotice =
+          'Phrase strip is full — ${_buildStrip.length} of $max symbols.';
+      _announceBuild(buildNotice!);
+      notifyListeners();
+      return false;
+    }
+    _buildStrip.add(BuildStripEntry(text: text));
+    buildNotice = null;
+    _announceBuild('Added $text. ${_buildStrip.length} of $max.');
+    notifyListeners();
+    return true;
+  }
+
+  /// Tap-to-remove: drops the strip unit at [index]. Out-of-range is a
+  /// no-op.
+  void buildRemoveAt(int index) {
+    if (index < 0 || index >= _buildStrip.length) return;
+    final removed = _buildStrip.removeAt(index);
+    buildNotice = null;
+    _announceBuild(
+      'Removed ${removed.text}. ${_buildStrip.length} of $buildMax.',
+    );
+    notifyListeners();
+  }
+
+  /// Clears the whole strip. Empty strip is a no-op.
+  void buildClear() {
+    if (_buildStrip.isEmpty) return;
+    _buildStrip.clear();
+    buildNotice = null;
+    _announceBuild('Phrase strip cleared.');
+    notifyListeners();
+  }
+
+  /// Speaks the composed phrase — the ONLY Build-path method that may
+  /// touch the TTS layer. Records history through the same path as Tap's
+  /// [speakSentence] so caregivers see Build messages in activity too. The
+  /// strip is kept so the message can be replayed.
+  void buildSpeak() {
+    final text = _buildStrip.map((e) => e.text).join(' ');
+    if (text.isEmpty) return;
+    tts.speak(text);
+    // Fire-and-forget: history must never block or delay speech.
+    unawaited(
+      history.record(
+        profiles.active?.id ?? '',
+        [for (final e in _buildStrip) if (e.wordId != null) e.wordId!],
+        text,
+        currentLocale,
+      ),
+    );
+    _announceBuild('Speaking: $text');
+    notifyListeners();
+  }
+}
+
+/// One unit in the Build-mode phrase strip: a vocabulary word (with its
+/// language-independent id, so history records resolve it) or ad-hoc text
+/// (a dashboard custom button) which has no id and contributes no id to
+/// the history record.
+class BuildStripEntry {
+  const BuildStripEntry({this.wordId, required this.text});
+
+  final String? wordId;
+  final String text;
 }

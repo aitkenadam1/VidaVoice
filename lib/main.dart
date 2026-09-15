@@ -3,8 +3,10 @@ import 'package:provider/provider.dart';
 
 import 'app_config.dart';
 import 'screens/boot_screen.dart';
+import 'screens/build_board_screen.dart';
 import 'screens/home_board_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'services/profile_service.dart';
 import 'state/session_state.dart';
 
 void main() {
@@ -13,6 +15,14 @@ void main() {
   // Async on purpose: the UI reacts to BootStatus changes.
   session.boot();
 }
+
+/// Routes the home experience by the active profile's communication mode
+/// (Phase 3 of the modes plan): Build gets the phrase-strip surface; Tap
+/// (and Type, until Phase 4 ships its own screen) keep the classic board.
+Widget homeScreenFor(SessionState session) =>
+    session.profiles.active?.communicationMode == CommunicationMode.build
+        ? const BuildBoardScreen()
+        : const HomeBoardScreen();
 
 class OneVozApp extends StatelessWidget {
   const OneVozApp({super.key, required this.session});
@@ -41,7 +51,7 @@ class OneVozApp extends StatelessWidget {
                 if (!s.onboardingComplete) {
                   return const OnboardingScreen();
                 }
-                return const HomeBoardScreen();
+                return homeScreenFor(s);
             }
           },
         ),

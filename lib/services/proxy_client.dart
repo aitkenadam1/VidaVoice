@@ -7,16 +7,25 @@ import 'package:http/http.dart' as http;
 
 import 'elevenlabs_key_store.dart';
 
-/// Base URL of the managed VidaVoice voice backend.
+/// Base URL of the managed VoiceSimple voice backend.
 ///
-/// PLACEHOLDER: the proxy is built and verified locally at
+/// PLACEHOLDER — MUST-REPLACE before any public build: the company domain
+/// is TBD and this host has no DNS record, so a build pointed here fails
+/// closed (which is correct) and can never reach a real backend. Override
+/// per build without a code change:
+///   flutter build ... --dart-define=VIDAVOICE_PROXY_URL=https://...
+///
+/// The proxy is built and verified locally at
 /// ~/workspace/vidavoice-voice-proxy but is NOT deployed yet. Until Adam
-/// deploys it and updates this URL, every proxy call fails with an
+/// deploys it and points this URL at it, every proxy call fails with an
 /// "unreachable" ProxyException — which is the normal, expected state.
 /// The app treats an unreachable proxy as "offline": onboarding offers to
 /// continue with on-device voices, and speech falls back to on-device
 /// voices. Nothing in the app may break when this host doesn't resolve.
-const kProxyBaseUrl = 'https://voice.vidavoice.org';
+const kProxyBaseUrl = String.fromEnvironment(
+  'VIDAVOICE_PROXY_URL',
+  defaultValue: 'https://voice.vidavoice.org',
+);
 
 /// Error from the managed voice proxy (or from reaching it).
 ///
@@ -293,7 +302,7 @@ class ProxyDeviceList {
   }
 }
 
-/// HTTP client for the managed VidaVoice voice backend.
+/// HTTP client for the managed VoiceSimple voice backend.
 ///
 /// Every call carries `Authorization: Bearer <token>` (once signed in) and
 /// a 5-second timeout. The backend is optional infrastructure: when it is
@@ -357,7 +366,7 @@ class ProxyClient {
       );
     } catch (_) {
       throw ProxyException(
-        'Could not reach the VidaVoice service.',
+        'Could not reach the VoiceSimple service.',
         code: 'unreachable',
         fallbackAllowed: true,
       );
@@ -379,7 +388,7 @@ class ProxyClient {
       );
     } catch (_) {
       throw ProxyException(
-        'Could not reach the VidaVoice service.',
+        'Could not reach the VoiceSimple service.',
         code: 'unreachable',
         fallbackAllowed: true,
       );
@@ -401,7 +410,7 @@ class ProxyClient {
       );
     } catch (_) {
       throw ProxyException(
-        'Could not reach the VidaVoice service.',
+        'Could not reach the VoiceSimple service.',
         code: 'unreachable',
         fallbackAllowed: true,
       );

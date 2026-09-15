@@ -6,7 +6,7 @@
          they explicitly create a voice. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <application
-        android:label="VidaVoice"
+        android:label="VoiceSimple"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

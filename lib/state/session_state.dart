@@ -54,6 +54,11 @@ class SessionState extends ChangeNotifier {
     this.tts.proxy = this.proxy;
     this.tts.proxyProfileIdProvider = () =>
         _serverProfileIds.isNotEmpty ? _serverProfileIds.first : null;
+    // The speech path calls proxy.synthesize directly (it must never throw
+    // past the UI), so a 401 there bypasses _authed: this closes the gap —
+    // an expired session signs out instead of invisibly switching the
+    // child's voice to the system voice.
+    this.tts.onProxyUnauthorized = () => signOut();
   }
 
   final Future<SharedPreferences> Function() _prefsFactory;

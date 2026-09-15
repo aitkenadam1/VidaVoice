@@ -170,13 +170,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         Icon(Icons.cloud_outlined, size: 72, color: scheme.primary),
         const SizedBox(height: 16),
         const Text(
-          'Your VidaVoice account',
+          'Your VoiceSimple account',
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 8),
         Text(
-          'An account unlocks AI cloud voices, included with VidaVoice, '
+          'An account unlocks AI cloud voices, included with VoiceSimple, '
           'on up to 3 devices. It\u2019s optional \u2014 the board speaks '
           'fully offline with on-device voices.',
           style: TextStyle(fontSize: 15, color: scheme.onSurfaceVariant),
@@ -198,7 +198,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         Icon(Icons.person_outline, size: 72, color: scheme.primary),
         const SizedBox(height: 16),
         const Text(
-          'Who will use VidaVoice?',
+          'Who will use VoiceSimple?',
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           textAlign: TextAlign.center,
         ),

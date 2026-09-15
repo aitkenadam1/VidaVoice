@@ -4,10 +4,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:vidavoice/main.dart';
-import 'package:vidavoice/models/word.dart';
-import 'package:vidavoice/services/tts_service.dart';
-import 'package:vidavoice/state/session_state.dart';
+import 'package:voicesimple/main.dart';
+import 'package:voicesimple/models/word.dart';
+import 'package:voicesimple/services/tts_service.dart';
+import 'package:voicesimple/state/session_state.dart';
 
 /// TTS double: never touches the platform channel.
 class _FakeTts extends TtsService {
@@ -94,7 +94,7 @@ void main() {
     final session = await makeSession();
     await session.setUnlockedLevel(LanguagePack.maxSupportedLevel);
 
-    await tester.pumpWidget(VidaVoiceApp(session: session));
+    await tester.pumpWidget(VoiceSimpleApp(session: session));
     await tester.pump();
 
     // A level-1 core word is on the board.
@@ -114,7 +114,7 @@ void main() {
     final session = await makeSession();
     await session.setUnlockedLevel(1);
 
-    await tester.pumpWidget(VidaVoiceApp(session: session));
+    await tester.pumpWidget(VoiceSimpleApp(session: session));
     await tester.pump();
 
     // The grid is lazy: only on-screen cells exist. 'want' is level 1 and
@@ -174,7 +174,7 @@ void main() {
     session.ttsAvailable = false;
     await session.setUnlockedLevel(LanguagePack.maxSupportedLevel);
 
-    await tester.pumpWidget(VidaVoiceApp(session: session));
+    await tester.pumpWidget(VoiceSimpleApp(session: session));
     await tester.pump();
 
     // The board is fully there despite no voice...

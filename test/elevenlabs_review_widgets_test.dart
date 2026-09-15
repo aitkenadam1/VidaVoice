@@ -5,16 +5,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:vidavoice/models/dashboard.dart';
-import 'package:vidavoice/services/button_image.dart';
-import 'package:vidavoice/services/elevenlabs_key_store.dart';
-import 'package:vidavoice/services/elevenlabs_service.dart';
-import 'package:vidavoice/services/tts_service.dart';
-import 'package:vidavoice/services/voice_sample_recorder.dart';
-import 'package:vidavoice/state/session_state.dart';
-import 'package:vidavoice/widgets/dashboard_section.dart';
-import 'package:vidavoice/widgets/elevenlabs_section.dart';
-import 'package:vidavoice/widgets/pick_button_image.dart';
+import 'package:voicesimple/models/dashboard.dart';
+import 'package:voicesimple/services/button_image.dart';
+import 'package:voicesimple/services/elevenlabs_key_store.dart';
+import 'package:voicesimple/services/elevenlabs_service.dart';
+import 'package:voicesimple/services/tts_service.dart';
+import 'package:voicesimple/services/voice_sample_recorder.dart';
+import 'package:voicesimple/state/session_state.dart';
+import 'package:voicesimple/widgets/dashboard_section.dart';
+import 'package:voicesimple/widgets/elevenlabs_section.dart';
+import 'package:voicesimple/widgets/pick_button_image.dart';
 
 /// TTS double: never touches the platform channel.
 class _FakeTts extends TtsService {

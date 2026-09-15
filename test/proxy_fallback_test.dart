@@ -4,9 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:vidavoice/services/elevenlabs_audio.dart';
-import 'package:vidavoice/services/proxy_client.dart';
-import 'package:vidavoice/services/tts_service.dart';
+import 'package:voicesimple/services/elevenlabs_audio.dart';
+import 'package:voicesimple/services/proxy_client.dart';
+import 'package:voicesimple/services/tts_service.dart';
 
 /// Player double: never touches a platform channel.
 class _FakeElevenAudio extends ElevenLabsAudioPlayer {

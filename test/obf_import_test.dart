@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:vidavoice/services/obf_import_service.dart';
-import 'package:vidavoice/widgets/dashboard_tile.dart';
+import 'package:voicesimple/services/obf_import_service.dart';
+import 'package:voicesimple/widgets/dashboard_tile.dart';
 
 /// Unit tests for Open Board Format import + the dashboard tile.
 /// Run from the project root: `flutter test test/obf_import_test.dart`.

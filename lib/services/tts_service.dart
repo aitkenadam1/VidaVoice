@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
 import 'package:flutter_tts/flutter_tts.dart';
 
 import '../app_config.dart';
@@ -8,6 +8,48 @@ import 'elevenlabs_audio.dart';
 import 'elevenlabs_service.dart';
 import 'kokoro_tts_service.dart';
 import 'proxy_client.dart';
+
+/// Circuit breaker for a cloud TTS path. After [maxFailures] consecutive
+/// failures the path is skipped for [cooldown] instead of paying a timeout
+/// per tap; then a single probe is allowed through and success closes it.
+/// Cache hits are served regardless — only network attempts are gated.
+class CloudCircuitBreaker {
+  CloudCircuitBreaker({
+    this.maxFailures = 3,
+    this.cooldown = const Duration(minutes: 2),
+  });
+
+  final int maxFailures;
+  final Duration cooldown;
+  int _consecutiveFailures = 0;
+  DateTime? _trippedAt;
+
+  /// True while the path should be skipped without attempting a call.
+  bool get isOpen {
+    final tripped = _trippedAt;
+    if (tripped == null) return false;
+    if (DateTime.now().difference(tripped) >= cooldown) {
+      // Cooldown elapsed: half-open — allow one probe through.
+      _trippedAt = null;
+      _consecutiveFailures = 0;
+      return false;
+    }
+    return true;
+  }
+
+  void recordSuccess() {
+    _consecutiveFailures = 0;
+    _trippedAt = null;
+  }
+
+  void recordFailure() {
+    _consecutiveFailures++;
+    if (_consecutiveFailures >= maxFailures) _trippedAt ??= DateTime.now();
+  }
+
+  @visibleForTesting
+  int get consecutiveFailures => _consecutiveFailures;
+}
 
 /// A speakable voice exposed by the TTS engine.
 ///
@@ -19,7 +61,7 @@ import 'proxy_client.dart';
 /// account ([elevenLabsVoiceId] is the voice id); they need an API key and
 /// internet, and any failure falls back to the on-device voices. Managed
 /// ("included") cloud voices ([proxyVoiceId] is the opaque voice id from
-/// the family's proxy entitlement) need a signed-in VidaVoice account and
+/// the family's proxy entitlement) need a signed-in VoiceSimple account and
 /// internet; any failure falls back to the on-device voices.
 class TtsVoice {
   const TtsVoice({
@@ -106,6 +148,21 @@ class TtsService {
   /// synthesis (the contract requires a profile_id per request). Wired by
   /// SessionState; null means "no profile" and the proxy branch is skipped.
   String? Function()? proxyProfileIdProvider;
+
+  /// Called when the managed backend reports an expired/invalid session
+  /// (401) during speech. Wired by SessionState to signOut(): without this
+  /// the dead token is kept, every tap makes a doomed round-trip, and the
+  /// child's voice invisibly switches to the system voice.
+  Future<void> Function()? onProxyUnauthorized;
+
+  /// Circuit breaker for the managed-voice path: after consecutive
+  /// failures the cloud is skipped for a cooldown instead of paying the
+  /// 5s timeout per tap. Settable so tests can use a short cooldown.
+  CloudCircuitBreaker proxyBreaker = CloudCircuitBreaker();
+
+  /// Circuit breaker for the BYO ElevenLabs path (same rationale).
+  /// Settable so tests can use a short cooldown.
+  CloudCircuitBreaker elevenLabsBreaker = CloudCircuitBreaker();
 
   /// Player for cloud-voice audio. A settable seam so tests can observe
   /// routing without platform channels.
@@ -237,52 +294,81 @@ class TtsService {
           svc.hasToken &&
           profileId != null &&
           profileId.isNotEmpty) {
-        try {
-          // Shared family quota: serve repeats from the cache so a child
-          // re-tapping the same button doesn't re-bill the same utterance.
-          final cacheKey = 'proxy::${voice.proxyVoiceId}::$text';
-          final cached = _proxyAudioCache[cacheKey];
-          if (cached != null) {
+        // Shared family quota: serve repeats from the cache so a child
+        // re-tapping the same button doesn't re-bill the same utterance.
+        // Cache hits play even while the breaker is open — they cost
+        // nothing and keep the board responsive.
+        final cacheKey = 'proxy::${voice.proxyVoiceId}::$text';
+        final cached = _proxyAudioCache[cacheKey];
+        if (cached != null) {
+          try {
             await elevenAudioPlayer.playBytes(cached);
             return;
+          } catch (_) {
+            // Cached bytes unplayable: drop the entry and try the network.
+            _proxyAudioCache.remove(cacheKey);
           }
-          final audio = await svc.synthesize(
-            requestId: proxyUuid4(),
-            profileId: profileId,
-            voiceId: voice.proxyVoiceId!,
-            text: text,
-          );
-          _storeProxyAudio(cacheKey, audio);
-          await elevenAudioPlayer.playBytes(audio);
-          return;
-        } catch (_) {
-          // Managed voice unavailable (offline, quota, session expired):
-          // fall through to the on-device voices rather than going silent.
         }
+        if (!proxyBreaker.isOpen) {
+          try {
+            final audio = await svc.synthesize(
+              requestId: proxyUuid4(),
+              profileId: profileId,
+              voiceId: voice.proxyVoiceId!,
+              text: text,
+            );
+            proxyBreaker.recordSuccess();
+            _storeProxyAudio(cacheKey, audio);
+            await elevenAudioPlayer.playBytes(audio);
+            return;
+          } on ProxyException catch (e) {
+            proxyBreaker.recordFailure();
+            if (e.code == 'unauthorized') {
+              // Expired session: clear it now so the UI stops presenting
+              // cloud voices as active; speech still falls through to the
+              // on-device voices below rather than going silent.
+              await onProxyUnauthorized?.call();
+            }
+          } catch (_) {
+            proxyBreaker.recordFailure();
+          }
+        }
+        // Breaker open or attempt failed (offline, quota, expired session):
+        // fall through to the on-device voices rather than going silent.
       }
     }
     if (voice != null && voice.isElevenLabs) {
       final svc = elevenLabs;
       if (svc != null) {
-        try {
-          // Billed per character: serve repeats from the cache so a child
-          // re-tapping the same button doesn't re-bill the same utterance.
-          final cacheKey = '${voice.elevenLabsVoiceId}::$text';
-          final cached = _cloudAudioCache[cacheKey];
-          if (cached != null) {
+        // Billed per character: serve repeats from the cache so a child
+        // re-tapping the same button doesn't re-bill the same utterance.
+        final cacheKey = '${voice.elevenLabsVoiceId}::$text';
+        final cached = _cloudAudioCache[cacheKey];
+        if (cached != null) {
+          try {
             await elevenAudioPlayer.playBytes(cached);
             return;
+          } catch (_) {
+            // Cached bytes unplayable: drop the entry and try the network.
+            _cloudAudioCache.remove(cacheKey);
           }
-          final audio = await svc.synthesize(
-            text: text,
-            voiceId: voice.elevenLabsVoiceId!,
-          );
-          _storeCloudAudio(cacheKey, audio);
-          await elevenAudioPlayer.playBytes(audio);
-          return;
-        } catch (_) {
-          // Cloud voice unavailable (no internet, bad key, quota, timeout):
-          // fall through to the on-device voices rather than going silent.
+        }
+        if (!elevenLabsBreaker.isOpen) {
+          try {
+            final audio = await svc.synthesize(
+              text: text,
+              voiceId: voice.elevenLabsVoiceId!,
+            );
+            elevenLabsBreaker.recordSuccess();
+            _storeCloudAudio(cacheKey, audio);
+            await elevenAudioPlayer.playBytes(audio);
+            return;
+          } catch (_) {
+            // Cloud voice unavailable (no internet, bad key, quota,
+            // timeout): record it and fall through to the on-device
+            // voices rather than going silent.
+            elevenLabsBreaker.recordFailure();
+          }
         }
       }
     }

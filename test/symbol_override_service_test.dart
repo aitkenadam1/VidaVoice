@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:vidavoice/services/symbol_override_service.dart';
+import 'package:voicesimple/services/symbol_override_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

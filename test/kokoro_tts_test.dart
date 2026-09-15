@@ -4,8 +4,8 @@ import 'dart:typed_data';
 import 'package:archive/archive.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
-import 'package:vidavoice/services/kokoro_tts_service.dart';
-import 'package:vidavoice/services/tts_service.dart';
+import 'package:voicesimple/services/kokoro_tts_service.dart';
+import 'package:voicesimple/services/tts_service.dart';
 
 void main() {
   group('kokoro voice table', () {

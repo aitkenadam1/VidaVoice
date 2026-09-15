@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:vidavoice/services/usage_service.dart';
+import 'package:voicesimple/services/usage_service.dart';
 
 /// Unit tests for tap counting + local persistence.
 /// Run from the project root: `flutter test`.

@@ -1,13 +1,14 @@
-# VidaVoice — v0.02 overnight build
+# VoiceSimple — v0.02 overnight build
 
 Affordable, multilingual AAC for nonverbal children and adults.
-A VidaCare Foundation project. Full product blueprint:
+A for-profit product that donates a share of revenue to the VidaCare Foundation. Full product blueprint:
 [`../aac-app-blueprint.md`](../aac-app-blueprint.md)
 
-> App name is final: **VidaVoice** (see `lib/app_config.dart`).
-> Logo is final: the **V-waveform** concept (Adam's pick, 2026-09-14), wired as
-> the app icon via `flutter_launcher_icons` and shown in-app on onboarding and
-> Settings. Source: `branding/media-generation-vidavoice-logo-v-wave-*.webp`.
+> App name is final: **VoiceSimple** (see `lib/app_config.dart`).
+> Logo is final: the **VoiceSimple** mark (Adam's pick, 2026-09-15), wired as
+> the app icon and shown in-app on onboarding and Settings.
+> Source: `~/workspace/rebrand-assets/voicesimple-logo.png` (black background;
+> a transparent master from the designer is still wanted for the final icon).
 
 ## What was built (v0.02)
 
@@ -41,7 +42,7 @@ A VidaCare Foundation project. Full product blueprint:
 - **Settings**: language switcher, voice speed + pitch sliders (with "Hear it"
   preview), button size (Small/Medium/Large — visual size only; the grid layout
   never changes, positions stay fixed).
-- **App icon**: V-waveform wired via `flutter_launcher_icons` (generated into
+- **App icon**: VoiceSimple mark wired via `flutter_launcher_icons` (generated into
   android/ios) and shown in-app.
 
 ## How to run
@@ -49,7 +50,7 @@ A VidaCare Foundation project. Full product blueprint:
 Prerequisites: Flutter SDK (stable) on PATH, Android SDK for APK builds.
 
 ```bash
-cd ~/workspace/vidacare-aac/vidavoice
+cd ~/workspace/vidavoice-debug
 
 flutter pub get
 
@@ -99,7 +100,7 @@ assets/
   symbols/*.png              # ARASAAC pictograms per word id
   symbols/manifest.json      # which word ids have a symbol
   symbols/MAPPING.md         # arasaac id per word (review aid)
-  images/app_icon.png        # V-waveform logo (1024×1024)
+  images/app_icon.png        # VoiceSimple logo
 test/
   language_pack_test.dart    # pins 192 words, unique cells, 2-tap budget, EN↔ES parity
 ```
@@ -129,7 +130,7 @@ shipping it to families.
 ## App icon
 
 `flutter_launcher_icons` is configured in `pubspec.yaml`
-(`image_path: assets/images/app_icon.png`, the **V-waveform** final logo).
+(`image_path: assets/images/app_icon.png`, the **VoiceSimple** logo).
 To regenerate after any future logo change:
 
 ```bash
@@ -146,7 +147,7 @@ platform-tools r37.0.1 · Gradle 9.3.1.
 
 ```text
 $ flutter analyze
-Analyzing vidavoice...
+Analyzing voicesimple...
 No issues found! (ran in 14.5s)
 
 $ flutter test
@@ -193,7 +194,7 @@ pre-staged: `flutter pub get` resolved, launcher icons generated, Gradle 9.3.1
 wrapper dist pre-seeded, Android SDK components installed, licenses accepted.
 
 ```bash
-cd ~/workspace/vidacare-aac/vidavoice
+cd ~/workspace/vidavoice-debug
 flutter build apk --debug
 # → build/app/outputs/flutter-apk/app-debug.apk
 ```

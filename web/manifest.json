@@ -1,6 +1,6 @@
 {
-    "name": "vidavoice",
-    "short_name": "vidavoice",
+    "name": "VoiceSimple",
+    "short_name": "VoiceSimple",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -52,7 +52,7 @@ class _DeviceSectionState extends State<DeviceSection> {
       setState(() {
         _loading = false;
         _error = e.code == 'unreachable'
-            ? 'Couldn\u2019t reach the VidaVoice service. Check your '
+            ? 'Couldn\u2019t reach the VoiceSimple service. Check your '
                   'connection and try again.'
             : e.message;
       });

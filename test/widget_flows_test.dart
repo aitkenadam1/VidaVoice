@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:vidavoice/main.dart';
-import 'package:vidavoice/models/word.dart';
-import 'package:vidavoice/screens/caregiver_screen.dart';
-import 'package:vidavoice/services/tts_service.dart';
-import 'package:vidavoice/state/session_state.dart';
+import 'package:voicesimple/main.dart';
+import 'package:voicesimple/models/word.dart';
+import 'package:voicesimple/screens/caregiver_screen.dart';
+import 'package:voicesimple/services/tts_service.dart';
+import 'package:voicesimple/state/session_state.dart';
 
 class _FakeTts extends TtsService {
   @override
@@ -81,7 +81,7 @@ void main() {
     final session = await makeSession();
     await session.setUnlockedLevel(LanguagePack.maxSupportedLevel);
 
-    await tester.pumpWidget(VidaVoiceApp(session: session));
+    await tester.pumpWidget(VoiceSimpleApp(session: session));
     await tester.pump();
 
     // Tap a home word, then open the Food folder.
@@ -107,9 +107,9 @@ void main() {
     useWideSurface(tester);
     final session = await makeSession(onboardingComplete: false);
 
-    await tester.pumpWidget(VidaVoiceApp(session: session));
+    await tester.pumpWidget(VoiceSimpleApp(session: session));
     await tester.pump();
-    expect(find.text('Welcome to VidaVoice'), findsOneWidget);
+    expect(find.text('Welcome to VoiceSimple'), findsOneWidget);
 
     await tester.tap(find.text('Skip for now'));
     await tester.pumpAndSettle();
@@ -123,19 +123,19 @@ void main() {
     useWideSurface(tester);
     final session = await makeSession(onboardingComplete: false);
 
-    await tester.pumpWidget(VidaVoiceApp(session: session));
+    await tester.pumpWidget(VoiceSimpleApp(session: session));
     await tester.pump();
-    expect(find.text('Welcome to VidaVoice'), findsOneWidget);
+    expect(find.text('Welcome to VoiceSimple'), findsOneWidget);
 
     // Page 2 (account): defer the caregiver account for now.
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
-    expect(find.text('Your VidaVoice account'), findsOneWidget);
+    expect(find.text('Your VoiceSimple account'), findsOneWidget);
     await tester.tap(find.text('Continue with on-device voices for now'));
     await tester.pumpAndSettle();
 
     // Page 3: enter the communicator's name.
-    expect(find.text('Who will use VidaVoice?'), findsOneWidget);
+    expect(find.text('Who will use VoiceSimple?'), findsOneWidget);
     await tester.enterText(find.byType(TextField), 'Maya');
 
     // Pages 4 and 5: import, then customization (both skippable).
@@ -168,7 +168,7 @@ void main() {
     final session = await makeSession(locale: 'es');
     await session.setUnlockedLevel(LanguagePack.maxSupportedLevel);
 
-    await tester.pumpWidget(VidaVoiceApp(session: session));
+    await tester.pumpWidget(VoiceSimpleApp(session: session));
     await tester.pump();
 
     // 'quiero' is the Spanish label for core.want.
@@ -190,7 +190,7 @@ void main() {
     final session = await makeSession();
     await session.setUnlockedLevel(1);
 
-    await tester.pumpWidget(VidaVoiceApp(session: session));
+    await tester.pumpWidget(VoiceSimpleApp(session: session));
     await tester.pump();
 
     final homeLabels = session.pack.homeItems

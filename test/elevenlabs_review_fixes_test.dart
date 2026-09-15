@@ -5,9 +5,9 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:vidavoice/services/elevenlabs_audio.dart';
-import 'package:vidavoice/services/elevenlabs_service.dart';
-import 'package:vidavoice/services/tts_service.dart';
+import 'package:voicesimple/services/elevenlabs_audio.dart';
+import 'package:voicesimple/services/elevenlabs_service.dart';
+import 'package:voicesimple/services/tts_service.dart';
 
 class _FakeElevenAudio extends ElevenLabsAudioPlayer {
   final played = <Uint8List>[];

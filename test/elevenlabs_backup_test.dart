@@ -2,9 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:vidavoice/services/elevenlabs_service.dart';
-import 'package:vidavoice/services/elevenlabs_voice_store.dart';
-import 'package:vidavoice/services/profile_backup_service.dart';
+import 'package:voicesimple/services/elevenlabs_service.dart';
+import 'package:voicesimple/services/elevenlabs_voice_store.dart';
+import 'package:voicesimple/services/profile_backup_service.dart';
 
 void main() {
   const maya = SavedElevenLabsVoice(id: 'cv-1', name: 'Maya', locale: 'en');

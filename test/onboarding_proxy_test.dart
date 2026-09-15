@@ -7,11 +7,11 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:vidavoice/screens/onboarding_screen.dart';
-import 'package:vidavoice/services/elevenlabs_key_store.dart';
-import 'package:vidavoice/services/proxy_client.dart';
-import 'package:vidavoice/services/tts_service.dart';
-import 'package:vidavoice/state/session_state.dart';
+import 'package:voicesimple/screens/onboarding_screen.dart';
+import 'package:voicesimple/services/elevenlabs_key_store.dart';
+import 'package:voicesimple/services/proxy_client.dart';
+import 'package:voicesimple/services/tts_service.dart';
+import 'package:voicesimple/state/session_state.dart';
 
 /// TTS double: never touches the platform channel.
 class _FakeTts extends TtsService {
@@ -111,7 +111,7 @@ void main() {
   Future<void> goToAccountPage(WidgetTester tester) async {
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
-    expect(find.text('Your VidaVoice account'), findsOneWidget);
+    expect(find.text('Your VoiceSimple account'), findsOneWidget);
   }
 
   Future<void> tapFormButton(WidgetTester tester, Finder finder) async {
@@ -157,7 +157,7 @@ void main() {
       // form's defer button advances it.
       for (var i = 0; i < 7; i++) {
         await tester.pumpAndSettle();
-        if (find.text('Your VidaVoice account').evaluate().isNotEmpty) {
+        if (find.text('Your VoiceSimple account').evaluate().isNotEmpty) {
           await tapFormButton(
             tester,
             find.text('Continue with on-device voices for now'),
@@ -190,7 +190,7 @@ void main() {
       expect(session.accountDeferred, isTrue);
       expect(session.proxySignedIn, isFalse);
       // Advanced to the profile-name step.
-      expect(find.text('Who will use VidaVoice?'), findsOneWidget);
+      expect(find.text('Who will use VoiceSimple?'), findsOneWidget);
     });
 
     testWidgets('offline signup shows plain-language error, stays on step', (
@@ -204,12 +204,12 @@ void main() {
       await tapFormButton(tester, find.text('Create account'));
 
       expect(
-        find.textContaining('Couldn\u2019t reach the VidaVoice service'),
+        find.textContaining('Couldn\u2019t reach the VoiceSimple service'),
         findsOneWidget,
       );
       expect(session.proxySignedIn, isFalse);
       // Still on the account step — nothing advanced behind our back.
-      expect(find.text('Your VidaVoice account'), findsOneWidget);
+      expect(find.text('Your VoiceSimple account'), findsOneWidget);
     });
 
     testWidgets('successful signup signs in and advances', (tester) async {
@@ -238,7 +238,7 @@ void main() {
       expect(session.tts.proxyProfileIdProvider?.call(), 'p1');
       await session.signOut();
       expect(session.tts.proxyProfileIdProvider?.call(), isNull);
-      expect(find.text('Who will use VidaVoice?'), findsOneWidget);
+      expect(find.text('Who will use VoiceSimple?'), findsOneWidget);
     });
 
     testWidgets('login 401 maps to a plain-language message', (tester) async {

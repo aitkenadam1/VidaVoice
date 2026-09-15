@@ -9,13 +9,13 @@ import 'state/session_state.dart';
 
 void main() {
   final session = SessionState();
-  runApp(VidaVoiceApp(session: session));
+  runApp(VoiceSimpleApp(session: session));
   // Async on purpose: the UI reacts to BootStatus changes.
   session.boot();
 }
 
-class VidaVoiceApp extends StatelessWidget {
-  const VidaVoiceApp({super.key, required this.session});
+class VoiceSimpleApp extends StatelessWidget {
+  const VoiceSimpleApp({super.key, required this.session});
 
   final SessionState session;
 

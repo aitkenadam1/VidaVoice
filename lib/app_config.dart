@@ -3,7 +3,7 @@
 /// To rename the app, change [appDisplayName] here — every screen reads it
 /// from here rather than hard-coding a string.
 class AppConfig {
-  static const String appDisplayName = 'VidaVoice';
+  static const String appDisplayName = 'VoiceSimple';
   static const String appTagline = 'Every voice matters.';
   static const String packageId = 'org.vidacarefoundation.vidavoice';
 

@@ -13,7 +13,7 @@ import 'proxy_account_form.dart';
 
 /// AI cloud voices.
 ///
-/// The primary path is the managed ("included") cloud voices: a VidaVoice
+/// The primary path is the managed ("included") cloud voices: a VoiceSimple
 /// account adds AI voices on up to 3 devices, billed through the family's
 /// shared monthly quota — no API key needed.
 ///
@@ -111,7 +111,7 @@ class _ProxyVoiceCardState extends State<_ProxyVoiceCard> {
       setState(() {
         _loading = false;
         _error = e.code == 'unreachable'
-            ? 'Couldn\u2019t reach the VidaVoice service. Your board works '
+            ? 'Couldn\u2019t reach the VoiceSimple service. Your board works '
                   'fully offline \u2014 cloud voices need an account and '
                   'internet.'
             : e.message;
@@ -188,7 +188,7 @@ class _ProxyVoiceCardState extends State<_ProxyVoiceCard> {
             const SizedBox(height: 8),
             if (!session.proxySignedIn) ...[
               const Text(
-                'A VidaVoice account adds AI cloud voices on up to 3 '
+                'A VoiceSimple account adds AI cloud voices on up to 3 '
                 'devices, with a shared monthly quota \u2014 no API key '
                 'needed. Sign up below, or keep using on-device voices: '
                 'nothing changes.',

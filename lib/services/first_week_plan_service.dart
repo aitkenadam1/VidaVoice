@@ -27,7 +27,7 @@ const List<PlanDay> firstWeekPlan = [
   PlanDay(
     day: 1,
     title: 'Model, don\u2019t quiz',
-    body: 'Use VidaVoice to talk WITH them, not test them. They learn by '
+    body: 'Use VoiceSimple to talk WITH them, not test them. They learn by '
         'watching you use it — not by being quizzed on it.',
     tryIt: 'At the next meal, tap \u201cI want\u201d + a food on the app yourself '
         'before handing anything over. Do it 3 times today. Don\u2019t ask them '

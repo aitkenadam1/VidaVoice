@@ -6,6 +6,7 @@ import '../models/word.dart';
 import '../state/session_state.dart';
 import '../widgets/activity_summary_section.dart';
 import '../widgets/backup_section.dart';
+import '../widgets/communication_mode_widgets.dart';
 import '../widgets/custom_symbols_section.dart';
 import '../widgets/dashboard_section.dart';
 import '../widgets/device_section.dart';
@@ -563,31 +564,50 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
           return Column(
             children: [
               for (final p in profiles.profiles)
-                ListTile(
-                  leading: const Icon(Icons.person_outline),
-                  title: Text(p.name),
-                  trailing: Row(
+                Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (p.id == profiles.active?.id)
-                        const Icon(Icons.check, color: Colors.green)
-                      else
-                        TextButton(
-                          onPressed: () async {
-                            await session.switchProfile(p.id);
-                            refresh();
-                          },
-                          child: const Text('Switch'),
+                      ListTile(
+                        leading: const Icon(Icons.person_outline),
+                        title: Text(p.name),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (p.id == profiles.active?.id)
+                              const Icon(Icons.check, color: Colors.green)
+                            else
+                              TextButton(
+                                onPressed: () async {
+                                  await session.switchProfile(p.id);
+                                  refresh();
+                                },
+                                child: const Text('Switch'),
+                              ),
+                            if (profiles.profiles.length > 1)
+                              IconButton(
+                                tooltip: 'Remove profile',
+                                icon: const Icon(Icons.delete_outline),
+                                onPressed: () async {
+                                  await session.removeProfile(p.id);
+                                  refresh();
+                                },
+                              ),
+                          ],
                         ),
-                      if (profiles.profiles.length > 1)
-                        IconButton(
-                          tooltip: 'Remove profile',
-                          icon: const Icon(Icons.delete_outline),
-                          onPressed: () async {
-                            await session.removeProfile(p.id);
-                            refresh();
-                          },
+                      ),
+                      const Divider(height: 1),
+                      // Per-profile communication-mode picker (Phase 2 of
+                      // the modes plan). Keyed on the saved mode so an
+                      // external change (e.g. backup import) resets the
+                      // local selection to what is actually stored.
+                      ProfileModeEditor(
+                        key: ValueKey(
+                          'mode-editor-${p.id}-${p.communicationMode.name}',
                         ),
+                        profileId: p.id,
+                      ),
                     ],
                   ),
                 ),

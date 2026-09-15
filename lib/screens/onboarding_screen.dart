@@ -3,16 +3,18 @@ import 'package:provider/provider.dart';
 
 import '../app_config.dart';
 import '../state/session_state.dart';
+import '../widgets/communication_mode_widgets.dart';
 import '../widgets/dashboard_section.dart';
 import '../widgets/obf_import_button.dart';
 import '../widgets/proxy_account_form.dart';
 
-/// First-run setup: welcome → account → profile name → import → customize →
-/// voice speed → quick tour. Shown once (flag in SharedPreferences);
-/// re-runnable from the caregiver hub ("Re-run setup").
+/// First-run setup: welcome → account → profile name → mode → import →
+/// customize → voice speed → quick tour. Shown once (flag in
+/// SharedPreferences); re-runnable from the caregiver hub ("Re-run setup").
 ///
-/// The account, import, and customize steps are all skippable: the board
-/// works fully with on-device voices and no account.
+/// The account, mode, import, and customize steps are all skippable: the
+/// board works fully with on-device voices and no account, and skipping the
+/// mode step leaves the profile in Tap (the safe default).
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -21,7 +23,7 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  static const _pageCount = 7;
+  static const _pageCount = 8;
   static const _accountPage = 1;
 
   final PageController _pages = PageController();
@@ -77,6 +79,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   _welcome(scheme),
                   _accountStep(scheme),
                   _profileStep(scheme),
+                  _modeStep(),
                   _importStep(scheme),
                   _customizeStep(scheme),
                   _voiceStep(scheme),
@@ -221,6 +224,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ),
       ],
     );
+  }
+
+  /// Communication-mode choice (Phase 2 of the modes plan). The step only
+  /// ever writes through an explicit "Save mode" press
+  /// ([ProfileService.setCommunicationMode]); leaving the page — via
+  /// Continue or "Skip for now" — writes nothing, so the profile stays Tap.
+  Widget _modeStep() {
+    return _page(children: const [ModeChoiceStep()]);
   }
 
   Widget _importStep(ColorScheme scheme) {

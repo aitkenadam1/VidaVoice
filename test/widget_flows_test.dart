@@ -138,7 +138,16 @@ void main() {
     expect(find.text('Who will use OneVoz?'), findsOneWidget);
     await tester.enterText(find.byType(TextField), 'Maya');
 
-    // Pages 4 and 5: import, then customization (both skippable).
+    // Page 4: communication-mode choice (skippable — left untouched here,
+    // so the profile stays in Tap).
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('How does this person communicate best right now?'),
+      findsOneWidget,
+    );
+
+    // Pages 5 and 6: import, then customization (both skippable).
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
     expect(find.text('Bring a board from another app?'), findsOneWidget);
@@ -146,7 +155,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Make it theirs'), findsOneWidget);
 
-    // Pages 6 and 7: voice speed, then the tour.
+    // Pages 7 and 8: voice speed, then the tour.
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
     expect(find.text('Choose a voice speed'), findsOneWidget);

@@ -152,10 +152,10 @@ void main() {
     testWidgets('Continue walks every page and finishes', (tester) async {
       final session = await makeSession();
       await pumpOnboarding(tester, session);
-      // Pages: welcome, account (defer), profile, import, customize,
+      // Pages: welcome, account (defer), profile, mode, import, customize,
       // voice, tour. The account page hides the global Continue, so the
       // form's defer button advances it.
-      for (var i = 0; i < 7; i++) {
+      for (var i = 0; i < 8; i++) {
         await tester.pumpAndSettle();
         if (find.text('Your OneVoz account').evaluate().isNotEmpty) {
           await tapFormButton(

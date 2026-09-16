@@ -75,7 +75,7 @@ void main() {
         expect(folder, isNotNull, reason: '$locale has no phrases folder');
         expect(folder!.words, hasLength(14), reason: locale);
         for (final word in folder.words) {
-          expect(word.type, BoardItemType.phrase, reason: '${word.id}');
+          expect(word.type, BoardItemType.phrase, reason: word.id);
           expect(word.level, 1, reason: '${word.id} level');
         }
       }

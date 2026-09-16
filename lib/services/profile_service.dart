@@ -4,6 +4,8 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/calling_safety.dart';
+
 /// How this communicator composes messages.
 ///
 /// Stored per profile. It is NEVER derived from mobility answers, grid
@@ -50,6 +52,21 @@ class UserProfile {
   /// Caregiver's nudge preference for this profile. Default [allowed].
   ModeNudgePreference modeNudgePreference = ModeNudgePreference.allowed;
 
+  /// Phase 1 calling & safety: trusted contacts the child can call.
+  /// Default empty; seeded only by caregiver saves and sync merges.
+  List<SafetyContact> contacts = [];
+
+  /// Phase 1 calling & safety: pre-written phrases for calls. New
+  /// profiles are seeded with [defaultCallPhrases] at creation.
+  List<CallPhrase> callPhrases = [];
+
+  /// Phase 1 calling & safety: the child's emergency details (drives
+  /// the emergency SMS and phrase placeholder resolution).
+  EmergencyProfileData emergency = const EmergencyProfileData();
+
+  /// Phase 1 calling & safety: behavior toggles for the calling flow.
+  SafetySettings safety = const SafetySettings();
+
   Map<String, dynamic> toJson() => {
     'id': id,
     'name': name,
@@ -58,6 +75,10 @@ class UserProfile {
     'buildMaxSymbols': buildMaxSymbols,
     'predictionEnabled': predictionEnabled,
     'nudgePreference': modeNudgePreference.name,
+    'contacts': contacts.map((c) => c.toJson()).toList(),
+    'callPhrases': callPhrases.map((p) => p.toJson()).toList(),
+    'emergency': emergency.toJson(),
+    'safety': safety.toJson(),
     'updatedAt': updatedAt.toIso8601String(),
   };
 
@@ -91,6 +112,13 @@ class UserProfile {
       'off' => ModeNudgePreference.off,
       _ => ModeNudgePreference.allowed,
     };
+    // Migration-safe: calling/safety keys are optional; a pre-feature
+    // profile opens with empty lists and the safe defaults. Malformed
+    // entries are skipped, never thrown.
+    profile.contacts = _parseSafetyContacts(json['contacts']);
+    profile.callPhrases = _parseCallPhrases(json['callPhrases']);
+    profile.emergency = _parseEmergency(json['emergency']);
+    profile.safety = _parseSafetySettings(json['safety']);
     final updatedRaw = json['updatedAt'];
     if (updatedRaw is String) {
       profile.updatedAt =
@@ -119,6 +147,55 @@ String _newSyncKey() {
 }
 
 math.Random _secureRandom() => math.Random.secure();
+
+/// Parses the calling/safety lists from a stored profile map. Missing or
+/// malformed entries are skipped — a corrupt entry must never break the
+/// whole profile load.
+List<SafetyContact> _parseSafetyContacts(Object? raw) {
+  final out = <SafetyContact>[];
+  if (raw is! List) return out;
+  for (final entry in raw) {
+    try {
+      if (entry is Map) {
+        out.add(
+          SafetyContact.fromJson(Map<String, dynamic>.from(entry)),
+        );
+      }
+    } catch (_) {}
+  }
+  return out;
+}
+
+List<CallPhrase> _parseCallPhrases(Object? raw) {
+  final out = <CallPhrase>[];
+  if (raw is! List) return out;
+  for (final entry in raw) {
+    try {
+      if (entry is Map) {
+        out.add(CallPhrase.fromJson(Map<String, dynamic>.from(entry)));
+      }
+    } catch (_) {}
+  }
+  return out;
+}
+
+EmergencyProfileData _parseEmergency(Object? raw) {
+  if (raw is Map) {
+    try {
+      return EmergencyProfileData.fromJson(Map<String, dynamic>.from(raw));
+    } catch (_) {}
+  }
+  return const EmergencyProfileData();
+}
+
+SafetySettings _parseSafetySettings(Object? raw) {
+  if (raw is Map) {
+    try {
+      return SafetySettings.fromJson(Map<String, dynamic>.from(raw));
+    } catch (_) {}
+  }
+  return const SafetySettings();
+}
 
 /// Local profile store backed by SharedPreferences.
 class ProfileService {
@@ -174,12 +251,12 @@ class ProfileService {
       }
     }
     if (_profiles.isEmpty) {
-      _profiles.add(
-        UserProfile(
-          id: _newProfileId(),
-          name: 'My Voice',
-        ),
+      final profile = UserProfile(
+        id: _newProfileId(),
+        name: 'My Voice',
       );
+      profile.callPhrases = defaultCallPhrases();
+      _profiles.add(profile);
     }
     _activeId = prefs.getString(_kActive);
     if (!_profiles.any((p) => p.id == _activeId)) {
@@ -193,6 +270,7 @@ class ProfileService {
       id: _newProfileId(),
       name: name,
     );
+    profile.callPhrases = defaultCallPhrases();
     _profiles.add(profile);
     _activeId = profile.id;
     await _persist(await SharedPreferences.getInstance());
@@ -269,6 +347,46 @@ class ProfileService {
     _notifyChanged();
   }
 
+  /// Replaces the safety contacts for [id] (Phase 1 calling).
+  Future<void> setContacts(String id, List<SafetyContact> contacts) async {
+    final p = _byId(id);
+    if (p == null) return;
+    p.contacts = List<SafetyContact>.of(contacts);
+    p.touch();
+    await _persist(await SharedPreferences.getInstance());
+    _notifyChanged();
+  }
+
+  /// Replaces the call phrases for [id] (Phase 1 calling).
+  Future<void> setCallPhrases(String id, List<CallPhrase> phrases) async {
+    final p = _byId(id);
+    if (p == null) return;
+    p.callPhrases = List<CallPhrase>.of(phrases);
+    p.touch();
+    await _persist(await SharedPreferences.getInstance());
+    _notifyChanged();
+  }
+
+  /// Replaces the emergency profile data for [id] (Phase 1 safety).
+  Future<void> setEmergency(String id, EmergencyProfileData emergency) async {
+    final p = _byId(id);
+    if (p == null) return;
+    p.emergency = emergency;
+    p.touch();
+    await _persist(await SharedPreferences.getInstance());
+    _notifyChanged();
+  }
+
+  /// Replaces the safety settings for [id] (Phase 1 calling).
+  Future<void> setSafety(String id, SafetySettings safety) async {
+    final p = _byId(id);
+    if (p == null) return;
+    p.safety = safety;
+    p.touch();
+    await _persist(await SharedPreferences.getInstance());
+    _notifyChanged();
+  }
+
   UserProfile? _byId(String id) {
     for (final p in _profiles) {
       if (p.id == id) return p;
@@ -318,6 +436,10 @@ class ProfileService {
     required bool predictionEnabled,
     required ModeNudgePreference nudgePreference,
     required DateTime updatedAt,
+    required List<SafetyContact> contacts,
+    required List<CallPhrase> callPhrases,
+    required EmergencyProfileData emergency,
+    required SafetySettings safety,
   }) async {
     profile.name = name;
     profile.communicationMode = mode;
@@ -327,6 +449,10 @@ class ProfileService {
     );
     profile.predictionEnabled = predictionEnabled;
     profile.modeNudgePreference = nudgePreference;
+    profile.contacts = List<SafetyContact>.of(contacts);
+    profile.callPhrases = List<CallPhrase>.of(callPhrases);
+    profile.emergency = emergency;
+    profile.safety = safety;
     profile.updatedAt = updatedAt;
     await _persist(await SharedPreferences.getInstance());
   }

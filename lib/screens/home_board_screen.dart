@@ -2,15 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../app_config.dart';
+import '../models/calling_safety.dart';
 import '../models/dashboard.dart';
 import '../models/word.dart';
 import '../state/session_state.dart';
+import '../theme/onevoz_theme.dart';
 import '../widgets/dashboard_tile.dart';
+import '../widgets/hold_to_confirm_button.dart';
 import '../widgets/message_bar.dart';
+import '../widgets/safety_contact_avatar.dart';
 import '../widgets/tts_banner.dart';
 import '../widgets/word_button.dart';
+import 'call_confirm_screen.dart';
 import 'caregiver_screen.dart';
 import 'category_screen.dart';
+import 'emergency_screen.dart';
 import 'settings_screen.dart';
 
 /// The home board: 282 core words in FIXED positions (see en.json — motor
@@ -33,7 +39,9 @@ class HomeBoardScreen extends StatelessWidget {
     );
     final session = context.read<SessionState>();
 
-    return Scaffold(
+    return Theme(
+      data: OneVozTheme.childTheme(),
+      child: Scaffold(
       appBar: AppBar(
         title: Text(AppConfig.appDisplayName),
         actions: [
@@ -90,9 +98,11 @@ class HomeBoardScreen extends StatelessWidget {
               icon: const Icon(Icons.dashboard),
               label: const Text('Back to my board'),
             ),
+          const _CallActionArea(),
           const MessageBar(),
         ],
       ),
+    ),
     );
   }
 
@@ -183,6 +193,122 @@ class HomeBoardScreen extends StatelessWidget {
           session.tapWord(item);
         }
       },
+    );
+  }
+}
+
+/// Persistent calling & safety action area: photo call buttons for the
+/// active profile's Mom/Dad contacts plus the hold-to-confirm Emergency
+/// button. Sits below the board, above the [MessageBar]; the board grid
+/// itself is untouched.
+///
+/// Renders nothing at all when no call contacts are configured and the
+/// emergency flow is disabled — no dead ends, no decorative buttons.
+class _CallActionArea extends StatelessWidget {
+  const _CallActionArea();
+
+  SafetyContact? _byKind(List<SafetyContact> contacts, String kind) {
+    for (final c in contacts) {
+      if (c.kind == kind) return c;
+    }
+    return null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final session = context.watch<SessionState>();
+    final profile = session.profiles.active;
+    if (profile == null) return const SizedBox.shrink();
+    final mom = _byKind(profile.contacts, 'mom');
+    final dad = _byKind(profile.contacts, 'dad');
+    final emergencyOn = profile.emergency.emergencyEnabled;
+    if (mom == null && dad == null && !emergencyOn) {
+      return const SizedBox.shrink();
+    }
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+      // NOTE: no CrossAxisAlignment.stretch here — this Row lives directly
+      // in the board's Column (unbounded height), and stretching children
+      // across an infinite cross axis explodes layout. Each child carries
+      // its own minHeight (96) instead.
+      child: Row(
+        children: [
+          if (mom != null)
+            Expanded(child: _CallContactButton(contact: mom)),
+          if (dad != null)
+            Expanded(child: _CallContactButton(contact: dad)),
+          if (emergencyOn)
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: HoldToConfirmButton(
+                  onConfirmed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => EmergencyScreen(
+                        emergency: profile.emergency,
+                        contacts: profile.contacts,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Photo button for one trusted contact: tap speaks the contact's name via
+/// TTS (zero-reading confirmation — the child hears who they picked) and
+/// opens the call-confirm screen for tap 2 of the 2-tap calling rule.
+class _CallContactButton extends StatelessWidget {
+  const _CallContactButton({required this.contact});
+
+  final SafetyContact contact;
+
+  @override
+  Widget build(BuildContext context) {
+    final session = context.read<SessionState>();
+    final label = contact.name.isNotEmpty ? contact.name : 'Call';
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: InkWell(
+        onTap: () {
+          session.tts.speak(contact.name);
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => CallConfirmScreen(contact: contact),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 96),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SafetyContactAvatar(contact: contact, radius: 28),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

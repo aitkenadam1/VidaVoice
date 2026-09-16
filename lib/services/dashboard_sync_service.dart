@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/dashboard.dart';
+import '../models/calling_safety.dart';
 import 'dashboard_service.dart';
 import 'profile_service.dart';
 import 'proxy_client.dart';
@@ -198,6 +199,12 @@ class DashboardSyncService {
             'buildMaxSymbols': p.buildMaxSymbols,
             'predictionEnabled': p.predictionEnabled,
             'nudgePreference': p.modeNudgePreference.name,
+            // Phase 1 calling & safety rides the encrypted blob with the
+            // rest of the per-profile content — never plaintext.
+            'contacts': p.contacts.map((c) => c.toJson()).toList(),
+            'callPhrases': p.callPhrases.map((cp) => cp.toJson()).toList(),
+            'emergency': p.emergency.toJson(),
+            'safety': p.safety.toJson(),
             'updatedAt': p.updatedAt.toIso8601String(),
           },
       ],
@@ -440,6 +447,10 @@ class DashboardSyncService {
         buildMaxSymbols: _parseInt(entry['buildMaxSymbols'], 4),
         predictionEnabled: _parseBool(entry['predictionEnabled'], true),
         nudgePreference: _parseNudge(entry['nudgePreference']),
+        contacts: _parseContacts(entry['contacts']),
+        callPhrases: _parseCallPhrases(entry['callPhrases']),
+        emergency: _parseEmergency(entry['emergency']),
+        safety: _parseSafety(entry['safety']),
         updatedAt: updatedAt,
       );
       result.profilesChanged = true;
@@ -453,6 +464,10 @@ class DashboardSyncService {
         buildMaxSymbols: _parseInt(entry['buildMaxSymbols'], 4),
         predictionEnabled: _parseBool(entry['predictionEnabled'], true),
         nudgePreference: _parseNudge(entry['nudgePreference']),
+        contacts: _parseContacts(entry['contacts']),
+        callPhrases: _parseCallPhrases(entry['callPhrases']),
+        emergency: _parseEmergency(entry['emergency']),
+        safety: _parseSafety(entry['safety']),
         updatedAt: updatedAt,
       );
       result.profilesChanged = true;
@@ -481,6 +496,50 @@ class DashboardSyncService {
       v is int ? v : (v is num ? v.toInt() : fallback);
 
   bool _parseBool(Object? v, bool fallback) => v is bool ? v : fallback;
+
+  /// Phase 1 calling & safety parsers: migration-safe (missing key ->
+  /// empty list / defaults) and non-throwing (malformed entries skipped).
+  List<SafetyContact> _parseContacts(Object? v) {
+    final out = <SafetyContact>[];
+    if (v is! List) return out;
+    for (final entry in v) {
+      if (entry is! Map) continue;
+      try {
+        out.add(SafetyContact.fromJson(Map<String, dynamic>.from(entry)));
+      } catch (_) {}
+    }
+    return out;
+  }
+
+  List<CallPhrase> _parseCallPhrases(Object? v) {
+    final out = <CallPhrase>[];
+    if (v is! List) return out;
+    for (final entry in v) {
+      if (entry is! Map) continue;
+      try {
+        out.add(CallPhrase.fromJson(Map<String, dynamic>.from(entry)));
+      } catch (_) {}
+    }
+    return out;
+  }
+
+  EmergencyProfileData _parseEmergency(Object? v) {
+    if (v is Map) {
+      try {
+        return EmergencyProfileData.fromJson(Map<String, dynamic>.from(v));
+      } catch (_) {}
+    }
+    return const EmergencyProfileData();
+  }
+
+  SafetySettings _parseSafety(Object? v) {
+    if (v is Map) {
+      try {
+        return SafetySettings.fromJson(Map<String, dynamic>.from(v));
+      } catch (_) {}
+    }
+    return const SafetySettings();
+  }
 
   CommunicationMode _parseMode(Object? v) => switch (v) {
     'build' => CommunicationMode.build,

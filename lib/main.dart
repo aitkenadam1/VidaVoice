@@ -11,6 +11,7 @@ import 'screens/sign_in_gate_screen.dart';
 import 'screens/type_board_screen.dart';
 import 'services/profile_service.dart';
 import 'state/session_state.dart';
+import 'theme/onevoz_theme.dart';
 
 void main() {
   final session = SessionState();
@@ -53,7 +54,7 @@ class OneVozApp extends StatelessWidget {
       child: MaterialApp(
         title: AppConfig.appDisplayName,
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(colorSchemeSeed: Colors.teal, useMaterial3: true),
+        theme: OneVozTheme.caregiverTheme(),
         home: Consumer<SessionState>(
           builder: (context, s, _) {
             switch (s.status) {

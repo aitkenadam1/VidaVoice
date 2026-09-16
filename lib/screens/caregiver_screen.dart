@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/word.dart';
 import '../state/session_state.dart';
+import 'calling_safety_hub_screen.dart';
 import '../widgets/activity_summary_section.dart';
 import '../widgets/backup_section.dart';
 import '../widgets/communication_mode_widgets.dart';
@@ -812,6 +813,52 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
         content: (context, session, refresh) => const DeviceSyncSection(),
       ),
       _Section(
+        id: 'calling-safety',
+        title: 'Calling & Safety',
+        icon: Icons.call_outlined,
+        summary: (session) {
+          final profile = session.profiles.active;
+          if (profile == null) return 'Add a profile first';
+          final n = profile.contacts.length;
+          final detailsSet =
+              profile.emergency.childName.trim().isNotEmpty ||
+              profile.emergency.homeAddress.trim().isNotEmpty;
+          if (n == 0 && !detailsSet) return 'Set up contacts and safety info';
+          final contactsPart = n == 0
+              ? 'no contacts yet'
+              : '$n contact${n == 1 ? '' : 's'}';
+          return detailsSet ? '$contactsPart · details set' : contactsPart;
+        },
+        content: (context, session, refresh) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(12, 0, 12, 8),
+              child: Text(
+                'Who they can call, what they can say on a call, and the '
+                'emergency details that fill in their phrases — all for '
+                'the active profile.',
+                style: TextStyle(fontSize: 13),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
+              child: FilledButton.icon(
+                icon: const Icon(Icons.call_outlined),
+                label: const Text('Open Calling & Safety'),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const CallingSafetyHubScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+      _Section(
         id: 'more',
         title: 'Setup & what\u2019s next',
         icon: Icons.more_horiz,
@@ -836,6 +883,25 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
                 dense: true,
                 leading: const Icon(Icons.schedule_outlined),
                 title: Text(item),
+                // Not tappable on purpose: these are roadmap items, not
+                // features. The chip makes "what's coming" unmistakable
+                // so nothing looks like a dead button.
+                trailing: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                  child: const Text(
+                    'Coming soon',
+                    style: TextStyle(fontSize: 11),
+                  ),
+                ),
               ),
             const Padding(
               padding: EdgeInsets.fromLTRB(16, 12, 16, 4),

@@ -38,6 +38,19 @@ const _mapTilerKey = String.fromEnvironment('MAPTILER_KEY');
 class LocationSection extends StatefulWidget {
   const LocationSection({super.key});
 
+  /// Center/zoom priority for the live map, pure for tests: a shared live
+  /// position first (the caregiver view), then this device's own GPS fix,
+  /// then the whole-US fallback. The map must never sit on the whole
+  /// country when we know where the device is.
+  static (LatLng, double) resolveMapCenter({
+    LatLng? liveCenter,
+    LatLng? myFix,
+  }) {
+    if (liveCenter != null) return (liveCenter, 13);
+    if (myFix != null) return (myFix, 13);
+    return (const LatLng(39.5, -98.35), 3);
+  }
+
   @override
   State<LocationSection> createState() => _LocationSectionState();
 }
@@ -80,6 +93,20 @@ class _LocationSectionState extends State<LocationSection> {
 
   String? _myInstallId;
 
+  /// This device's own current GPS fix, fetched in parallel with the
+  /// server round-trips. The map zooms to it immediately instead of
+  /// waiting for a share upload to round-trip through the server — and
+  /// it works even when sharing is off or an upload just failed.
+  LatLng? _myFix;
+  double? _myFixAccuracy;
+  final MapController _mapController = MapController();
+
+  @override
+  void dispose() {
+    _mapController.dispose();
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -121,6 +148,9 @@ class _LocationSectionState extends State<LocationSection> {
     });
     try {
       _myInstallId = await session.proxyAuth.installId();
+      // The local fix is kicked off in parallel with the server
+      // round-trips below so a slow GPS lookup never delays the list.
+      final fixFuture = session.locationService.currentFix();
       final list = await session.proxyDevices();
       final devices = list.devices;
       final live = <_LiveDevice>[];
@@ -153,12 +183,29 @@ class _LocationSectionState extends State<LocationSection> {
         );
       }
       if (!mounted) return;
+      final fix = await fixFuture;
+      if (!mounted) return;
+      final hadLive = _live.isNotEmpty;
       setState(() {
         _loadingDevices = false;
         _devices = devices;
         _live = live;
         _mapError = mapError;
+        if (fix != null) {
+          _myFix = LatLng(fix.latitude, fix.longitude);
+          _myFixAccuracy = fix.accuracyMeters;
+        }
       });
+      // First live position appearing on a refresh: move the camera to
+      // it. Scoped to the empty→non-empty transition only — a camera the
+      // user deliberately panned is never yanked on later refreshes.
+      if (!hadLive && live.isNotEmpty) {
+        final target = LatLng(live.first.lat, live.first.lon);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          _mapController.move(target, 13);
+        });
+      }
       unawaited(_loadTrail());
       unawaited(_loadAlerts());
     } on ProxyException catch (e) {
@@ -616,9 +663,17 @@ class _LocationSectionState extends State<LocationSection> {
   }
 
   Widget _map(BuildContext context, SessionState session) {
-    final center = _live.isNotEmpty
-        ? LatLng(_live.first.lat, _live.first.lon)
-        : const LatLng(39.5, -98.35);
+    // Center priority: a shared live position first (the caregiver view),
+    // then this device's own GPS fix, then the whole-US fallback. The old
+    // code only ever centered on server data, so the map sat on the whole
+    // country until an upload round-tripped — and forever when uploads
+    // were failing.
+    final (center, zoom) = LocationSection.resolveMapCenter(
+      liveCenter: _live.isNotEmpty
+          ? LatLng(_live.first.lat, _live.first.lon)
+          : null,
+      myFix: _myFix,
+    );
     return SizedBox(
       height: 260,
       child: ClipRRect(
@@ -626,9 +681,10 @@ class _LocationSectionState extends State<LocationSection> {
         child: Stack(
           children: [
             FlutterMap(
+              mapController: _mapController,
               options: MapOptions(
                 initialCenter: center,
-                initialZoom: _live.isNotEmpty ? 13 : 3,
+                initialZoom: zoom,
                 interactionOptions: const InteractionOptions(
                   flags: InteractiveFlag.all,
                 ),
@@ -708,7 +764,71 @@ class _LocationSectionState extends State<LocationSection> {
                         ),
                     ],
                   ),
+                // This device's own position, independent of sharing: the
+                // map is useful for "where am I" even before any upload.
+                if (_myFix != null)
+                  CircleLayer(
+                    circles: [
+                      CircleMarker(
+                        point: _myFix!,
+                        radius: _myFixAccuracy ?? 100,
+                        useRadiusInMeter: true,
+                        color: Colors.green.withValues(alpha: 0.15),
+                        borderColor: Colors.green.withValues(alpha: 0.6),
+                        borderStrokeWidth: 2,
+                      ),
+                    ],
+                  ),
+                if (_myFix != null)
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: _myFix!,
+                        width: 120,
+                        height: 44,
+                        alignment: Alignment.topCenter,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade700,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Text(
+                                'You',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            Icon(
+                              Icons.location_on,
+                              color: Colors.green.shade700,
+                              size: 26,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
               ],
+            ),
+            Positioned(
+              right: 8,
+              top: 8,
+              child: FloatingActionButton.small(
+                heroTag: 'location_locate_me',
+                tooltip: 'Center on my location',
+                onPressed: () => _centerOnMe(context, session),
+                child: const Icon(Icons.my_location),
+              ),
             ),
             Positioned(
               right: 8,
@@ -729,6 +849,30 @@ class _LocationSectionState extends State<LocationSection> {
         ),
       ),
     );
+  }
+
+  /// Re-centers the map on this device's current GPS fix. Says so
+  /// honestly when the OS won't give us one instead of moving nowhere.
+  Future<void> _centerOnMe(BuildContext context, SessionState session) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final fix = await session.locationService.currentFix();
+    if (!mounted) return;
+    if (fix == null) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text(
+            'OneVoz can\u2019t get your location right now. Check that '
+            'location is turned on and allowed for OneVoz.',
+          ),
+        ),
+      );
+      return;
+    }
+    setState(() {
+      _myFix = LatLng(fix.latitude, fix.longitude);
+      _myFixAccuracy = fix.accuracyMeters;
+    });
+    _mapController.move(_myFix!, 13);
   }
 
   Widget _deviceRows(BuildContext context, SessionState session) {
@@ -755,16 +899,28 @@ class _LocationSectionState extends State<LocationSection> {
         ? d.deviceName!.trim()
         : 'Device';
     final isMine = d.installId == _myInstallId;
+    // When this device is mid-share but the server has no position yet
+    // (first upload still in flight), say that — not "not sharing".
+    final mineSharing =
+        isMine && live == null && session.locationShare.isSharing;
     return ListTile(
       contentPadding: EdgeInsets.zero,
       dense: true,
       leading: Icon(
         Icons.smartphone,
-        color: live != null && !live.isStale ? Colors.green : Colors.grey,
+        color: live != null && !live.isStale
+            ? Colors.green
+            : mineSharing
+                ? Colors.blue
+                : Colors.grey,
       ),
       title: Text(name + (isMine ? ' (this device)' : '')),
       subtitle: live == null
-          ? const Text('Not sharing right now')
+          ? Text(
+              mineSharing
+                  ? 'Sharing · waiting for the first position…'
+                  : 'Not sharing right now',
+            )
           : Text(
               live.isStale
                   ? 'Last seen ${_fmtAgo(live.updatedAt)} (stale)'

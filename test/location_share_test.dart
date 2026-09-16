@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -478,6 +479,31 @@ void main() {
   });
 
   group('caregiver map', () {
+    test('resolveMapCenter prefers live, then my fix, then US fallback',
+        () {
+      // A shared live position wins (caregiver view).
+      expect(
+        LocationSection.resolveMapCenter(
+          liveCenter: const LatLng(40.7, -74.0),
+          myFix: const LatLng(40.5, -112.0),
+        ),
+        (const LatLng(40.7, -74.0), 13),
+      );
+      // No live data: the device's own fix still zooms in instead of
+      // showing the whole country.
+      expect(
+        LocationSection.resolveMapCenter(
+          myFix: const LatLng(40.5, -112.0),
+        ),
+        (const LatLng(40.5, -112.0), 13),
+      );
+      // Nothing known: whole-US fallback at zoom 3.
+      expect(
+        LocationSection.resolveMapCenter(),
+        (const LatLng(39.5, -98.35), 3),
+      );
+    });
+
     testWidgets('shows the honest missing-key state without a MapTiler key',
         (tester) async {
       SharedPreferences.setMockInitialValues({});

@@ -477,6 +477,56 @@ void main() {
     });
   });
 
+  group('location alerts', () {
+    // Regression: the server rejects POST /v1/alerts without `ts`
+    // (400 invalid_ts). The client must always send one — every alert
+    // kind (share_started, share_stopped, sos, location_request) was
+    // silently failing before this.
+    test('postAlert always includes ts in the server window', () async {
+      Map<String, dynamic>? sent;
+      final client = clientWith((req) async {
+        expect(req.url.path, '/v1/alerts');
+        sent = json.decode(req.body) as Map<String, dynamic>;
+        return http.Response(
+          json.encode({'id': 7, 'kind': 'share_started', 'ts': sent!['ts']}),
+          200,
+        );
+      });
+      client.setToken('tok-1');
+      await client.postAlert(
+        installId: 'install-1',
+        kind: 'share_started',
+        ciphertext: 'Y2lwaGVydGV4dA==',
+        nonce: 'bm9uY2UxMjM0NTY=',
+      );
+      final ts = sent!['ts'];
+      expect(ts, isA<int>());
+      final now = DateTime.now().millisecondsSinceEpoch;
+      expect(ts, greaterThan(now - 90 * 24 * 3600 * 1000));
+      expect(ts, lessThanOrEqualTo(now + 5 * 60 * 1000));
+    });
+
+    test('postAlert honors an explicit ts', () async {
+      Map<String, dynamic>? sent;
+      final client = clientWith((req) async {
+        sent = json.decode(req.body) as Map<String, dynamic>;
+        return http.Response(
+          json.encode({'id': 8, 'kind': 'sos', 'ts': sent!['ts']}),
+          200,
+        );
+      });
+      client.setToken('tok-1');
+      await client.postAlert(
+        installId: 'install-1',
+        kind: 'sos',
+        ciphertext: 'Y2lwaGVydGV4dA==',
+        nonce: 'bm9uY2UxMjM0NTY=',
+        ts: 1700000000000,
+      );
+      expect(sent!['ts'], 1700000000000);
+    });
+  });
+
   group('ProxyAuthStore', () {
     test('save/read/clear round-trips the token and family id', () async {
       final store = ProxyAuthStore(store: _FakeSecureStore());

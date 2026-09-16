@@ -355,18 +355,26 @@ class ProxyClient {
     }
   }
 
+  /// Background location uploads get a roomier budget than interactive
+  /// calls: a ping that trips the 5s UI timeout on a slow link would show
+  /// a scary "upload failed" even though the server is fine. These calls
+  /// are best-effort and non-interactive, so waiting longer is strictly
+  /// better than crying wolf.
+  static const _locationTimeout = Duration(seconds: 25);
+
   /// POST [path], returning the decoded JSON body. Throws [ProxyException]
   /// on transport failure or any non-2xx status.
   Future<Map<String, dynamic>> _postJson(
     String path,
-    Map<String, dynamic> body,
-  ) async {
+    Map<String, dynamic> body, {
+    Duration? timeout,
+  }) async {
     final uri = Uri.parse('$baseUrl$path');
     late http.Response res;
     try {
       res = await _client
           .post(uri, headers: _headers(), body: json.encode(body))
-          .timeout(_timeout);
+          .timeout(timeout ?? _timeout);
     } on TimeoutException {
       throw ProxyException(
         'The request timed out.',
@@ -388,14 +396,15 @@ class ProxyClient {
   /// sync upload, which the contract defines as PUT (idempotent upsert).
   Future<Map<String, dynamic>> _putJson(
     String path,
-    Map<String, dynamic> body,
-  ) async {
+    Map<String, dynamic> body, {
+    Duration? timeout,
+  }) async {
     final uri = Uri.parse('$baseUrl$path');
     late http.Response res;
     try {
       res = await _client
           .put(uri, headers: _headers(), body: json.encode(body))
-          .timeout(_timeout);
+          .timeout(timeout ?? _timeout);
     } on TimeoutException {
       throw ProxyException(
         'The request timed out.',
@@ -735,12 +744,16 @@ class ProxyClient {
     required int version,
   }) async {
     _requireAuth();
-    await _putJson('/v1/sync/location/latest', {
-      'install_id': installId,
-      'ciphertext': ciphertext,
-      'nonce': nonce,
-      'version': version,
-    });
+    await _putJson(
+      '/v1/sync/location/latest',
+      {
+        'install_id': installId,
+        'ciphertext': ciphertext,
+        'nonce': nonce,
+        'version': version,
+      },
+      timeout: _locationTimeout,
+    );
   }
 
   /// Download the encrypted latest-position blob for [installId], or null
@@ -764,10 +777,14 @@ class ProxyClient {
     required List<Map<String, dynamic>> points,
   }) async {
     _requireAuth();
-    await _postJson('/v1/sync/location/points', {
-      'install_id': installId,
-      'points': points,
-    });
+    await _postJson(
+      '/v1/sync/location/points',
+      {
+        'install_id': installId,
+        'points': points,
+      },
+      timeout: _locationTimeout,
+    );
   }
 
   /// Download encrypted history points for [installId] in [since, until)
@@ -786,20 +803,29 @@ class ProxyClient {
 
   /// Post an alert event. [kind] is plaintext (routing only): 'sos',
   /// 'location_request', 'share_started', 'share_stopped'. Everything
-  /// sensitive (coordinates, zone names) is inside [ciphertext].
+  /// sensitive (coordinates, zone names) is inside [ciphertext]. [ts] is
+  /// the event time in unix millis — the server rejects alerts without
+  /// one, so it defaults to now when the caller doesn't have a better
+  /// clock (the encrypted payload usually carries its own ts).
   Future<void> postAlert({
     required String installId,
     required String kind,
     required String ciphertext,
     required String nonce,
+    int? ts,
   }) async {
     _requireAuth();
-    await _postJson('/v1/alerts', {
-      'install_id': installId,
-      'kind': kind,
-      'ciphertext': ciphertext,
-      'nonce': nonce,
-    });
+    await _postJson(
+      '/v1/alerts',
+      {
+        'install_id': installId,
+        'kind': kind,
+        'ciphertext': ciphertext,
+        'nonce': nonce,
+        'ts': ts ?? DateTime.now().millisecondsSinceEpoch,
+      },
+      timeout: _locationTimeout,
+    );
   }
 
   /// List alert events since [sinceMs] (unix ms), newest last. Each item

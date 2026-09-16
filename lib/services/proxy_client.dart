@@ -550,8 +550,15 @@ class ProxyClient {
     }
     late http.Response res;
     try {
+      // Defensive: the contract promises an absolute URL, but resolve a
+      // relative one against the proxy base so a server regression can
+      // never break speech with a malformed-URL failure.
+      final audioUri = Uri.parse(url);
+      final resolved = audioUri.hasScheme
+          ? audioUri
+          : Uri.parse(baseUrl).resolveUri(audioUri);
       res = await _client
-          .get(Uri.parse(url), headers: _headers(jsonBody: false))
+          .get(resolved, headers: _headers(jsonBody: false))
           .timeout(_timeout);
     } on TimeoutException {
       throw ProxyException(

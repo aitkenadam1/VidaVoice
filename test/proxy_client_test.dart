@@ -173,6 +173,38 @@ void main() {
       },
     );
 
+    test(
+      'a relative audio url is resolved against the proxy base url',
+      () async {
+        final audio = Uint8List.fromList([9, 8, 7]);
+        Uri? fetched;
+        final client = clientWith((req) async {
+          if (req.url.path == '/v1/speech') {
+            return http.Response(
+              json.encode({
+                'request_id': 'r-1',
+                'audio': {'url': '/v1/audio/abc.mp3'},
+                'source': 'elevenlabs',
+                'fallback_allowed': true,
+              }),
+              200,
+            );
+          }
+          fetched = req.url;
+          return http.Response.bytes(audio, 200);
+        });
+        client.setToken('tok-1');
+        final bytes = await client.synthesize(
+          requestId: proxyUuid4(),
+          profileId: 'p1',
+          voiceId: 'pv-1',
+          text: 'Hello',
+        );
+        expect(bytes, audio);
+        expect(fetched.toString(), 'https://proxy.test/v1/audio/abc.mp3');
+      },
+    );
+
     test('429 quota_exceeded is fallbackAllowed', () async {
       final client = clientWith(
         (_) async => http.Response(

@@ -254,10 +254,14 @@ void main() {
       return session;
     }
 
+    // NOTE: synchronous file IO on purpose — async dart:io never completes
+    // inside testWidgets' FakeAsync zone on this SDK, so the async
+    // variants hang pumpWidget forever. Production code paths are
+    // unaffected (no FakeAsync on a real device).
     Future<String> writeTempFile(String contents) async {
-      final dir = await Directory.systemTemp.createTemp('vidavoice-test');
+      final dir = Directory.systemTemp.createTempSync('vidavoice-test');
       final file = File('${dir.path}/backup.json');
-      await file.writeAsString(contents);
+      file.writeAsStringSync(contents);
       return file.path;
     }
 
@@ -275,6 +279,9 @@ void main() {
             home: Scaffold(
               body: BackupSection(
                 pickFile: () async => path,
+                // Sync read: real async dart:io never completes inside
+                // testWidgets' FakeAsync zone.
+                readFile: (p) async => File(p).readAsStringSync(),
                 onImported: () async {
                   imported = true;
                 },
@@ -291,7 +298,15 @@ void main() {
       expect(find.textContaining('Alex'), findsWidgets);
 
       await tester.tap(find.text('Merge'));
-      await tester.pumpAndSettle();
+      // The success SnackBar auto-dismisses after 4s of fake time, so pump
+      // only until it appears, then assert.
+      for (
+        var i = 0;
+        i < 50 && find.textContaining('merged').evaluate().isEmpty;
+        i++
+      ) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
 
       expect(imported, isTrue);
       expect(find.textContaining('merged'), findsOneWidget);
@@ -311,13 +326,24 @@ void main() {
         ChangeNotifierProvider.value(
           value: session,
           child: MaterialApp(
-            home: Scaffold(body: BackupSection(pickFile: () async => path)),
+            home: Scaffold(
+              body: BackupSection(
+                pickFile: () async => path,
+                // Sync read: real async dart:io never completes inside
+                // testWidgets' FakeAsync zone.
+                readFile: (p) async => File(p).readAsStringSync(),
+              ),
+            ),
           ),
         ),
       );
 
       await tester.tap(find.text('Import backup'));
-      await tester.pumpAndSettle();
+      // The corrupt file fails decode before any dialog; the error SnackBar
+      // auto-dismisses after 4s of fake time, so pump only until it appears.
+      for (var i = 0; i < 50 && find.byType(SnackBar).evaluate().isEmpty; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
 
       // No confirmation dialog — straight to the error.
       expect(find.text('Restore backup?'), findsNothing);

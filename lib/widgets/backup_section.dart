@@ -24,6 +24,7 @@ class BackupSection extends StatefulWidget {
   const BackupSection({
     super.key,
     this.pickFile,
+    this.readFile,
     this.shareFile,
     this.onImported,
     this.service,
@@ -31,6 +32,11 @@ class BackupSection extends StatefulWidget {
 
   /// Returns the chosen import file's path, or null if cancelled.
   final Future<String?> Function()? pickFile;
+
+  /// Reads the chosen import file's contents. Defaults to [File.readAsString].
+  /// Injectable so widget tests can drive the flow with a fake file layer:
+  /// real async dart:io never completes inside testWidgets' FakeAsync zone.
+  final Future<String> Function(String path)? readFile;
 
   /// Shares the exported file (OS share sheet in production).
   final Future<void> Function(String path)? shareFile;
@@ -59,6 +65,8 @@ class _BackupSectionState extends State<BackupSection> {
     );
     return files.isEmpty ? null : files.single.path;
   }
+
+  Future<String> _defaultReadFile(String path) => File(path).readAsString();
 
   Future<void> _defaultShareFile(String path) async {
     await SharePlus.instance.share(
@@ -103,7 +111,7 @@ class _BackupSectionState extends State<BackupSection> {
     if (path == null) return; // user cancelled
     late final String raw;
     try {
-      raw = await File(path).readAsString();
+      raw = await (widget.readFile ?? _defaultReadFile)(path);
     } catch (e) {
       _snack('Could not read that file: $e');
       return;

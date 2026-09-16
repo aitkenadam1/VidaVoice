@@ -12,6 +12,7 @@ import '../models/word.dart';
 import '../services/dashboard_service.dart';
 import '../services/dashboard_sync_service.dart';
 import '../services/caregiver_pin_service.dart';
+import '../services/device_role_service.dart';
 import '../services/elevenlabs_key_store.dart';
 import '../services/elevenlabs_service.dart';
 import '../services/elevenlabs_voice_store.dart';
@@ -45,6 +46,7 @@ class SessionState extends ChangeNotifier {
     ProxyClient? proxy,
     ProxyAuthStore? proxyAuth,
     CaregiverPinService? caregiverPin,
+    DeviceRoleService? deviceRoleService,
     DateTime Function()? nudgeClock,
   }) : _prefsFactory = prefsFactory ?? SharedPreferences.getInstance,
        tts = tts ?? TtsService(),
@@ -52,6 +54,7 @@ class SessionState extends ChangeNotifier {
        proxy = proxy ?? ProxyClient(),
        proxyAuth = proxyAuth ?? ProxyAuthStore(),
        caregiverPin = caregiverPin ?? CaregiverPinService(),
+       deviceRoleService = deviceRoleService ?? DeviceRoleService(),
        nudge = ModeNudgeService(clock: nudgeClock) {
     // The managed-voice branch of TtsService.speak needs the server-issued
     // profile id (the proxy contract requires profile_id per request) and
@@ -125,6 +128,16 @@ class SessionState extends ChangeNotifier {
   /// Device-local caregiver gate PIN for the caregiver hub. Injectable
   /// for tests; production uses the platform keychain.
   final CaregiverPinService caregiverPin;
+
+  /// Which side of the family this device serves (communicator boards
+  /// vs. the Caregiver Portal). Injectable for tests; production uses the
+  /// platform keychain. Null until the first-launch role question is
+  /// answered.
+  final DeviceRoleService deviceRoleService;
+
+  /// The device's role, loaded at boot. Null means "not chosen yet" — the
+  /// router shows the role-selection screen.
+  DeviceRole? deviceRole;
 
   /// End-to-end encrypted dashboard + profile sync across the family's
   /// devices. Initialized in the constructor; wired (change listeners,
@@ -284,6 +297,14 @@ class SessionState extends ChangeNotifier {
         _prefs!.getInt('vidavoice.unlockedLevel') ??
             LanguagePack.minSupportedLevel,
       );
+      // The device role is per-device secure storage. Best-effort like
+      // the proxy session: a read failure asks the question again rather
+      // than failing boot.
+      try {
+        deviceRole = await deviceRoleService.readRole();
+      } catch (_) {
+        deviceRole = null;
+      }
 
       pack = await LanguagePackService.loadPack(currentLocale);
       // Throws PackValidationError on any violation — boot must fail fast.
@@ -569,6 +590,13 @@ class SessionState extends ChangeNotifier {
     try {
       await proxyAuth.clear();
     } catch (_) {}
+    // The role question belongs to the device setup for this account — a
+    // different family signing in must be asked again. Best-effort and
+    // non-blocking: a wedged keychain must never stall sign-out. The
+    // in-memory role is already cleared, so the worst case is the role
+    // question reappearing on next launch (the safe direction).
+    deviceRole = null;
+    unawaited(deviceRoleService.clearRole().then((_) {}, onError: (_) {}));
     if (tts.currentVoice?.isProxy ?? false) {
       await clearVoice();
     }
@@ -935,6 +963,26 @@ class SessionState extends ChangeNotifier {
   Future<void> setOnboardingComplete(bool value) async {
     onboardingComplete = value;
     await _prefs?.setBool('vidavoice.onboardingComplete', value);
+    notifyListeners();
+  }
+
+  /// Persist the device's role (first-launch question, or a
+  /// password-verified mode switch). The router rebuilds on notify.
+  Future<void> setDeviceRole(DeviceRole role) async {
+    deviceRole = role;
+    try {
+      await deviceRoleService.writeRole(role);
+    } catch (_) {}
+    notifyListeners();
+  }
+
+  /// Forget the device role (used on sign-out so the next account is
+  /// asked fresh — the role belongs to the device setup, not the OS).
+  Future<void> clearDeviceRole() async {
+    deviceRole = null;
+    try {
+      await deviceRoleService.clearRole();
+    } catch (_) {}
     notifyListeners();
   }
 

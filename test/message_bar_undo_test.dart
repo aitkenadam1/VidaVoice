@@ -8,6 +8,7 @@ import 'package:onevoz/main.dart';
 import 'package:onevoz/models/word.dart';
 import 'package:onevoz/services/tts_service.dart';
 import 'package:onevoz/state/session_state.dart';
+import 'package:onevoz/services/device_role_service.dart';
 
 /// TTS double: never touches the platform channel.
 class _FakeTts extends TtsService {
@@ -63,6 +64,7 @@ void main() {
     session.status = BootStatus.ready;
     session.onboardingComplete = true;
     session.proxySignedIn = true; // login gate: the board needs a session
+    session.deviceRole = DeviceRole.communicator; // device role: boards, not the role question
     return session;
   }
 

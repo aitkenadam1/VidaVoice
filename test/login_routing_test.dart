@@ -12,6 +12,7 @@ import 'package:onevoz/screens/device_license_blocked_screen.dart';
 import 'package:onevoz/screens/home_board_screen.dart';
 import 'package:onevoz/screens/sign_in_gate_screen.dart';
 import 'package:onevoz/services/elevenlabs_key_store.dart';
+import 'package:onevoz/services/device_role_service.dart';
 import 'package:onevoz/services/proxy_client.dart';
 import 'package:onevoz/services/tts_service.dart';
 import 'package:onevoz/state/session_state.dart';
@@ -59,10 +60,14 @@ void main() {
     bool blocked = false,
     Future<http.Response> Function(http.Request)? proxyHandler,
     _FakeSecureStore? secureStore,
+    DeviceRole role = DeviceRole.communicator,
   }) async {
     SharedPreferences.setMockInitialValues({
       'vidavoice.onboardingComplete': onboardingComplete,
     });
+    final store = secureStore ?? _FakeSecureStore();
+    final roleService = DeviceRoleService(store: store);
+    await roleService.writeRole(role);
     final session = SessionState(
       tts: _FakeTts(),
       proxy: ProxyClient(
@@ -71,8 +76,10 @@ void main() {
         ),
         baseUrl: 'https://proxy.test',
       ),
-      proxyAuth: ProxyAuthStore(store: secureStore ?? _FakeSecureStore()),
+      proxyAuth: ProxyAuthStore(store: store),
+      deviceRoleService: roleService,
     );
+    session.deviceRole = role;
     session.pack = loadPackFromFile('en');
     session.status = BootStatus.ready;
     session.onboardingComplete = onboardingComplete;

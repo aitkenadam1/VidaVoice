@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:onevoz/screens/onboarding_screen.dart';
 import 'package:onevoz/services/elevenlabs_key_store.dart';
+import 'package:onevoz/services/device_role_service.dart';
 import 'package:onevoz/services/proxy_client.dart';
 import 'package:onevoz/services/tts_service.dart';
 import 'package:onevoz/state/session_state.dart';
@@ -92,6 +93,10 @@ void main() {
         baseUrl: 'https://proxy.test',
       ),
       proxyAuth: ProxyAuthStore(store: _FakeSecureStore()),
+      // The platform keychain hangs (never resolves) in widget tests —
+      // signOut clears the role, so it needs the fake like every other
+      // secure store here.
+      deviceRoleService: DeviceRoleService(store: _FakeSecureStore()),
     );
     await session.profiles.load();
     return session;
@@ -261,6 +266,10 @@ void main() {
       await session.signOut();
       expect(session.tts.proxyProfileIdProvider?.call(), isNull);
       expect(find.text('Who will use OneVoz?'), findsOneWidget);
+      // Like the walkthrough test above: the signup started background
+      // work (polling) — dispose so no timer outlives this test and
+      // wedges the next test's pumpAndSettle.
+      session.dispose();
     });
 
     testWidgets('login 401 maps to a plain-language message', (tester) async {

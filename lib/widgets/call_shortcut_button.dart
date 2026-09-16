@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../models/calling_safety.dart';
 import '../screens/call_confirm_screen.dart';
-import '../screens/caregiver_screen.dart';
 import '../state/session_state.dart';
+import 'mode_switch_gate.dart';
 import 'safety_contact_avatar.dart';
 
 /// Phone shortcut for the child board AppBars: one tap reaches the child's
@@ -12,8 +12,9 @@ import 'safety_contact_avatar.dart';
 ///
 /// Always visible while a profile is active — the calling feature must show
 /// on the blue banner even before any contacts exist:
-/// - No call contacts yet: a sheet explains that, with a button routing to
-///   the caregiver area where contacts are added. Never a dead button.
+/// - No call contacts yet: a sheet explains that, with a button opening the
+///   password gate (contacts are a caregiver action in the Caregiver Portal).
+///   Never a dead button, and never caregiver UI without verification.
 /// - One contact: goes straight to call confirmation.
 /// - Otherwise: a bottom sheet listing every Mom/Dad-kind contact.
 /// Emergency has its own top-bar button ([EmergencyShortcutButton]).
@@ -108,8 +109,9 @@ class CallShortcutButton extends StatelessWidget {
   }
 
   /// Shown when the profile has no Mom/Dad contacts yet: explains why
-  /// there is nobody to call and routes to the caregiver area where
-  /// contacts are added — the button always goes somewhere real.
+  /// there is nobody to call. Adding contacts is a caregiver action, so
+  /// the button opens the password gate — caregiver UI never appears on
+  /// a communicator device without verification.
   void _noContactsSheet(BuildContext context) {
     showModalBottomSheet<void>(
       context: context,
@@ -129,21 +131,17 @@ class CallShortcutButton extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Add a Mom or Dad contact in the caregiver area and '
-                'they\u2019ll show up here.',
+                'A caregiver adds Mom or Dad contacts in the Caregiver '
+                'Portal and they\u2019ll show up here.',
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               FilledButton.icon(
                 icon: const Icon(Icons.family_restroom),
-                label: const Text('Add contacts'),
+                label: const Text('Continue as caregiver'),
                 onPressed: () {
                   Navigator.of(sheetContext).pop();
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const CaregiverScreen(),
-                    ),
-                  );
+                  showCaregiverEntrySheet(context);
                 },
               ),
             ],

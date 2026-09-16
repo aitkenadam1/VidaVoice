@@ -16,6 +16,7 @@ import 'package:onevoz/services/profile_service.dart';
 import 'package:onevoz/services/proxy_client.dart';
 import 'package:onevoz/services/tts_service.dart';
 import 'package:onevoz/state/session_state.dart';
+import 'package:onevoz/services/device_role_service.dart';
 
 /// Phase 4 (communication modes): Type mode with on-device prediction.
 ///
@@ -103,6 +104,7 @@ Future<SessionState> makeSession(
   session.status = BootStatus.ready;
   session.onboardingComplete = true;
   session.proxySignedIn = true; // login gate: the board needs a session
+  session.deviceRole = DeviceRole.communicator; // device role: boards, not the role question
   await session.profiles.load();
   await session.prediction.load(session.profiles.active!.id);
   await session.history.load(session.profiles.active!.id);

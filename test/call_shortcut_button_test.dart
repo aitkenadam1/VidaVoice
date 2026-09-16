@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:onevoz/models/calling_safety.dart';
 import 'package:onevoz/models/word.dart';
 import 'package:onevoz/screens/call_confirm_screen.dart';
-import 'package:onevoz/screens/caregiver_screen.dart';
+import 'package:onevoz/widgets/mode_switch_gate.dart';
 import 'package:onevoz/screens/emergency_screen.dart';
 import 'package:onevoz/services/tts_service.dart';
 import 'package:onevoz/services/caregiver_pin_service.dart';
@@ -113,12 +113,14 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('No one to call yet'), findsOneWidget);
-      expect(find.text('Add contacts'), findsOneWidget);
+      expect(find.text('Continue as caregiver'), findsOneWidget);
 
-      await tester.tap(find.text('Add contacts'));
+      // Caregiver UI never opens without the password gate on a
+      // communicator device: the button opens ModeSwitchGate instead.
+      await tester.tap(find.text('Continue as caregiver'));
       await tester.pumpAndSettle();
 
-      expect(find.byType(CaregiverScreen), findsOneWidget);
+      expect(find.byType(ModeSwitchGate), findsOneWidget);
     });
 
     testWidgets('visible with no contacts even when emergency is on', (

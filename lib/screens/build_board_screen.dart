@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../widgets/mode_switch_gate.dart';
 
 import '../app_config.dart';
 import '../models/dashboard.dart';
@@ -12,7 +13,6 @@ import '../widgets/location_request_prompt.dart';
 import '../widgets/dashboard_tile.dart';
 import '../widgets/tts_banner.dart';
 import '../widgets/word_button.dart';
-import 'caregiver_screen.dart';
 import 'category_screen.dart';
 import 'settings_screen.dart';
 
@@ -43,17 +43,16 @@ class BuildBoardScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppConfig.appDisplayName),
+        title: GestureDetector(
+          // Discreet caregiver entry — no visible affordance on the
+          // child board. Long-press the title, verify the account
+          // password, and this device switches to caregiver mode.
+          onLongPress: () => showCaregiverEntrySheet(context),
+          child: Text(AppConfig.appDisplayName),
+        ),
         actions: [
           const CallShortcutButton(),
           const EmergencyShortcutButton(),
-          IconButton(
-            tooltip: 'Caregiver',
-            icon: const Icon(Icons.family_restroom),
-            onPressed: () => Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (_) => const CaregiverScreen())),
-          ),
           IconButton(
             tooltip: 'Settings',
             icon: const Icon(Icons.settings),

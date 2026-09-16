@@ -4,11 +4,14 @@ import 'package:provider/provider.dart';
 import 'app_config.dart';
 import 'screens/boot_screen.dart';
 import 'screens/build_board_screen.dart';
+import 'screens/caregiver_portal_screen.dart';
 import 'screens/device_license_blocked_screen.dart';
+import 'screens/device_role_screen.dart';
 import 'screens/home_board_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/sign_in_gate_screen.dart';
 import 'screens/type_board_screen.dart';
+import 'services/device_role_service.dart';
 import 'services/profile_service.dart';
 import 'state/session_state.dart';
 import 'theme/onevoz_theme.dart';
@@ -78,6 +81,18 @@ class OneVozApp extends StatelessWidget {
                 }
                 if (s.deviceLicenseBlocked) {
                   return const DeviceLicenseBlockedScreen();
+                }
+                // Device roles: first launch (per device) asks whether
+                // this device is the communicator's voice or a caregiver
+                // manager. Communicator devices render the board shell
+                // with ZERO portal routes; caregiver devices render the
+                // portal. The router rebuilds on every role change, so a
+                // password-verified mode switch takes effect instantly.
+                if (s.deviceRole == null) {
+                  return const DeviceRoleScreen();
+                }
+                if (s.deviceRole == DeviceRole.caregiver) {
+                  return const CaregiverPortalScreen();
                 }
                 return homeScreenFor(s);
             }

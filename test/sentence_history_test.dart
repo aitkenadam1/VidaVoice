@@ -9,6 +9,7 @@ import 'package:onevoz/models/word.dart';
 import 'package:onevoz/services/history_service.dart';
 import 'package:onevoz/services/tts_service.dart';
 import 'package:onevoz/state/session_state.dart';
+import 'package:onevoz/services/device_role_service.dart';
 
 class _FakeTts extends TtsService {
   int speakCalls = 0;
@@ -148,6 +149,7 @@ void main() {
         'vidavoice.onboardingComplete': true,
       });
       final session = SessionState(tts: _FakeTts());
+      session.deviceRole = DeviceRole.communicator;
       session.pack = loadPackFromFile();
       session.status = BootStatus.ready;
       session.onboardingComplete = true;

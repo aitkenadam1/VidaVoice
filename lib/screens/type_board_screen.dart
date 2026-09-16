@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../widgets/mode_switch_gate.dart';
 
 import '../app_config.dart';
 import '../services/history_service.dart';
@@ -9,7 +10,6 @@ import '../widgets/call_shortcut_button.dart';
 import '../widgets/emergency_shortcut_button.dart';
 import '../widgets/location_request_prompt.dart';
 import '../widgets/tts_banner.dart';
-import 'caregiver_screen.dart';
 import 'settings_screen.dart';
 
 /// The Type-mode home screen (Phase 4 of the modes plan): a real text
@@ -183,17 +183,16 @@ class _TypeBoardScreenState extends State<TypeBoardScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppConfig.appDisplayName),
+        title: GestureDetector(
+          // Discreet caregiver entry — no visible affordance on the
+          // child board. Long-press the title, verify the account
+          // password, and this device switches to caregiver mode.
+          onLongPress: () => showCaregiverEntrySheet(context),
+          child: Text(AppConfig.appDisplayName),
+        ),
         actions: [
           const CallShortcutButton(),
           const EmergencyShortcutButton(),
-          IconButton(
-            tooltip: 'Caregiver',
-            icon: const Icon(Icons.family_restroom),
-            onPressed: () => Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (_) => const CaregiverScreen())),
-          ),
           IconButton(
             tooltip: 'Settings',
             icon: const Icon(Icons.settings),

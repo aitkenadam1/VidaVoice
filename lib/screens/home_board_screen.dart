@@ -13,11 +13,11 @@ import '../widgets/dashboard_tile.dart';
 import '../widgets/emergency_shortcut_button.dart';
 import '../widgets/location_request_prompt.dart';
 import '../widgets/message_bar.dart';
+import '../widgets/mode_switch_gate.dart';
 import '../widgets/safety_contact_avatar.dart';
 import '../widgets/tts_banner.dart';
 import '../widgets/word_button.dart';
 import 'call_confirm_screen.dart';
-import 'caregiver_screen.dart';
 import 'category_screen.dart';
 import 'settings_screen.dart';
 
@@ -45,17 +45,16 @@ class HomeBoardScreen extends StatelessWidget {
       data: OneVozTheme.childTheme(),
       child: Scaffold(
       appBar: AppBar(
-        title: Text(AppConfig.appDisplayName),
+        title: GestureDetector(
+          // Discreet caregiver entry — no visible affordance on the
+          // child board. Long-press the title, verify the account
+          // password, and this device switches to caregiver mode.
+          onLongPress: () => showCaregiverEntrySheet(context),
+          child: Text(AppConfig.appDisplayName),
+        ),
         actions: [
           const CallShortcutButton(),
           const EmergencyShortcutButton(),
-          IconButton(
-            tooltip: 'Caregiver',
-            icon: const Icon(Icons.family_restroom),
-            onPressed: () => Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (_) => const CaregiverScreen())),
-          ),
           IconButton(
             tooltip: 'Settings',
             icon: const Icon(Icons.settings),

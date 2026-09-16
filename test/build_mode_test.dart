@@ -17,6 +17,7 @@ import 'package:onevoz/services/profile_service.dart';
 import 'package:onevoz/services/proxy_client.dart';
 import 'package:onevoz/services/tts_service.dart';
 import 'package:onevoz/state/session_state.dart';
+import 'package:onevoz/services/device_role_service.dart';
 import 'package:onevoz/widgets/build_strip_bar.dart';
 import 'package:onevoz/widgets/communication_mode_widgets.dart';
 import 'package:onevoz/widgets/word_button.dart';
@@ -85,6 +86,7 @@ Future<SessionState> makeSession(
   session.onboardingComplete = true;
   // The login gate: the board is only reachable with a caregiver session.
   session.proxySignedIn = true;
+  session.deviceRole = DeviceRole.communicator; // device role: boards, not the role question
   await session.profiles.load();
   return session;
 }

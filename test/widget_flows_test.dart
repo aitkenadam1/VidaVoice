@@ -15,6 +15,7 @@ import 'package:onevoz/services/caregiver_pin_service.dart';
 import 'package:onevoz/services/proxy_client.dart';
 import 'package:onevoz/services/tts_service.dart';
 import 'package:onevoz/state/session_state.dart';
+import 'package:onevoz/services/device_role_service.dart';
 
 class _FakeTts extends TtsService {
   @override
@@ -95,11 +96,14 @@ Future<void> unlockGate(WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({
       'vidavoice.onboardingComplete': onboardingComplete,
     });
+    final roleStore = _FakeSecureStore();
+    await DeviceRoleService(store: roleStore).writeRole(DeviceRole.communicator);
     final session = SessionState(
       caregiverPin: CaregiverPinService(store: _FakeSecureStore()),
       tts: _FakeTts(),
       proxy: proxy,
       proxyAuth: ProxyAuthStore(store: _FakeSecureStore()),
+      deviceRoleService: DeviceRoleService(store: roleStore),
     );
     session.pack = loadPackFromFile(locale);
     session.status = BootStatus.ready;
@@ -108,6 +112,7 @@ Future<void> unlockGate(WidgetTester tester) async {
     // pre-sign-in flow (e.g. the onboarding walkthrough) pass signedIn:
     // false.
     session.proxySignedIn = signedIn;
+    session.deviceRole = DeviceRole.communicator; // device role: boards, not the role question
     await session.profiles.load();
     await session.plan.load(session.profiles.active?.id ?? '');
     return session;

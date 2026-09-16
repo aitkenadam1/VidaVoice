@@ -61,6 +61,13 @@ class DashboardSyncService {
   /// so zones survive restarts before the first pull completes.
   static const _kSafeZones = 'vidavoice.sync.safeZones';
 
+  /// Device → communicator-profile assignments (install id → local
+  /// profile id). Family-wide, inside the encrypted blob like safe
+  /// zones, so every caregiver device agrees which device serves which
+  /// communicator. Local profile ids are meaningless to the server —
+  /// they travel only inside the ciphertext.
+  static const _kDeviceAssignments = 'vidavoice.sync.deviceAssignments';
+
   /// PBKDF2 iteration count for the sync key. Production value; tests pass
   /// a small count for speed via [deriveSyncKey]'s parameter.
   static const defaultPbkdf2Iterations = 600000;
@@ -72,6 +79,11 @@ class DashboardSyncService {
   /// Family-wide safe zones (Phase 2B). Kept in memory, persisted to
   /// local prefs, and published inside the encrypted payload.
   final List<SafeZone> _zones = [];
+
+  /// install_id → local profile id assignments. Kept in memory,
+  /// persisted to local prefs, and published inside the encrypted
+  /// payload.
+  final Map<String, String> _deviceAssignments = {};
 
   /// When the mirror flag was last changed locally. The flag itself is
   /// last-write-wins across devices, like profile/dashboard content.
@@ -156,6 +168,49 @@ class DashboardSyncService {
     return out;
   }
 
+  /// The family's device → profile assignments. Unmodifiable; mutate
+  /// through [setDeviceAssignment] so persistence, sync, and listeners
+  /// stay consistent.
+  Map<String, String> get deviceAssignments =>
+      Map.unmodifiable(_deviceAssignments);
+
+  /// Assigns the device [installId] to the communicator profile
+  /// [profileId], or clears the assignment when [profileId] is null.
+  /// Persists locally and notifies listeners; callers push explicitly
+  /// (e.g. [pushNow]) when they want the change published immediately.
+  Future<void> setDeviceAssignment(String installId, String? profileId) async {
+    if (profileId == null || profileId.isEmpty) {
+      _deviceAssignments.remove(installId);
+    } else {
+      _deviceAssignments[installId] = profileId;
+    }
+    await _persistAssignments();
+    _notify();
+  }
+
+  Future<void> _persistAssignments() async {
+    try {
+      final prefs = await _prefsFactory();
+      await prefs.setString(
+        _kDeviceAssignments,
+        json.encode(_deviceAssignments),
+      );
+    } catch (_) {}
+  }
+
+  /// Parses the device_assignments map out of a payload or local prefs
+  /// blob. Malformed entries are skipped, never fatal.
+  Map<String, String> _parseAssignments(Object? raw) {
+    final out = <String, String>{};
+    if (raw is! Map) return out;
+    for (final entry in raw.entries) {
+      final k = entry.key.toString();
+      final v = entry.value?.toString() ?? '';
+      if (k.isNotEmpty && v.isNotEmpty) out[k] = v;
+    }
+    return out;
+  }
+
   void setKey(List<int> key) {
     _key = List<int>.of(key);
   }
@@ -183,6 +238,11 @@ class DashboardSyncService {
       _zones
         ..clear()
         ..addAll(_parseZones(_tryDecodeZones(prefs.getString(_kSafeZones))));
+      _deviceAssignments
+        ..clear()
+        ..addAll(
+          _parseAssignments(_tryDecodeZones(prefs.getString(_kDeviceAssignments))),
+        );
       _notify();
     } catch (_) {}
   }
@@ -307,6 +367,10 @@ class DashboardSyncService {
       // and names live ONLY inside this encrypted blob — the server
       // stores the ciphertext opaquely, exactly like dashboard words.
       'safe_zones': [for (final z in _zones) z.toJson()],
+      // Device → communicator-profile assignments. Local profile ids
+      // are meaningless outside the family — encrypted like everything
+      // else in this payload.
+      'device_assignments': Map<String, String>.of(_deviceAssignments),
     };
   }
 
@@ -514,6 +578,22 @@ class DashboardSyncService {
       }
     }
 
+    // Device → profile assignments: union, remote wins on conflict
+    // (same "ties to remote" policy as safe zones). Migration-safe:
+    // blobs without the key leave local assignments untouched.
+    if (payload.containsKey('device_assignments')) {
+      final remote = _parseAssignments(payload['device_assignments']);
+      final merged = Map<String, String>.of(_deviceAssignments)
+        ..addAll(remote);
+      if (!_sameAssignments(_deviceAssignments, merged)) {
+        _deviceAssignments
+          ..clear()
+          ..addAll(merged);
+        await _persistAssignments();
+        result.assignmentsChanged = true;
+      }
+    }
+
     // Active profile follows only when the family enabled mirroring.
     if (_mirror) {
       final key = payload['activeProfileSyncKey'];
@@ -599,6 +679,14 @@ class DashboardSyncService {
     final byId = {for (final z in b) z.id: z};
     for (final z in a) {
       if (byId[z.id] != z) return false;
+    }
+    return true;
+  }
+
+  bool _sameAssignments(Map<String, String> a, Map<String, String> b) {
+    if (a.length != b.length) return false;
+    for (final entry in a.entries) {
+      if (b[entry.key] != entry.value) return false;
     }
     return true;
   }
@@ -695,11 +783,15 @@ class DashboardSyncResult {
   /// Phase 2B: a pull added, updated, or reordered safe zones.
   bool safeZonesChanged = false;
 
+  /// A pull changed device → profile assignments.
+  bool assignmentsChanged = false;
+
   bool get changed =>
       profilesChanged ||
       dashboardsChanged ||
       activeChanged ||
-      safeZonesChanged;
+      safeZonesChanged ||
+      assignmentsChanged;
 }
 
 /// An AES-GCM encrypted blob, base64-encoded for transport.

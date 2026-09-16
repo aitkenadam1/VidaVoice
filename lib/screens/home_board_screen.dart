@@ -8,6 +8,7 @@ import '../models/word.dart';
 import '../state/session_state.dart';
 import '../theme/onevoz_theme.dart';
 import '../widgets/call_shortcut_button.dart';
+import '../widgets/location_shortcut_button.dart';
 import '../widgets/dashboard_tile.dart';
 import '../widgets/emergency_shortcut_button.dart';
 import '../widgets/location_status_banner.dart';
@@ -47,6 +48,7 @@ class HomeBoardScreen extends StatelessWidget {
         title: Text(AppConfig.appDisplayName),
         actions: [
           const CallShortcutButton(),
+          const LocationShortcutButton(),
           const EmergencyShortcutButton(),
           IconButton(
             tooltip: 'Caregiver',

@@ -636,7 +636,7 @@ class _LocationSectionState extends State<LocationSection> {
               children: [
                 TileLayer(
                   urlTemplate:
-                      'https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=$_mapTilerKey',
+                      'https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=$_mapTilerKey',
                   userAgentPackageName: 'me.onevoz.app',
                 ),
                 if (_live.isNotEmpty)

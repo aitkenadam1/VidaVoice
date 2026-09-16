@@ -1,15 +1,23 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:onevoz/models/calling_safety.dart';
+import 'package:onevoz/models/word.dart';
 import 'package:onevoz/screens/call_confirm_screen.dart';
+import 'package:onevoz/screens/caregiver_screen.dart';
 import 'package:onevoz/screens/emergency_screen.dart';
+import 'package:onevoz/screens/location_screen.dart';
 import 'package:onevoz/services/tts_service.dart';
 import 'package:onevoz/state/session_state.dart';
 import 'package:onevoz/widgets/call_shortcut_button.dart';
 import 'package:onevoz/widgets/emergency_shortcut_button.dart';
+import 'package:onevoz/widgets/location_section.dart';
+import 'package:onevoz/widgets/location_shortcut_button.dart';
 
 /// TTS double: never touches the platform channel.
 class _FakeTts extends TtsService {
@@ -37,6 +45,15 @@ const _dad = SafetyContact(
 const _noEmergency = EmergencyProfileData(emergencyEnabled: false);
 
 void main() {
+  LanguagePack loadPackFromFile(String locale) {
+    final raw = File('assets/lang/$locale.json').readAsStringSync();
+    final pack = LanguagePack.fromJson(
+      Map<String, dynamic>.from(json.decode(raw) as Map),
+    );
+    pack.validate();
+    return pack;
+  }
+
   Future<SessionState> makeSession() async {
     SharedPreferences.setMockInitialValues({});
     final session = SessionState(tts: _FakeTts());
@@ -64,17 +81,34 @@ void main() {
   }
 
   group('call shortcut button', () {
-    testWidgets('hidden when the profile has no call contacts', (tester) async {
+    testWidgets('visible with no contacts; tap routes to contact setup', (
+      tester,
+    ) async {
       final session = await makeSession();
       final p = await session.profiles.addProfile('Kid');
       await session.profiles.setEmergency(p.id, _noEmergency);
+      // CaregiverScreen needs the vocabulary pack, like the real boot path.
+      session.pack = loadPackFromFile('en');
 
       await pumpBar(tester, session);
 
-      expect(find.byIcon(Icons.call), findsNothing);
+      // The calling feature shows on the blue banner even before contacts
+      // exist — it must never hide, only route somewhere useful.
+      expect(find.byIcon(Icons.call), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.call));
+      await tester.pumpAndSettle();
+
+      expect(find.text('No one to call yet'), findsOneWidget);
+      expect(find.text('Add contacts'), findsOneWidget);
+
+      await tester.tap(find.text('Add contacts'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CaregiverScreen), findsOneWidget);
     });
 
-    testWidgets('hidden with no contacts even when emergency is on', (
+    testWidgets('visible with no contacts even when emergency is on', (
       tester,
     ) async {
       final session = await makeSession();
@@ -83,7 +117,7 @@ void main() {
 
       await pumpBar(tester, session);
 
-      expect(find.byIcon(Icons.call), findsNothing);
+      expect(find.byIcon(Icons.call), findsOneWidget);
       // Emergency has its own button now.
       expect(find.byIcon(Icons.emergency), findsOneWidget);
     });
@@ -126,8 +160,7 @@ void main() {
     });
   });
 
-  group('emergency shortcut button', () {
-    testWidgets('hidden when emergency is disabled', (tester) async {
+  group('emergency shortcut button', () {    testWidgets('hidden when emergency is disabled', (tester) async {
       final session = await makeSession();
       final p = await session.profiles.addProfile('Kid');
       await session.profiles.setEmergency(p.id, _noEmergency);
@@ -147,6 +180,40 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(EmergencyScreen), findsOneWidget);
+    });
+  });
+
+  group('location shortcut button', () {
+    testWidgets('always visible; tap opens the standalone Location page', (
+      tester,
+    ) async {
+      final session = await makeSession();
+      await session.profiles.addProfile('Kid');
+
+      await tester.pumpWidget(
+        ChangeNotifierProvider<SessionState>.value(
+          value: session,
+          child: MaterialApp(
+            home: Scaffold(
+              appBar: AppBar(
+                actions: const [LocationShortcutButton()],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byIcon(Icons.location_on), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.location_on));
+      await tester.pumpAndSettle();
+
+      // Its own page — not the caregiver settings — hosting the full
+      // location content.
+      expect(find.byType(LocationScreen), findsOneWidget);
+      expect(find.byType(LocationSection), findsOneWidget);
+      expect(find.text('Location'), findsWidgets);
     });
   });
 }

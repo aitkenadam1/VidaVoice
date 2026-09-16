@@ -6,6 +6,7 @@ import '../services/history_service.dart';
 import '../services/prediction_service.dart';
 import '../state/session_state.dart';
 import '../widgets/call_shortcut_button.dart';
+import '../widgets/location_shortcut_button.dart';
 import '../widgets/emergency_shortcut_button.dart';
 import '../widgets/location_status_banner.dart';
 import '../widgets/tts_banner.dart';
@@ -186,6 +187,7 @@ class _TypeBoardScreenState extends State<TypeBoardScreen> {
         title: Text(AppConfig.appDisplayName),
         actions: [
           const CallShortcutButton(),
+          const LocationShortcutButton(),
           const EmergencyShortcutButton(),
           IconButton(
             tooltip: 'Caregiver',

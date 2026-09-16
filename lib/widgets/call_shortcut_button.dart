@@ -3,13 +3,17 @@ import 'package:provider/provider.dart';
 
 import '../models/calling_safety.dart';
 import '../screens/call_confirm_screen.dart';
+import '../screens/caregiver_screen.dart';
 import '../state/session_state.dart';
 import 'safety_contact_avatar.dart';
 
 /// Phone shortcut for the child board AppBars: one tap reaches the child's
 /// call contacts without scrolling to the call buttons below the board.
 ///
-/// - Hidden when the active profile has no call contacts.
+/// Always visible while a profile is active — the calling feature must show
+/// on the blue banner even before any contacts exist:
+/// - No call contacts yet: a sheet explains that, with a button routing to
+///   the caregiver area where contacts are added. Never a dead button.
 /// - One contact: goes straight to call confirmation.
 /// - Otherwise: a bottom sheet listing every Mom/Dad-kind contact.
 /// Emergency has its own top-bar button ([EmergencyShortcutButton]).
@@ -32,7 +36,6 @@ class CallShortcutButton extends StatelessWidget {
     final profile = session.profiles.active;
     if (profile == null) return const SizedBox.shrink();
     final contacts = callContacts(profile.contacts);
-    if (contacts.isEmpty) return const SizedBox.shrink();
     return IconButton(
       tooltip: 'Call',
       icon: const Icon(Icons.call),
@@ -45,6 +48,10 @@ class CallShortcutButton extends StatelessWidget {
     SessionState session,
     List<SafetyContact> contacts,
   ) {
+    if (contacts.isEmpty) {
+      _noContactsSheet(context);
+      return;
+    }
     if (contacts.length == 1) {
       _callContact(context, session, contacts.first);
       return;
@@ -98,5 +105,51 @@ class CallShortcutButton extends StatelessWidget {
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (_) => CallConfirmScreen(contact: contact)));
+  }
+
+  /// Shown when the profile has no Mom/Dad contacts yet: explains why
+  /// there is nobody to call and routes to the caregiver area where
+  /// contacts are added — the button always goes somewhere real.
+  void _noContactsSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Icon(Icons.call, size: 40),
+              const SizedBox(height: 12),
+              const Text(
+                'No one to call yet',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Add a Mom or Dad contact in the caregiver area and '
+                'they\u2019ll show up here.',
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                icon: const Icon(Icons.family_restroom),
+                label: const Text('Add contacts'),
+                onPressed: () {
+                  Navigator.of(sheetContext).pop();
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const CaregiverScreen(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

@@ -83,6 +83,8 @@ Future<SessionState> makeSession(
   session.pack = loadPackFromFile();
   session.status = BootStatus.ready;
   session.onboardingComplete = true;
+  // The login gate: the board is only reachable with a caregiver session.
+  session.proxySignedIn = true;
   await session.profiles.load();
   return session;
 }
@@ -353,6 +355,9 @@ void main() {
     test('full build flow works with a dead network', () async {
       final tts = _RecordingTts();
       final session = await makeBuildSession(tts, deadNetwork: true);
+      // The build path must work with no session at all: explicitly drop
+      // the helper's signed-in state.
+      session.proxySignedIn = false;
       final id = session.profiles.active!.id;
       await session.history.load(id);
 

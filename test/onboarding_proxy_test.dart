@@ -150,18 +150,41 @@ void main() {
     });
 
     testWidgets('Continue walks every page and finishes', (tester) async {
-      final session = await makeSession();
+      final session = await makeSession(
+        proxyHandler: (req) async {
+          if (req.url.path == '/v1/auth/signup') {
+            return http.Response(json.encode(_authBody()), 201);
+          }
+          if (req.url.path == '/v1/devices/register') {
+            return http.Response(json.encode(_registrationBody()), 201);
+          }
+          if (req.url.path == '/v1/sync/salt') {
+            return http.Response(
+              json.encode({'sync_salt': base64.encode(utf8.encode('salt'))}),
+              200,
+            );
+          }
+          if (req.url.path == '/v1/sync/dashboards') {
+            if (req.method == 'PUT') {
+              return http.Response(json.encode({'version': 1}), 200);
+            }
+            return http.Response(
+              json.encode({'error': 'no_sync_data'}),
+              404,
+            );
+          }
+          return http.Response('not found', 404);
+        },
+      );
       await pumpOnboarding(tester, session);
-      // Pages: welcome, account (defer), profile, mode, import, customize,
+      // Pages: welcome, account (signup), profile, mode, import, customize,
       // voice, tour. The account page hides the global Continue, so the
-      // form's defer button advances it.
+      // form's Create account button advances it.
       for (var i = 0; i < 8; i++) {
         await tester.pumpAndSettle();
         if (find.text('Your OneVoz account').evaluate().isNotEmpty) {
-          await tapFormButton(
-            tester,
-            find.text('Continue with on-device voices for now'),
-          );
+          await fillSignup(tester);
+          await tapFormButton(tester, find.text('Create account'));
         } else if (find.text('Start communicating').evaluate().isNotEmpty) {
           await tester.tap(find.text('Start communicating'));
         } else {
@@ -170,27 +193,24 @@ void main() {
       }
       await tester.pumpAndSettle();
       expect(session.onboardingComplete, isTrue);
-      expect(session.accountDeferred, isTrue);
+      expect(session.proxySignedIn, isTrue);
     });
   });
 
   group('account step', () {
-    testWidgets('defer continues without an account and sets accountDeferred', (
+    testWidgets('no defer option: an account is required to continue', (
       tester,
     ) async {
       final session = await makeSession();
       await pumpOnboarding(tester, session);
       await goToAccountPage(tester);
 
-      await tapFormButton(
-        tester,
-        find.text('Continue with on-device voices for now'),
-      );
-
-      expect(session.accountDeferred, isTrue);
+      // The old "Continue with on-device voices for now" bypass is gone:
+      // login gates the whole app.
+      expect(find.text('Continue with on-device voices for now'), findsNothing);
       expect(session.proxySignedIn, isFalse);
-      // Advanced to the profile-name step.
-      expect(find.text('Who will use OneVoz?'), findsOneWidget);
+      // Still on the account step — nothing advanced behind our back.
+      expect(find.text('Your OneVoz account'), findsOneWidget);
     });
 
     testWidgets('offline signup shows plain-language error, stays on step', (
@@ -232,7 +252,6 @@ void main() {
 
       expect(session.proxySignedIn, isTrue);
       expect(session.proxyFamilyId, 'fam-1');
-      expect(session.accountDeferred, isFalse);
       // Speech meters against the server-issued profile id, never the
       // app's local profile UUIDs.
       expect(session.tts.proxyProfileIdProvider?.call(), 'p1');

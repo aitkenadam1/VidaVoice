@@ -151,6 +151,7 @@ void main() {
       session.pack = loadPackFromFile();
       session.status = BootStatus.ready;
       session.onboardingComplete = true;
+    session.proxySignedIn = true; // login gate: the board needs a session
       await session.setUnlockedLevel(LanguagePack.maxSupportedLevel);
       return session;
     }

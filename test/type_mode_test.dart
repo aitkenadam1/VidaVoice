@@ -102,6 +102,7 @@ Future<SessionState> makeSession(
   session.pack = loadPackFromFile();
   session.status = BootStatus.ready;
   session.onboardingComplete = true;
+  session.proxySignedIn = true; // login gate: the board needs a session
   await session.profiles.load();
   await session.prediction.load(session.profiles.active!.id);
   await session.history.load(session.profiles.active!.id);

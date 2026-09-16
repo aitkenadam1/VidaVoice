@@ -77,6 +77,7 @@ void main() {
     session.pack = loadPackFromFile();
     session.status = BootStatus.ready;
     session.onboardingComplete = true; // normally read from prefs in boot()
+    session.proxySignedIn = true; // login gate: the board needs a session
     return session;
   }
 
@@ -170,6 +171,7 @@ void main() {
     session.pack = loadPackFromFile();
     session.status = BootStatus.ready;
     session.onboardingComplete = true;
+    session.proxySignedIn = true; // login gate: the board needs a session
     // boot() would set this from the init() result; the seam bypasses boot().
     session.ttsAvailable = false;
     await session.setUnlockedLevel(LanguagePack.maxSupportedLevel);

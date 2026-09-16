@@ -4,8 +4,10 @@ import 'package:provider/provider.dart';
 import 'app_config.dart';
 import 'screens/boot_screen.dart';
 import 'screens/build_board_screen.dart';
+import 'screens/device_license_blocked_screen.dart';
 import 'screens/home_board_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'screens/sign_in_gate_screen.dart';
 import 'screens/type_board_screen.dart';
 import 'services/profile_service.dart';
 import 'state/session_state.dart';
@@ -63,8 +65,18 @@ class OneVozApp extends StatelessWidget {
                   onRetry: () => s.boot(),
                 );
               case BootStatus.ready:
+                // Login gates everything: without a caregiver session the
+                // app shows the sign-in gate — never the home board. A
+                // device that hit the family device cap stops at the
+                // device-license screen until a slot is freed.
                 if (!s.onboardingComplete) {
                   return const OnboardingScreen();
+                }
+                if (!s.proxySignedIn) {
+                  return const SignInGateScreen();
+                }
+                if (s.deviceLicenseBlocked) {
+                  return const DeviceLicenseBlockedScreen();
                 }
                 return homeScreenFor(s);
             }

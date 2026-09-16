@@ -62,6 +62,7 @@ void main() {
     session.pack = loadPackFromFile();
     session.status = BootStatus.ready;
     session.onboardingComplete = true;
+    session.proxySignedIn = true; // login gate: the board needs a session
     return session;
   }
 

@@ -3,11 +3,15 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:onevoz/main.dart';
 import 'package:onevoz/models/word.dart';
 import 'package:onevoz/screens/caregiver_screen.dart';
+import 'package:onevoz/services/elevenlabs_key_store.dart';
+import 'package:onevoz/services/proxy_client.dart';
 import 'package:onevoz/services/tts_service.dart';
 import 'package:onevoz/state/session_state.dart';
 
@@ -43,9 +47,24 @@ class _FakeTts extends TtsService {
 /// Widget coverage for the flows in docs/MORNING-TEST.md that had no
 /// coverage: folder open/return, onboarding complete/skip, Spanish label
 /// rendering, and level-2 unlock mid-session.
+/// In-memory keychain double: on desktop test runners the real secure
+/// storage backend hangs instead of completing, so widget tests that run
+/// the real signup flow inject this through SessionState.
+class _FakeSecureStore implements SecureValueStore {
+  final map = <String, String>{};
+
+  @override
+  Future<String?> read(String key) async => map[key];
+
+  @override
+  Future<void> write(String key, String value) async => map[key] = value;
+
+  @override
+  Future<void> delete(String key) async => map.remove(key);
+}
+
 void main() {
-  LanguagePack loadPackFromFile(String locale) {
-    final raw = File('assets/lang/$locale.json').readAsStringSync();
+  LanguagePack loadPackFromFile(String locale) {    final raw = File('assets/lang/$locale.json').readAsStringSync();
     final pack = LanguagePack.fromJson(
       Map<String, dynamic>.from(json.decode(raw) as Map),
     );
@@ -56,18 +75,77 @@ void main() {
   Future<SessionState> makeSession({
     String locale = 'en',
     bool onboardingComplete = true,
+    ProxyClient? proxy,
+    bool signedIn = true,
   }) async {
     SharedPreferences.setMockInitialValues({
       'vidavoice.onboardingComplete': onboardingComplete,
     });
-    final session = SessionState(tts: _FakeTts());
+    final session = SessionState(
+      tts: _FakeTts(),
+      proxy: proxy,
+      proxyAuth: ProxyAuthStore(store: _FakeSecureStore()),
+    );
     session.pack = loadPackFromFile(locale);
     session.status = BootStatus.ready;
     session.onboardingComplete = onboardingComplete;
+    // Login gate: the board needs a session. Tests that exercise the
+    // pre-sign-in flow (e.g. the onboarding walkthrough) pass signedIn:
+    // false.
+    session.proxySignedIn = signedIn;
     await session.profiles.load();
     await session.plan.load(session.profiles.active?.id ?? '');
     return session;
   }
+
+  /// Fake voice-proxy backend for the onboarding walkthrough's required
+  /// account step (signup → device register → sync salt).
+  ProxyClient walkthroughProxy() {
+    Future<http.Response> handler(http.Request req) async {
+      final path = req.url.path;
+      if (path == '/v1/auth/signup') {
+        return http.Response(
+          json.encode({
+            'token': 'tok-1',
+            'token_type': 'Bearer',
+            'expires_in': 3600,
+            'family_id': 'fam-1',
+            'profile_ids': ['p1'],
+            'caregiver_id': 'cg-1',
+            'sync_salt': base64.encode(utf8.encode('walkthrough-salt')),
+          }),
+          201,
+        );
+      }
+      if (path == '/v1/devices/register') {
+        return http.Response(
+          json.encode({
+            'device': {'install_id': 'install-1'},
+            'device_slots': 3,
+            'subscription_tier': 'base',
+            'devices_used': 1,
+          }),
+          201,
+        );
+      }
+      if (path == '/v1/sync/dashboards') {
+        if (req.method == 'PUT') {
+          return http.Response(json.encode({'version': 1}), 200);
+        }
+        return http.Response(json.encode({'error': 'no_sync_data'}), 404);
+      }
+      return http.Response('not found', 404);
+    }
+
+    return ProxyClient(
+      client: MockClient(handler),
+      baseUrl: 'https://proxy.test',
+    );
+  }
+
+  Finder fieldWithLabel(String label) => find.byWidgetPredicate(
+        (w) => w is TextField && (w.decoration?.labelText == label),
+      );
 
   void useWideSurface(WidgetTester tester) {
     tester.view.physicalSize = const Size(1600, 2400);
@@ -121,18 +199,42 @@ void main() {
     tester,
   ) async {
     useWideSurface(tester);
-    final session = await makeSession(onboardingComplete: false);
+    final session = await makeSession(
+      onboardingComplete: false,
+      proxy: walkthroughProxy(),
+      signedIn: false,
+    );
 
     await tester.pumpWidget(OneVozApp(session: session));
     await tester.pump();
     expect(find.text('Welcome to OneVoz'), findsOneWidget);
 
-    // Page 2 (account): defer the caregiver account for now.
+    // Page 2 (account): create the caregiver account — required, no
+    // defer path.
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
     expect(find.text('Your OneVoz account'), findsOneWidget);
-    await tester.tap(find.text('Continue with on-device voices for now'));
+    await tester.enterText(
+      fieldWithLabel('Email'),
+      'caregiver@example.org',
+    );
+    await tester.enterText(fieldWithLabel('Username'), 'maya_mom');
+    await tester.enterText(
+      fieldWithLabel('Password'),
+      'a-strong-password-1',
+    );
+    await tester.tap(find.text('Create account'));
+    // The real signup derives the sync key with 600k PBKDF2 iterations.
+    // The KDF yields via short delayed futures that need fake time to
+    // advance; pumpAndSettle stops once the busy indicator disappears
+    // (the form flips to its signed-in state), so drive the clock
+    // manually until the wizard advances.
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(seconds: 1));
+      if (find.text('Who will use OneVoz?').evaluate().isNotEmpty) break;
+    }
     await tester.pumpAndSettle();
+    expect(session.proxySignedIn, isTrue);
 
     // Page 3: enter the communicator's name.
     expect(find.text('Who will use OneVoz?'), findsOneWidget);
@@ -248,6 +350,7 @@ void main() {
     session.pack = loadPackFromFile('en');
     session.status = BootStatus.ready;
     session.onboardingComplete = true;
+    session.proxySignedIn = true; // login gate: the board needs a session
     await session.setUnlockedLevel(LanguagePack.maxSupportedLevel);
     await session.profiles.load();
     await session.plan.load(session.profiles.active?.id ?? '');

@@ -54,6 +54,9 @@ dependencies:
   # explicitly rather than relying on transitive resolution.
   path: ^1.9.0
   crypto: ^3.0.0
+  # PBKDF2 key derivation + AES-GCM for the end-to-end encrypted dashboard
+  # sync (pure Dart + native where available; works on web and mobile).
+  cryptography: ^2.7.0
   # API key for the optional ElevenLabs cloud voices (bring-your-own-key).
   # Never in SharedPreferences or logs: billing credentials belong in the
   # platform keychain/keystore.

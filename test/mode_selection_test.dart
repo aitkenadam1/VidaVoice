@@ -113,7 +113,9 @@ void main() {
     'more',
   ];
 
-  /// Onboarding-capable session: proxy unreachable, account deferrable.
+  /// Onboarding-capable session: pre-signed-in (the caregiver account is
+  /// required since the encrypted-sync build) with the proxy unreachable
+  /// for anything else.
   Future<SessionState> makeOnboardingSession() async {
     SharedPreferences.setMockInitialValues({});
     final session = SessionState(
@@ -124,6 +126,8 @@ void main() {
       ),
       proxyAuth: ProxyAuthStore(store: _FakeSecureStore()),
     );
+    session.proxy.setToken('tok-test');
+    session.proxySignedIn = true;
     await session.profiles.load();
     return session;
   }
@@ -145,17 +149,16 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  /// Walk welcome → account (defer) → profile → mode, landing on the mode
-  /// step without saving anything.
+  /// Walk welcome → account (pre-signed-in) → profile → mode, landing on
+  /// the mode step without saving anything.
   Future<void> goToModeStep(WidgetTester tester, SessionState session) async {
     await pumpOnboarding(tester, session);
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
     expect(find.text('Your OneVoz account'), findsOneWidget);
-    await tapFormButton(
-      tester,
-      find.text('Continue with on-device voices for now'),
-    );
+    // The account step hides the global Continue; the signed-in form's
+    // own Continue button advances it.
+    await tapFormButton(tester, find.text('Continue'));
     expect(find.text('Who will use OneVoz?'), findsOneWidget);
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
@@ -173,28 +176,20 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(session.onboardingComplete, isTrue);
-      expect(
-        session.profiles.active!.communicationMode,
-        CommunicationMode.tap,
-      );
+      expect(session.profiles.active!.communicationMode, CommunicationMode.tap);
     });
 
-    testWidgets('walking every page without saving leaves Tap', (
-      tester,
-    ) async {
+    testWidgets('walking every page without saving leaves Tap', (tester) async {
       final session = await makeOnboardingSession();
       await pumpOnboarding(tester, session);
-      // Pages: welcome, account (defer), profile, mode, import, customize,
-      // voice, tour. The account page hides the global Continue, so the
-      // form's defer button advances it.
+      // Pages: welcome, account (pre-signed-in), profile, mode, import,
+      // customize, voice, tour. The account page hides the global Continue,
+      // so the signed-in form's own Continue button advances it.
       var sawModeStep = false;
       for (var i = 0; i < 8; i++) {
         await tester.pumpAndSettle();
         if (find.text('Your OneVoz account').evaluate().isNotEmpty) {
-          await tapFormButton(
-            tester,
-            find.text('Continue with on-device voices for now'),
-          );
+          await tapFormButton(tester, find.text('Continue'));
         } else if (find
             .text('How does this person communicate best right now?')
             .evaluate()
@@ -215,15 +210,10 @@ void main() {
       expect(session.onboardingComplete, isTrue);
       // No mobility/access step exists in onboarding and nothing derived a
       // mode: the untouched profile is still Tap.
-      expect(
-        session.profiles.active!.communicationMode,
-        CommunicationMode.tap,
-      );
+      expect(session.profiles.active!.communicationMode, CommunicationMode.tap);
     });
 
-    testWidgets('explicit Save mode persists the chosen mode', (
-      tester,
-    ) async {
+    testWidgets('explicit Save mode persists the chosen mode', (tester) async {
       final session = await makeOnboardingSession();
       await goToModeStep(tester, session);
 
@@ -262,15 +252,14 @@ void main() {
       await tester.pumpAndSettle();
 
       // Radio moved, but no explicit save: the profile is untouched.
-      expect(
-        session.profiles.active!.communicationMode,
-        CommunicationMode.tap,
-      );
+      expect(session.profiles.active!.communicationMode, CommunicationMode.tap);
     });
   });
 
   group('caregiver hub mode editor', () {
-    Future<SessionState> makeHubSession({required List<String> collapsed}) async {
+    Future<SessionState> makeHubSession({
+      required List<String> collapsed,
+    }) async {
       // Seed the saved order too: the hub's upgrade path re-applies the
       // default collapsed state to any section missing from the saved
       // order, which would re-collapse 'profiles'.
@@ -320,8 +309,7 @@ void main() {
       final beforeJson = Map<String, dynamic>.from(
         session.profiles.active!.toJson(),
       );
-      final cellsBefore = session
-          .dashboards
+      final cellsBefore = session.dashboards
           .forProfile(id)!
           .cells
           .map((c) => c.id)
@@ -357,12 +345,17 @@ void main() {
         CommunicationMode.type,
       );
 
-      // The profile JSON changed in exactly one field...
+      // The profile JSON changed in exactly two fields: the mode, and the
+      // content timestamp (which must advance — it drives sync
+      // last-write-wins, so the mode change propagates to other devices).
       final afterJson = Map<String, dynamic>.from(
         session.profiles.active!.toJson(),
       );
-      beforeJson.remove('mode');
-      afterJson.remove('mode');
+      for (final json in [beforeJson, afterJson]) {
+        json
+          ..remove('mode')
+          ..remove('updatedAt');
+      }
       expect(afterJson, beforeJson);
 
       // ...and everything else the communicator owns is untouched.
@@ -400,9 +393,7 @@ void main() {
   });
 
   group('sandbox preview', () {
-    testWidgets('try-before-saving never speaks, in any mode', (
-      tester,
-    ) async {
+    testWidgets('try-before-saving never speaks, in any mode', (tester) async {
       final tts = _RecordingTts();
       final session = SessionState(tts: tts);
       await session.profiles.load();
@@ -438,9 +429,7 @@ void main() {
         // Exercise every interactive element the sandbox offers.
         switch (mode) {
           case CommunicationMode.tap:
-            await tester.tap(
-              find.byKey(const ValueKey('sandbox-tile-water')),
-            );
+            await tester.tap(find.byKey(const ValueKey('sandbox-tile-water')));
             await tester.pumpAndSettle();
           case CommunicationMode.build:
             await tester.tap(find.byKey(const ValueKey('sandbox-add-more')));

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/dashboard.dart';
@@ -9,8 +10,19 @@ import '../models/word.dart';
 ///
 /// One dashboard per profile. The service is a thin store — ordering and
 /// editing live in the caregiver UI; the home board only reads.
+///
+/// Dashboards are synced across the family's devices end-to-end encrypted
+/// (see DashboardSyncService): the payload keys dashboards by the
+/// profile's [syncKey](../../profile_service.dart), and this service
+/// attaches them to local profile ids on merge.
 class DashboardService {
   static const _kDashboards = 'vidavoice.dashboards.v1';
+
+  /// Fired after every persisted change (not after [load]). The dashboard
+  /// sync engine uses it to schedule an encrypted push.
+  VoidCallback? onChanged;
+
+  void _notifyChanged() => onChanged?.call();
 
   final Map<String, PersonalDashboard> _byProfile = {};
 
@@ -103,17 +115,41 @@ class DashboardService {
     dashboard.updatedAt = DateTime.now();
     _byProfile[dashboard.profileId] = dashboard;
     await _persist();
+    _notifyChanged();
   }
 
   Future<void> delete(String profileId) async {
     _byProfile.remove(profileId);
     await _persist();
+    _notifyChanged();
   }
 
   Future<void> setEnabled(String profileId, bool enabled) async {
     final dashboard = _byProfile[profileId];
     if (dashboard == null) return;
     dashboard.enabled = enabled;
+    await _persist();
+    _notifyChanged();
+  }
+
+  /// Replaces the local dashboard for [localProfileId] with a copy of a
+  /// dashboard that arrived over sync. The synced dashboard's own
+  /// profileId is meaningless on this device (profile ids are local), so
+  /// the copy is re-keyed to the local profile while keeping the synced
+  /// content, name, enabled flag, and updatedAt.
+  Future<void> replaceFor(
+    String localProfileId,
+    PersonalDashboard source,
+  ) async {
+    _byProfile[localProfileId] = PersonalDashboard(
+      id: source.id,
+      profileId: localProfileId,
+      name: source.name,
+      cells: List.of(source.cells),
+      enabled: source.enabled,
+      source: source.source,
+      updatedAt: source.updatedAt,
+    );
     await _persist();
   }
 

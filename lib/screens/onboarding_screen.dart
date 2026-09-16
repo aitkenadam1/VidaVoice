@@ -12,9 +12,10 @@ import '../widgets/proxy_account_form.dart';
 /// customize → voice speed → quick tour. Shown once (flag in
 /// SharedPreferences); re-runnable from the caregiver hub ("Re-run setup").
 ///
-/// The account, mode, import, and customize steps are all skippable: the
-/// board works fully with on-device voices and no account, and skipping the
-/// mode step leaves the profile in Tap (the safe default).
+/// The caregiver account is required: it protects the family's profiles
+/// and keeps dashboards identical across the family's devices. The mode,
+/// import, and customize steps stay skippable: skipping the mode step
+/// leaves the profile in Tap (the safe default).
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -179,17 +180,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          'An account unlocks AI cloud voices, included with OneVoz, '
-          'on up to 3 devices. It\u2019s optional \u2014 the board speaks '
-          'fully offline with on-device voices.',
+          'An account protects your family\u2019s profiles and keeps their '
+          'dashboards identical on up to 3 devices. Sign in or create one '
+          'to continue.',
           style: TextStyle(fontSize: 15, color: scheme.onSurfaceVariant),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 20),
         ProxyAccountForm(
-          showDeferButton: true,
           onSignedIn: _next,
-          onDeferred: _next,
         ),
       ],
     );

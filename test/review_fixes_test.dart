@@ -39,6 +39,7 @@ Future<SessionState> makeSession() async {
   final session = SessionState(tts: _SilentTts());
   session.status = BootStatus.ready;
   session.onboardingComplete = true;
+  session.proxySignedIn = true; // login gate: the board needs a session
   await session.profiles.load();
   final id = session.profiles.active!.id;
   await session.history.load(id);

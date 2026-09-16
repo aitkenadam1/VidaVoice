@@ -4,11 +4,13 @@ import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'dart:async';
+import 'dart:convert';
 
 import '../app_config.dart';
 import '../models/dashboard.dart';
 import '../models/word.dart';
 import '../services/dashboard_service.dart';
+import '../services/dashboard_sync_service.dart';
 import '../services/elevenlabs_key_store.dart';
 import '../services/elevenlabs_service.dart';
 import '../services/elevenlabs_voice_store.dart';
@@ -65,6 +67,12 @@ class SessionState extends ChangeNotifier {
     // an expired session signs out instead of invisibly switching the
     // child's voice to the system voice.
     this.tts.onProxyUnauthorized = () => signOut();
+    dashboardSync = DashboardSyncService(
+      proxy: this.proxy,
+      profiles: profiles,
+      dashboards: dashboards,
+      prefsFactory: _prefsFactory,
+    );
   }
 
   final Future<SharedPreferences> Function() _prefsFactory;
@@ -100,6 +108,11 @@ class SessionState extends ChangeNotifier {
   /// Secure storage for the proxy token / family id / install id.
   final ProxyAuthStore proxyAuth;
 
+  /// End-to-end encrypted dashboard + profile sync across the family's
+  /// devices. Initialized in the constructor; wired (change listeners,
+  /// first pull) in [boot].
+  late final DashboardSyncService dashboardSync;
+
   /// True when a proxy token is in hand (restored from secure storage on
   /// boot, or freshly signed in). The token is validated lazily on first
   /// use — a 401 signs out silently.
@@ -117,10 +130,11 @@ class SessionState extends ChangeNotifier {
   /// section. Null otherwise.
   String? deviceLimitNotice;
 
-  /// True when the caregiver skipped the account step during onboarding
-  /// ("Continue with on-device voices for now"). Persisted in prefs so a
-  /// later nudge can offer account setup again.
-  bool accountDeferred = false;
+  /// True when the last device registration hit the family's device cap.
+  /// The session stays signed in (the token is needed to list and remove
+  /// devices) but the app shows the blocking device-license screen instead
+  /// of the home board until a slot is freed.
+  bool deviceLicenseBlocked = false;
 
   BootStatus status = BootStatus.loading;
   String bootError = '';
@@ -219,7 +233,6 @@ class SessionState extends ChangeNotifier {
       buttonScale = _prefs!.getDouble('vidavoice.buttonScale') ?? 1.0;
       onboardingComplete =
           _prefs!.getBool('vidavoice.onboardingComplete') ?? false;
-      accountDeferred = _prefs!.getBool('vidavoice.accountDeferred') ?? false;
       // Restore the proxy session best-effort: a stored token means the
       // caregiver signed in before. The token is validated lazily on first
       // use (a 401 signs out silently) — never a boot failure.
@@ -246,6 +259,7 @@ class SessionState extends ChangeNotifier {
       // Heal pre-fallback cells (stored with wordId but no label) while
       // their words still resolve — see DashboardService.backfillLabels.
       await dashboards.backfillLabels(pack);
+      _wireDashboardSync();
       await symbolOverrides.load();
       await usage.load();
       await history.load(profiles.active?.id ?? '');
@@ -278,12 +292,60 @@ class SessionState extends ChangeNotifier {
       // Restore the caregiver's voice choice for this language, if the
       // engine still has that voice installed.
       await _applySavedVoice();
+      // Converge with the family's synced dashboards in the background.
+      // Never fails boot: the device keeps working with local state.
+      if (proxySignedIn) {
+        unawaited(_backgroundSyncPull());
+      }
       status = BootStatus.ready;
     } catch (e) {
       status = BootStatus.error;
       bootError = e.toString();
     }
     notifyListeners();
+  }
+
+  /// Wires the dashboard sync engine once: local dashboard/profile changes
+  /// schedule a debounced encrypted push (only after the first pull —
+  /// see [DashboardSyncService.autoPushEnabled]).
+  bool _syncWired = false;
+
+  void _wireDashboardSync() {
+    if (_syncWired) return;
+    _syncWired = true;
+    dashboardSync.onChanged = notifyListeners;
+    unawaited(dashboardSync.loadPersisted());
+    dashboards.onChanged = () => dashboardSync.schedulePush();
+    profiles.onChanged = () => dashboardSync.schedulePush();
+  }
+
+  /// Background converge after boot with a cached session: re-register
+  /// this device (refreshes last-seen, catches a device-cap change),
+  /// pull the family's blob, merge, then allow auto-push. Sync never
+  /// fails boot.
+  Future<void> _backgroundSyncPull() async {
+    try {
+      // Best-effort: a failure here must not block the dashboard sync.
+      await _registerDevice();
+      final keyB64 = await proxyAuth.readSyncKey();
+      if (keyB64 == null || keyB64.isEmpty) return;
+      dashboardSync.setKey(base64.decode(keyB64));
+      final result = await dashboardSync.pullNow();
+      if (result.changed) {
+        await dashboards.backfillLabels(pack);
+        await reloadProfileData();
+        notifyListeners();
+      }
+    } catch (_) {
+      // Local state stays as-is; the caregiver can retry from Device sync.
+    } finally {
+      // A failed first pull must not disable auto-push forever: local
+      // edits should still converge once connectivity returns.
+      dashboardSync.autoPushEnabled = true;
+      // Registration may have flipped the device-license block; make
+      // sure the router rebuilds.
+      notifyListeners();
+    }
   }
 
   Future<void> setSpeechRate(double rate) async {
@@ -328,6 +390,7 @@ class SessionState extends ChangeNotifier {
       password: password,
     );
     await _afterProxyAuth(result);
+    await _setupSyncKey(result, password);
   }
 
   /// Sign in with email or username. Throws [ProxyException] on failure.
@@ -341,6 +404,33 @@ class SessionState extends ChangeNotifier {
       password: password,
     );
     await _afterProxyAuth(result);
+    await _setupSyncKey(result, password);
+  }
+
+  /// Derives the dashboard-sync key from the password the caregiver just
+  /// typed and converges with the family's synced state (pull, then push
+  /// local state). Best-effort: sync failures never fail sign-in.
+  Future<void> _setupSyncKey(ProxyAuthResult result, String password) async {
+    try {
+      final salt = result.syncSalt ?? await proxy.getSyncSalt();
+      final key = await DashboardSyncService.deriveSyncKey(password, salt);
+      await proxyAuth.writeSyncKey(base64.encode(key));
+      dashboardSync.setKey(key);
+      await dashboardSync.loadPersisted();
+      final syncResult = await dashboardSync.syncNow();
+      if (syncResult.changed) {
+        await dashboards.backfillLabels(pack);
+        await reloadProfileData();
+        notifyListeners();
+      }
+    } catch (_) {
+      // The account works without sync; the caregiver can retry from the
+      // Device sync section.
+    } finally {
+      // A failed first sync must not disable auto-push forever: local
+      // edits should still converge once connectivity returns.
+      dashboardSync.autoPushEnabled = true;
+    }
   }
 
   /// Common post-auth: persist the token, register this install as a
@@ -351,27 +441,63 @@ class SessionState extends ChangeNotifier {
     proxyFamilyId = result.familyId;
     _serverProfileIds = List<String>.of(result.profileIds);
     deviceLimitNotice = null;
+    deviceLicenseBlocked = false;
     try {
       await proxyAuth.save(result);
     } catch (_) {}
-    await clearAccountDeferred();
-    // Register this install so it counts toward the family's device slots.
-    // Best-effort: a device that can't register (offline, cap reached)
-    // still gets a working account — the hub surfaces the cap message.
+    await _registerDevice();
+    notifyListeners();
+  }
+
+  /// Registers this install as a family device. Best-effort: an offline
+  /// device still gets a working account. On DEVICE_LIMIT_REACHED the
+  /// session stays signed in but [deviceLicenseBlocked] is set, so the UI
+  /// shows the blocking device-license screen instead of the home board.
+  Future<void> _registerDevice() async {
     try {
       final installId = await proxyAuth.installId();
       await _authed(
         () => proxy.registerDevice(
           installId: installId,
+          deviceName: _deviceName(),
           platform: kIsWeb ? 'web' : defaultTargetPlatform.name,
         ),
       );
+      deviceLicenseBlocked = false;
+      deviceLimitNotice = null;
     } on ProxyException catch (e) {
       if (e.code == 'DEVICE_LIMIT_REACHED') {
+        deviceLicenseBlocked = true;
         deviceLimitNotice = e.message;
       }
     } catch (_) {}
+  }
+
+  /// Re-runs device registration — used by the device-license screen after
+  /// the caregiver frees a slot. Clears the block on success.
+  Future<void> retryDeviceRegistration() async {
+    await _registerDevice();
     notifyListeners();
+  }
+
+  /// Human-readable device name sent at registration, so caregivers can
+  /// tell their devices apart in the device list.
+  String _deviceName() {
+    if (kIsWeb) return 'web browser';
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.iOS:
+        return 'iOS device';
+      case TargetPlatform.android:
+        return 'Android device';
+      case TargetPlatform.macOS:
+        return 'macOS device';
+      case TargetPlatform.windows:
+        return 'Windows device';
+      case TargetPlatform.linux:
+        return 'Linux device';
+      case TargetPlatform.fuchsia:
+        return 'Fuchsia device';
+    }
   }
 
   /// Sign out of the managed backend: drop the token (secure storage too)
@@ -383,8 +509,10 @@ class SessionState extends ChangeNotifier {
     proxyFamilyId = null;
     _serverProfileIds = const [];
     deviceLimitNotice = null;
+    deviceLicenseBlocked = false;
     _entitlementVoices = null;
     _entitlementFetched = null;
+    dashboardSync.clearKey();
     try {
       await proxyAuth.clear();
     } catch (_) {}
@@ -444,21 +572,6 @@ class SessionState extends ChangeNotifier {
   /// Remove a device, freeing its slot. Throws [ProxyException] on failure.
   Future<void> removeProxyDevice(String installId) =>
       _authed(() => proxy.deleteDevice(installId));
-
-  /// The caregiver skipped the account step ("Continue with on-device
-  /// voices for now"). Persisted so a later nudge can offer setup again.
-  Future<void> deferAccount() async {
-    accountDeferred = true;
-    await _prefs?.setBool('vidavoice.accountDeferred', true);
-    notifyListeners();
-  }
-
-  Future<void> clearAccountDeferred() async {
-    if (!accountDeferred) return;
-    accountDeferred = false;
-    await _prefs?.remove('vidavoice.accountDeferred');
-    notifyListeners();
-  }
 
   /// Saved ElevenLabs voices for the active profile, as picker entries.
   Future<List<TtsVoice>> elevenLabsVoiceEntries() async {

@@ -71,11 +71,17 @@ class ProxyAuthResult {
     required this.token,
     required this.familyId,
     required this.profileIds,
+    this.syncSalt,
   });
 
   final String token;
   final String familyId;
   final List<String> profileIds;
+
+  /// Base64 per-family salt for deriving the end-to-end encrypted
+  /// dashboard-sync key. Stable per family; null when the server predates
+  /// the sync endpoints (callers fall back to GET /v1/sync/salt).
+  final String? syncSalt;
 
   factory ProxyAuthResult.fromJson(Map<String, dynamic> json) {
     final token = json['token']?.toString() ?? '';
@@ -86,12 +92,14 @@ class ProxyAuthResult {
       );
     }
     final rawIds = json['profile_ids'];
+    final salt = json['sync_salt']?.toString();
     return ProxyAuthResult(
       token: token,
       familyId: json['family_id']?.toString() ?? '',
       profileIds: rawIds is List
           ? rawIds.map((e) => e.toString()).toList()
           : const [],
+      syncSalt: (salt == null || salt.isEmpty) ? null : salt,
     );
   }
 }
@@ -375,6 +383,35 @@ class ProxyClient {
     return _decode(res);
   }
 
+  /// PUT [path], returning the decoded JSON body. Throws [ProxyException]
+  /// on transport failure or any non-2xx status. Used by the dashboard
+  /// sync upload, which the contract defines as PUT (idempotent upsert).
+  Future<Map<String, dynamic>> _putJson(
+    String path,
+    Map<String, dynamic> body,
+  ) async {
+    final uri = Uri.parse('$baseUrl$path');
+    late http.Response res;
+    try {
+      res = await _client
+          .put(uri, headers: _headers(), body: json.encode(body))
+          .timeout(_timeout);
+    } on TimeoutException {
+      throw ProxyException(
+        'The request timed out.',
+        code: 'unreachable',
+        fallbackAllowed: true,
+      );
+    } catch (_) {
+      throw ProxyException(
+        'Could not reach the OneVoz service.',
+        code: 'unreachable',
+        fallbackAllowed: true,
+      );
+    }
+    return _decode(res);
+  }
+
   /// GET [path], returning the decoded JSON body.
   Future<Map<String, dynamic>> _getJson(String path) async {
     final uri = Uri.parse('$baseUrl$path');
@@ -629,6 +666,60 @@ class ProxyClient {
     _requireAuth();
     await _deleteJson('/v1/devices/$installId');
   }
+
+  // --------------------------------- dashboard sync (E2E encrypted) -----
+  // The dashboard sync blob is END-TO-END ENCRYPTED on the device before
+  // upload: it contains the family's AAC dashboard content (words and
+  // phrases), which the server must never see in plaintext per the
+  // no-content promise. The server stores the blob opaquely — it never
+  // decrypts, inspects, logs, or returns anything but the stored bytes.
+  // Key derivation (PBKDF2 from the caregiver password + per-family salt)
+  // happens in DashboardSyncService; this client only moves bytes.
+
+  /// The per-family base64 salt for the sync-key derivation. Stable per
+  /// family — generated server-side on first request.
+  Future<String> getSyncSalt() async {
+    _requireAuth();
+    final body = await _getJson('/v1/sync/salt');
+    final salt = body['sync_salt']?.toString() ?? '';
+    if (salt.isEmpty) {
+      throw ProxyException(
+        'The service returned an unexpected response.',
+        code: 'bad_response',
+      );
+    }
+    return salt;
+  }
+
+  /// Upload the encrypted dashboard blob via PUT (idempotent upsert per
+  /// the contract). Returns the stored {version, updated_at}.
+  Future<Map<String, dynamic>> putDashboardBlob({
+    required String ciphertext,
+    required String nonce,
+    required int version,
+  }) async {
+    _requireAuth();
+    return await _putJson('/v1/sync/dashboards', {
+      'ciphertext': ciphertext,
+      'nonce': nonce,
+      'version': version,
+    });
+  }
+
+  /// Download the encrypted dashboard blob, or null when the family has
+  /// never synced (404/no_sync_data). Other errors are rethrown.
+  Future<Map<String, dynamic>?> getDashboardBlob() async {
+    _requireAuth();
+    try {
+      return await _getJson('/v1/sync/dashboards');
+    } on ProxyException catch (e) {
+      if (e.statusCode == 404 &&
+          (e.code == 'no_sync_data' || e.code == 'not_found')) {
+        return null;
+      }
+      rethrow;
+    }
+  }
 }
 
 /// Secure storage for the proxy auth material: the bearer token, the
@@ -647,6 +738,7 @@ class ProxyAuthStore {
   static const _familyKey = 'vidavoice.proxy.familyId';
   static const _profilesKey = 'vidavoice.proxy.profileIds';
   static const _installKey = 'vidavoice.proxy.installId';
+  static const _syncKeyKey = 'vidavoice.proxy.syncKey';
 
   final SecureValueStore _store;
 
@@ -694,8 +786,30 @@ class ProxyAuthStore {
     await _store.delete(_tokenKey);
     await _store.delete(_familyKey);
     await _store.delete(_profilesKey);
+    await _store.delete(_syncKeyKey);
     // The install id is per-install, not per-account: keep it so a
     // re-sign-in re-registers the same device instead of burning a slot.
+  }
+
+  /// The raw dashboard-sync key bytes, base64-encoded. A billing-adjacent
+  /// secret: keychain only, never SharedPreferences, never logs. Written
+  /// at sign-in (derived from the caregiver password + server salt),
+  /// deleted at sign-out.
+  Future<String?> readSyncKey() async {
+    try {
+      final key = await _store.read(_syncKeyKey);
+      return (key == null || key.isEmpty) ? null : key;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> writeSyncKey(String base64Key) async {
+    await _store.write(_syncKeyKey, base64Key);
+  }
+
+  Future<void> deleteSyncKey() async {
+    await _store.delete(_syncKeyKey);
   }
 
   /// The install's stable UUID v4, generated once and kept forever.

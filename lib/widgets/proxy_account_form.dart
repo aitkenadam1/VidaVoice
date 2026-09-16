@@ -50,31 +50,24 @@ bool isValidProxyUsername(String v) =>
 
 bool isValidProxyPassword(String v) => v.length >= 10 && v.length <= 128;
 
-/// The caregiver account form, shared by onboarding and the voice
-/// settings card. Signup and login in one place: the toggle switches
-/// modes, server error codes are translated to plain language, and an
-/// unreachable proxy offers the offline path instead of a dead end.
+/// The caregiver account form, shared by onboarding, the sign-in gate, and
+/// the voice settings card. Signup and login in one place: the toggle
+/// switches modes and server error codes are translated to plain language.
+///
+/// There is no "continue without an account" path: login gates the whole
+/// app (see SignInGateScreen), so an unreachable proxy is just an error
+/// message asking the caregiver to connect and try again.
 ///
 /// When the session is already signed in, shows a compact "signed in"
 /// state instead of the form.
 class ProxyAccountForm extends StatefulWidget {
   const ProxyAccountForm({
     super.key,
-    this.showDeferButton = false,
     this.onSignedIn,
-    this.onDeferred,
   });
-
-  /// Show the prominent "Continue with on-device voices for now" button
-  /// (onboarding). When false (voice settings), an unreachable service is
-  /// just an error message — the board keeps working either way.
-  final bool showDeferButton;
 
   /// Called after a successful sign-up or sign-in.
   final VoidCallback? onSignedIn;
-
-  /// Called when the caregiver chooses to continue without an account.
-  final VoidCallback? onDeferred;
 
   @override
   State<ProxyAccountForm> createState() => _ProxyAccountFormState();
@@ -168,12 +161,6 @@ class _ProxyAccountFormState extends State<ProxyAccountForm> {
     if (!mounted) return;
     setState(() => _busy = false);
     widget.onSignedIn?.call();
-  }
-
-  Future<void> _defer() async {
-    final session = context.read<SessionState>();
-    await session.deferAccount();
-    widget.onDeferred?.call();
   }
 
   Future<void> _signOut() async {
@@ -325,29 +312,16 @@ class _ProxyAccountFormState extends State<ProxyAccountForm> {
                   ),
           ),
         ),
-        if (widget.showDeferButton) ...[
-          const SizedBox(height: 8),
-          OutlinedButton(
-            onPressed: _busy ? null : _defer,
-            child: const Padding(
-              padding: EdgeInsets.symmetric(vertical: 10),
-              child: Text(
-                'Continue with on-device voices for now',
-                style: TextStyle(fontSize: 15),
-              ),
+        if (_unreachable)
+          const Padding(
+            padding: EdgeInsets.only(top: 8),
+            child: Text(
+              'Connect to the internet, then try again. An account is '
+              'required to use OneVoz.',
+              style: TextStyle(fontSize: 12),
+              textAlign: TextAlign.center,
             ),
           ),
-          if (_unreachable)
-            const Padding(
-              padding: EdgeInsets.only(top: 8),
-              child: Text(
-                'You can set up your account later from the caregiver hub. '
-                'Everything on the board works offline.',
-                style: TextStyle(fontSize: 12),
-                textAlign: TextAlign.center,
-              ),
-            ),
-        ],
       ],
     );
   }

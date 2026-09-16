@@ -11,6 +11,7 @@ import '../widgets/mode_nudge_card.dart';
 import '../widgets/custom_symbols_section.dart';
 import '../widgets/dashboard_section.dart';
 import '../widgets/device_section.dart';
+import '../widgets/device_sync_section.dart';
 import '../widgets/first_week_plan_section.dart';
 import '../widgets/word_finder_section.dart';
 
@@ -802,6 +803,13 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
         icon: Icons.devices_outlined,
         summary: (session) => 'Manage this family\u2019s devices',
         content: (context, session, refresh) => const DeviceSection(),
+      ),
+      _Section(
+        id: 'device-sync',
+        title: 'Device sync',
+        icon: Icons.sync_outlined,
+        summary: (session) => 'Encrypted dashboard sync across devices',
+        content: (context, session, refresh) => const DeviceSyncSection(),
       ),
       _Section(
         id: 'more',

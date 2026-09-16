@@ -1,11 +1,13 @@
 import 'dart:typed_data';
 
-import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kIsWeb, TargetPlatform, visibleForTesting;
 import 'package:flutter_tts/flutter_tts.dart';
 
 import '../app_config.dart';
 import 'elevenlabs_audio.dart';
 import 'elevenlabs_service.dart';
+import 'ios_speaker_route.dart';
 import 'kokoro_tts_service.dart';
 import 'proxy_client.dart';
 
@@ -168,6 +170,11 @@ class TtsService {
   /// routing without platform channels.
   ElevenLabsAudioPlayer elevenAudioPlayer = ElevenLabsAudioPlayer();
 
+  /// iOS loudspeaker routing for all speech paths (see [IosSpeakerRoute]).
+  /// A settable seam so tests can observe the routing step without
+  /// touching platform channels.
+  IosSpeakerRoute iosSpeakerRoute = IosSpeakerRoute();
+
   /// Cache of cloud-synthesized utterances, keyed by "$voiceId::$text".
   /// Every ElevenLabs call is billed per character, and board taps repeat
   /// the same short labels constantly — without this, re-tapping "more" a
@@ -231,6 +238,12 @@ class TtsService {
       // implement it and throws Unimplemented — which must not poison init
       // on web, so it is skipped there.
       if (!kIsWeb) await _engine.setSharedInstance(true);
+      // iOS: route spoken audio through the loudspeaker even during a
+      // phone call (see IosSpeakerRoute). Without this, phrase cards
+      // tapped mid-call are routed to the earpiece and the remote party
+      // hears nothing. Web cannot do this (no Safari audio-route API);
+      // Android keeps its default behavior.
+      await configureSpeakerRoute();
       // Web quirk: speechSynthesis.getVoices() returns an empty list until
       // the browser fires voiceschanged (async, after page load). Without
       // this wait, the language binding below sees no voices and the probe
@@ -255,6 +268,16 @@ class TtsService {
       await setVoice(currentVoice!);
     }
     return _ready;
+  }
+
+  /// iOS-only loudspeaker routing for every speech path. No-op on web
+  /// and Android. Separated from init() for tests: the platform guard
+  /// lives here, the plugin calls live in [IosSpeakerRoute] behind
+  /// injectable seams.
+  @visibleForTesting
+  Future<void> configureSpeakerRoute() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) return;
+    await iosSpeakerRoute.routeToSpeaker(_engine);
   }
 
   /// Polls for the browser's asynchronously-loading voice list (web only).

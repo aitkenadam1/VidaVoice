@@ -60,14 +60,14 @@ void main() {
     bool blocked = false,
     Future<http.Response> Function(http.Request)? proxyHandler,
     _FakeSecureStore? secureStore,
-    DeviceRole role = DeviceRole.communicator,
+    DeviceRole? role = DeviceRole.communicator,
   }) async {
     SharedPreferences.setMockInitialValues({
       'vidavoice.onboardingComplete': onboardingComplete,
     });
     final store = secureStore ?? _FakeSecureStore();
     final roleService = DeviceRoleService(store: store);
-    await roleService.writeRole(role);
+    if (role != null) await roleService.writeRole(role);
     final session = SessionState(
       tts: _FakeTts(),
       proxy: ProxyClient(
@@ -152,6 +152,19 @@ void main() {
       expect(find.text('Welcome to OneVoz'), findsOneWidget);
       expect(find.byType(SignInGateScreen), findsNothing);
     });
+
+    testWidgets(
+      'signed out with no device role sees the role question first',
+      (tester) async {
+        // Post-sign-out state: the role question (per-device) precedes
+        // the sign-in gate (per-account).
+        final session = await makeSession(signedIn: false, role: null);
+        await pumpApp(tester, session);
+
+        expect(find.text('Who is this device for?'), findsOneWidget);
+        expect(find.byType(SignInGateScreen), findsNothing);
+      },
+    );
   });
 
   group('cached session', () {

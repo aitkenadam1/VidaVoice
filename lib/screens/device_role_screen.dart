@@ -6,9 +6,9 @@ import '../services/device_role_service.dart';
 import '../state/session_state.dart';
 import '../theme/onevoz_theme.dart';
 
-/// First-launch device-role question, shown once per device after sign-in
-/// (before anything else). The choice is per-device and persisted in
-/// secure storage:
+/// First-launch device-role question, shown once per device before
+/// sign-in (before anything else except onboarding). The choice is
+/// per-device and persisted in secure storage:
 ///
 /// * Communicator — this device is the AAC voice (e.g. the child's iPad).
 ///   Boards only; the Caregiver Portal does not exist there.

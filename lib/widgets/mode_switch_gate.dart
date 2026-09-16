@@ -13,13 +13,16 @@ import '../state/session_state.dart';
 /// in the board's top bar. A child tapping around finds nothing; the
 /// device is never stranded because the caregiver knows the gesture and
 /// the account password. The password is verified live (internet
-/// required); on success the router rebuilds into the Caregiver Portal.
+/// required); on success the caregiver chooses between opening the
+/// Caregiver Portal and signing this device out — both stay behind the
+/// same password gate, so a child can never reach a tappable sign-out.
 Future<void> showCaregiverEntrySheet(BuildContext context) {
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     builder: (_) => ModeSwitchGate(
       targetRole: DeviceRole.caregiver,
+      offerSignOut: true,
       onVerified: () => Navigator.of(context).pop(),
     ),
   );
@@ -41,6 +44,7 @@ class ModeSwitchGate extends StatefulWidget {
     super.key,
     required this.targetRole,
     required this.onVerified,
+    this.offerSignOut = false,
   });
 
   /// The role the device switches to once the password verifies.
@@ -49,6 +53,14 @@ class ModeSwitchGate extends StatefulWidget {
   /// Called after the password verifies and the role is persisted. The
   /// host pops/navigates from here.
   final VoidCallback onVerified;
+
+  /// When true, a verified password does NOT switch roles immediately:
+  /// the caregiver is offered a choice between opening the portal (the
+  /// existing behavior) and signing this device out (confirm dialog
+  /// first; clears the session AND the device role, so the next launch
+  /// asks the role question again). Used only by the discreet
+  /// communicator-side entry point, so a child never sees it.
+  final bool offerSignOut;
 
   @override
   State<ModeSwitchGate> createState() => _ModeSwitchGateState();
@@ -60,6 +72,7 @@ class _ModeSwitchGateState extends State<ModeSwitchGate> {
   bool _busy = false;
   String? _error;
   bool _obscured = true;
+  bool _choiceShown = false;
 
   @override
   void dispose() {
@@ -85,6 +98,16 @@ class _ModeSwitchGateState extends State<ModeSwitchGate> {
       // must never call session.signIn — that would re-register the
       // device and re-derive the sync key mid-session.
       await session.proxy.login(identifier: identifier, password: password);
+      if (!mounted) return;
+      if (widget.offerSignOut) {
+        // Communicator-side entry: don't switch yet. The caregiver
+        // picks between the portal and signing this device out.
+        setState(() {
+          _busy = false;
+          _choiceShown = true;
+        });
+        return;
+      }
       await session.setDeviceRole(widget.targetRole);
       if (!mounted) return;
       // Release the spinner before handing off: the host usually pops
@@ -108,12 +131,64 @@ class _ModeSwitchGateState extends State<ModeSwitchGate> {
     }
   }
 
+  /// Post-verification choice (communicator-side entry only): open the
+  /// Caregiver Portal — the previous immediate behavior.
+  Future<void> _openPortal() async {
+    final session = context.read<SessionState>();
+    setState(() => _busy = true);
+    try {
+      await session.setDeviceRole(widget.targetRole);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+    if (!mounted) return;
+    widget.onVerified();
+  }
+
+  /// Post-verification choice (communicator-side entry only): sign this
+  /// device out. Confirmed first — signOut clears the session AND the
+  /// device role, so the next launch asks the role question again.
+  Future<void> _signOutDevice() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Sign out this device?'),
+        content: const Text(
+          'This device will be signed out of the family account. '
+          'The next launch asks who the device is for again. '
+          'Boards already on this device keep working offline.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Sign out'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      await context.read<SessionState>().signOut();
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+    // The router now lands on the device-role question (role was
+    // cleared); dismiss this sheet so it shows.
+    if (mounted) Navigator.of(context).pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final target = widget.targetRole == DeviceRole.caregiver
         ? 'caregiver mode'
         : 'communicator mode';
+    if (_choiceShown) return _buildChoice(context, scheme);
     return SingleChildScrollView(
       padding: EdgeInsets.only(
         left: 24,
@@ -196,6 +271,61 @@ class _ModeSwitchGateState extends State<ModeSwitchGate> {
                     style: const TextStyle(fontSize: 17),
                   ),
           ),
+        ],
+      ),
+    );
+  }
+  /// What the caregiver sees after the password verifies on the
+  /// communicator-side entry: portal or sign-out. Both stay behind the
+  /// password gate — no new visible affordance on the boards.
+  Widget _buildChoice(BuildContext context, ColorScheme scheme) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Icon(Icons.verified_user_outlined, size: 48, color: scheme.primary),
+          const SizedBox(height: 12),
+          const Text(
+            'Password confirmed',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'What would you like to do with this device?',
+            style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 20),
+          FilledButton.icon(
+            onPressed: _busy ? null : _openPortal,
+            icon: const Icon(Icons.family_restroom),
+            label: const Text('Open Caregiver Portal'),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(56),
+            ),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: _busy ? null : _signOutDevice,
+            icon: const Icon(Icons.logout),
+            label: const Text('Sign out this device'),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size.fromHeight(56),
+              foregroundColor: scheme.error,
+            ),
+          ),
+          const SizedBox(height: 4),
+          TextButton(
+            onPressed: _busy ? null : () => Navigator.of(context).pop(),
+            child: const Text('Not now'),
+          ),
+          if (_busy) ...[
+            const SizedBox(height: 12),
+            const Center(child: CircularProgressIndicator()),
+          ],
         ],
       ),
     );

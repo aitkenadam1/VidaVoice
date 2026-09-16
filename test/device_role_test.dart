@@ -11,6 +11,7 @@ import 'package:onevoz/models/word.dart';
 import 'package:onevoz/screens/caregiver_portal_screen.dart';
 import 'package:onevoz/screens/device_role_screen.dart';
 import 'package:onevoz/screens/home_board_screen.dart';
+import 'package:onevoz/screens/sign_in_gate_screen.dart';
 import 'package:onevoz/services/device_role_service.dart';
 import 'package:onevoz/services/elevenlabs_key_store.dart';
 import 'package:onevoz/services/proxy_client.dart';
@@ -56,6 +57,7 @@ LanguagePack _loadPack(String locale) {
 Future<SessionState> _makeSession({
   _FakeSecureStore? secureStore,
   DeviceRole? role,
+  bool signedIn = true,
 }) async {
   SharedPreferences.setMockInitialValues({
     'vidavoice.onboardingComplete': true,
@@ -77,8 +79,8 @@ Future<SessionState> _makeSession({
   session.pack = _loadPack('en');
   session.status = BootStatus.ready;
   session.onboardingComplete = true;
-  session.proxySignedIn = true;
-  session.proxy.setToken('tok-test');
+  session.proxySignedIn = signedIn;
+  if (signedIn) session.proxy.setToken('tok-test');
   session.deviceRole = role;
   await session.profiles.load();
   return session;
@@ -164,6 +166,34 @@ void main() {
       expect(find.byTooltip('Caregiver'), findsNothing);
       expect(find.byType(CaregiverPortalScreen), findsNothing);
     });
+
+    testWidgets(
+      'signed out with no role lands on the role question, not sign-in',
+      (tester) async {
+        // This is the post-sign-out state: the role is cleared, so the
+        // next launch asks again before any sign-in screen.
+        final session = await _makeSession(signedIn: false);
+        await _pumpApp(tester, session);
+
+        expect(find.byType(DeviceRoleScreen), findsOneWidget);
+        expect(find.byType(SignInGateScreen), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'choosing a role while signed out routes to the sign-in gate',
+      (tester) async {
+        final session = await _makeSession(signedIn: false);
+        await _pumpApp(tester, session);
+
+        await tester.tap(find.text('Communicator'));
+        await tester.pumpAndSettle();
+
+        expect(session.deviceRole, DeviceRole.communicator);
+        expect(find.byType(SignInGateScreen), findsOneWidget);
+        expect(find.byType(HomeBoardScreen), findsNothing);
+      },
+    );
   });
 
   group('DeviceRoleScreen', () {

@@ -74,6 +74,10 @@ SessionState _makeSession() => SessionState(
     }),
     baseUrl: 'https://proxy.test',
   ),
+  // The sign-out path clears stored auth state: the real platform
+  // keychain hangs (never resolves) in widget tests, so it gets the
+  // same fake every other secure store here uses.
+  proxyAuth: ProxyAuthStore(store: _FakeSecureStore()),
   deviceRoleService: DeviceRoleService(store: _FakeSecureStore()),
 );
 
@@ -81,18 +85,39 @@ Future<void> _pumpGate(
   WidgetTester tester,
   SessionState session,
   DeviceRole target,
-  void Function() onVerified,
-) async {
+  void Function() onVerified, {
+  bool offerSignOut = false,
+}) async {
   await tester.pumpWidget(
     ChangeNotifierProvider.value(
       value: session,
       child: MaterialApp(
         home: Scaffold(
-          body: ModeSwitchGate(targetRole: target, onVerified: onVerified),
+          body: ModeSwitchGate(
+            targetRole: target,
+            offerSignOut: offerSignOut,
+            onVerified: onVerified,
+          ),
         ),
       ),
     ),
   );
+}
+
+/// Fills the gate form and verifies with the correct password; on
+/// offerSignOut gates this lands on the post-verify choice, not the
+/// portal.
+Future<void> _verifyWithCorrectPassword(WidgetTester tester) async {
+  await tester.enterText(
+    find.widgetWithText(TextField, 'Email or username'),
+    'caregiver@example.com',
+  );
+  await tester.enterText(
+    find.widgetWithText(TextField, 'Account password'),
+    'correct-horse',
+  );
+  await tester.tap(find.text('Switch to caregiver mode'));
+  await tester.pumpAndSettle();
 }
 
 void main() {
@@ -205,6 +230,124 @@ void main() {
         // Still signed in: the gate is a credential check, not a session
         // change.
         expect(session.proxySignedIn, isTrue);
+      },
+    );
+  });
+
+  group('ModeSwitchGate with sign-out offered (communicator-side entry)', () {
+    testWidgets(
+      'verified password shows both options and defers the role switch',
+      (tester) async {
+        final session = _makeSession();
+        var verified = false;
+        await _pumpGate(
+          tester,
+          session,
+          DeviceRole.caregiver,
+          () => verified = true,
+          offerSignOut: true,
+        );
+
+        await _verifyWithCorrectPassword(tester);
+
+        // Choice, not an immediate switch: no role persisted yet, no
+        // callback fired.
+        expect(find.text('Password confirmed'), findsOneWidget);
+        expect(find.text('Open Caregiver Portal'), findsOneWidget);
+        expect(find.text('Sign out this device'), findsOneWidget);
+        expect(session.deviceRole, isNull);
+        expect(verified, isFalse);
+      },
+    );
+
+    testWidgets(
+      'Open Caregiver Portal persists the role and calls back',
+      (tester) async {
+        final session = _makeSession();
+        var verified = false;
+        await _pumpGate(
+          tester,
+          session,
+          DeviceRole.caregiver,
+          () => verified = true,
+          offerSignOut: true,
+        );
+
+        await _verifyWithCorrectPassword(tester);
+        await tester.tap(find.text('Open Caregiver Portal'));
+        await tester.pumpAndSettle();
+
+        expect(verified, isTrue);
+        expect(session.deviceRole, DeviceRole.caregiver);
+      },
+    );
+
+    testWidgets(
+      'sign-out confirms first, then clears the session and the role',
+      (tester) async {
+        final session = _makeSession();
+        session.proxy.setToken('tok-original');
+        session.proxySignedIn = true;
+        session.deviceRole = DeviceRole.communicator;
+        var verified = false;
+        await _pumpGate(
+          tester,
+          session,
+          DeviceRole.caregiver,
+          () => verified = true,
+          offerSignOut: true,
+        );
+
+        await _verifyWithCorrectPassword(tester);
+        await tester.tap(find.text('Sign out this device'));
+        await tester.pumpAndSettle();
+
+        // Confirm dialog gates the destructive action.
+        expect(find.text('Sign out this device?'), findsOneWidget);
+        await tester.tap(find.text('Sign out'));
+        await tester.pumpAndSettle();
+
+        expect(verified, isFalse);
+        expect(session.proxySignedIn, isFalse);
+        expect(session.deviceRole, isNull);
+        expect(
+          await session.deviceRoleService.readRole(),
+          isNull,
+          reason: 'stored role cleared so the next launch asks again',
+        );
+      },
+    );
+
+    testWidgets(
+      'canceling the sign-out confirm keeps the session intact',
+      (tester) async {
+        final session = _makeSession();
+        session.proxy.setToken('tok-original');
+        session.proxySignedIn = true;
+        session.deviceRole = DeviceRole.communicator;
+        var verified = false;
+        await _pumpGate(
+          tester,
+          session,
+          DeviceRole.caregiver,
+          () => verified = true,
+          offerSignOut: true,
+        );
+
+        await _verifyWithCorrectPassword(tester);
+        await tester.tap(find.text('Sign out this device'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Sign out this device?'), findsOneWidget);
+        await tester.tap(find.text('Cancel'));
+        await tester.pumpAndSettle();
+
+        // Nothing happened: still signed in, role untouched, choice
+        // still on screen.
+        expect(session.proxySignedIn, isTrue);
+        expect(session.deviceRole, DeviceRole.communicator);
+        expect(verified, isFalse);
+        expect(find.text('Open Caregiver Portal'), findsOneWidget);
       },
     );
   });

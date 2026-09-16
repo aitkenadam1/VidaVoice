@@ -76,20 +76,22 @@ class OneVozApp extends StatelessWidget {
                 if (!s.onboardingComplete) {
                   return const OnboardingScreen();
                 }
+                // Device roles come BEFORE the sign-in gate: the question
+                // is per-device ("who is this device for"), not per
+                // account. Sign-out clears the role, so logging out lands
+                // here — the next family is asked again before signing in.
+                // Communicator devices render the board shell with ZERO
+                // portal routes; caregiver devices render the portal. The
+                // router rebuilds on every role change, so a
+                // password-verified mode switch takes effect instantly.
+                if (s.deviceRole == null) {
+                  return const DeviceRoleScreen();
+                }
                 if (!s.proxySignedIn) {
                   return const SignInGateScreen();
                 }
                 if (s.deviceLicenseBlocked) {
                   return const DeviceLicenseBlockedScreen();
-                }
-                // Device roles: first launch (per device) asks whether
-                // this device is the communicator's voice or a caregiver
-                // manager. Communicator devices render the board shell
-                // with ZERO portal routes; caregiver devices render the
-                // portal. The router rebuilds on every role change, so a
-                // password-verified mode switch takes effect instantly.
-                if (s.deviceRole == null) {
-                  return const DeviceRoleScreen();
                 }
                 if (s.deviceRole == DeviceRole.caregiver) {
                   return const CaregiverPortalScreen();

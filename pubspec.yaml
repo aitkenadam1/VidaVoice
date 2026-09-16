@@ -54,6 +54,9 @@ dependencies:
   # explicitly rather than relying on transitive resolution.
   path: ^1.9.0
   crypto: ^3.0.0
+  # tel:/sms: deep links for Call Mom/Dad, Call 911, Text-to-911
+  # (Phase 1 cellular calling — no new backend).
+  url_launcher: ^6.3.2
   # PBKDF2 key derivation + AES-GCM for the end-to-end encrypted dashboard
   # sync (pure Dart + native where available; works on web and mobile).
   cryptography: ^2.7.0

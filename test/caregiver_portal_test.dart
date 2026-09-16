@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:onevoz/models/safe_zone.dart';
 import 'package:onevoz/models/word.dart';
 import 'package:onevoz/screens/caregiver_portal_screen.dart';
+import 'package:onevoz/widgets/mode_switch_gate.dart';
 import 'package:onevoz/services/device_role_service.dart';
 import 'package:onevoz/services/elevenlabs_key_store.dart';
 import 'package:onevoz/services/proxy_client.dart';
@@ -132,20 +133,64 @@ Future<void> _pumpPortal(WidgetTester tester, SessionState session) async {
 
 void main() {
   group('CaregiverPortalScreen', () {
-    testWidgets('renders all five tabs', (tester) async {
+    testWidgets('renders all seven tabs', (tester) async {
       final session = await _makeSession(_FakeDeviceBackend());
       await _pumpPortal(tester, session);
 
       expect(find.text('Caregiver Portal'), findsOneWidget);
       for (final label in [
-        'Devices',
-        'Safe Zones',
-        'Alerts',
+        'Content',
         'Profiles',
+        'Safety',
+        'Devices',
+        'Alerts',
+        'Settings',
         'Account',
       ]) {
         expect(find.text(label), findsWidgets);
       }
+    });
+
+    testWidgets('content tab hosts the board-content sections', (
+      tester,
+    ) async {
+      final session = await _makeSession(_FakeDeviceBackend());
+      await _pumpPortal(tester, session);
+
+      // Content is the default tab.
+      for (final title in [
+        'Vocabulary level',
+        'Find a word',
+        'Custom symbols',
+        'Personal dashboard',
+        'First week plan',
+      ]) {
+        expect(find.text(title), findsOneWidget);
+      }
+      expect(find.text('Level 1 \u2014 Starter'), findsOneWidget);
+    });
+
+    testWidgets('settings tab hosts voices, backup, sync, activity, tips', (
+      tester,
+    ) async {
+      final session = await _makeSession(_FakeDeviceBackend());
+      await _pumpPortal(tester, session);
+
+      await tester.tap(find.text('Settings'));
+      await tester.pumpAndSettle();
+
+      for (final title in [
+        'Voice & speech',
+        'Backup & sync',
+        'Device sync',
+        'Activity',
+        'Modeling tips',
+        'Setup & what\u2019s next',
+      ]) {
+        expect(find.text(title), findsOneWidget);
+      }
+      expect(find.text('Open voice & speech settings'), findsOneWidget);
+      expect(find.text('Re-run setup'), findsOneWidget);
     });
 
     testWidgets('devices tab lists devices and marks this one', (
@@ -153,6 +198,9 @@ void main() {
     ) async {
       final session = await _makeSession(_FakeDeviceBackend());
       await _pumpPortal(tester, session);
+
+      await tester.tap(find.text('Devices'));
+      await tester.pumpAndSettle();
 
       expect(find.text('Caregiver phone'), findsOneWidget);
       expect(find.text('Lost iPad'), findsOneWidget);
@@ -170,6 +218,9 @@ void main() {
       final session = await _makeSession(backend);
       await _pumpPortal(tester, session);
 
+      await tester.tap(find.text('Devices'));
+      await tester.pumpAndSettle();
+
       // Revoke the lost iPad.
       await tester.tap(find.widgetWithText(TextButton, 'Revoke').last);
       await tester.pumpAndSettle();
@@ -186,6 +237,9 @@ void main() {
       final session = await _makeSession(_FakeDeviceBackend());
       await _pumpPortal(tester, session);
 
+      await tester.tap(find.text('Devices'));
+      await tester.pumpAndSettle();
+
       await tester.tap(find.text('Assign to profile').first);
       await tester.pumpAndSettle();
       await tester.tap(find.text('My Voice').last);
@@ -198,7 +252,9 @@ void main() {
       expect(find.text('For My Voice'), findsOneWidget);
     });
 
-    testWidgets('safe zones tab mounts the zone list', (tester) async {
+    testWidgets('safety tab mounts calling, location, and safe zones', (
+      tester,
+    ) async {
       final session = await _makeSession(_FakeDeviceBackend());
       await session.dashboardSync.upsertSafeZone(
         SafeZone(
@@ -215,11 +271,43 @@ void main() {
       );
       await _pumpPortal(tester, session);
 
-      await tester.tap(find.text('Safe Zones'));
+      await tester.tap(find.text('Safety'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Safe zones'), findsOneWidget);
+      expect(find.text('Calling & Safety'), findsWidgets);
+      expect(find.text('Location'), findsWidgets);
+      expect(find.text('Safe zones'), findsWidgets);
       expect(find.text('Home'), findsOneWidget);
+    });
+
+    testWidgets('calling & safety opens the contacts editor', (
+      tester,
+    ) async {
+      final session = await _makeSession(_FakeDeviceBackend());
+      await _pumpPortal(tester, session);
+
+      await tester.tap(find.text('Safety'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Open Calling & Safety'));
+      await tester.pumpAndSettle();
+
+      // The hub hosts the contact list editor (add/edit + phone
+      // numbers) — the contacts behind the call shortcut's Mom/Dad.
+      expect(find.text('Calling & Safety'), findsOneWidget);
+      expect(find.text('Contacts'), findsWidgets);
+    });
+
+    testWidgets('portal deep link opens on the requested tab', (
+      tester,
+    ) async {
+      final session = await _makeSession(_FakeDeviceBackend());
+      session.pendingPortalTab = CaregiverPortalScreen.safetyTab;
+      await _pumpPortal(tester, session);
+
+      // Landed on Safety without tapping anything.
+      expect(find.text('Open Calling & Safety'), findsOneWidget);
+      // The hint is consumed: a later rebuild must not yank the tab back.
+      expect(session.pendingPortalTab, isNull);
     });
 
     testWidgets('alerts tab is a visible coming-soon placeholder', (
@@ -235,7 +323,9 @@ void main() {
       expect(find.text('Alert history'), findsOneWidget);
     });
 
-    testWidgets('profiles tab lists profiles read-only', (tester) async {
+    testWidgets('profiles tab manages profiles: add and switch', (
+      tester,
+    ) async {
       final session = await _makeSession(_FakeDeviceBackend());
       await _pumpPortal(tester, session);
 
@@ -243,7 +333,37 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('My Voice'), findsWidgets);
-      expect(find.textContaining('Tap to speak'), findsOneWidget);
+      expect(find.text('Add profile'), findsOneWidget);
+      // Only one profile: no remove affordance yet.
+      expect(
+        find.widgetWithIcon(IconButton, Icons.delete_outline),
+        findsNothing,
+      );
+
+      await tester.tap(find.text('Add profile'));
+      await tester.pumpAndSettle();
+      expect(find.text('New profile'), findsOneWidget);
+      await tester.enterText(
+        find.widgetWithText(TextField, 'First name'),
+        'Alex',
+      );
+      await tester.tap(find.text('Add'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Alex'), findsWidgets);
+      expect(session.profiles.profiles.length, 2);
+      // Adding a profile makes it the active one; the other tile now
+      // carries the Switch affordance, and both can be removed.
+      expect(session.profiles.active?.name, 'Alex');
+      expect(
+        find.widgetWithIcon(IconButton, Icons.delete_outline),
+        findsNWidgets(2),
+      );
+      expect(find.text('Switch'), findsOneWidget);
+
+      await tester.tap(find.text('Switch'));
+      await tester.pumpAndSettle();
+      expect(session.profiles.active?.name, 'My Voice');
     });
 
     testWidgets('account tab offers mode switch and sign out', (
@@ -285,8 +405,61 @@ void main() {
       await session.profiles.load();
       await _pumpPortal(tester, session);
 
+      await tester.tap(find.text('Devices'));
+      await tester.pumpAndSettle();
+
       expect(find.textContaining('Couldn\u2019t reach'), findsOneWidget);
       expect(find.text('Try again'), findsOneWidget);
+    });
+  });
+
+  group('caregiver entry deep link', () {
+    testWidgets(
+      'the entry sheet gates on password and never leaks portal content',
+      (tester) async {
+        final session = await _makeSession(_FakeDeviceBackend());
+        await tester.pumpWidget(
+          ChangeNotifierProvider.value(
+            value: session,
+            child: MaterialApp(
+              home: Scaffold(
+                body: Builder(
+                  builder: (context) => FilledButton(
+                    onPressed: () => showCaregiverEntrySheet(
+                      context,
+                      initialPortalTab:
+                          CaregiverPortalScreen.safetyTab,
+                    ),
+                    child: const Text('Enter'),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await tester.tap(find.text('Enter'));
+        await tester.pumpAndSettle();
+
+        // Password gate, not the portal.
+        expect(
+          find.widgetWithText(TextField, 'Account password'),
+          findsOneWidget,
+        );
+        expect(find.text('Caregiver Portal'), findsNothing);
+        // The Safety-tab hint is staged for after verification.
+        expect(
+          session.pendingPortalTab,
+          CaregiverPortalScreen.safetyTab,
+        );
+      },
+    );
+
+    testWidgets('sign out clears any staged portal tab', (tester) async {
+      final session = await _makeSession(_FakeDeviceBackend());
+      session.pendingPortalTab = CaregiverPortalScreen.safetyTab;
+      await session.signOut();
+      expect(session.pendingPortalTab, isNull);
     });
   });
 }

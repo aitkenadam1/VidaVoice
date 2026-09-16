@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../models/calling_safety.dart';
 import '../screens/call_confirm_screen.dart';
+import '../screens/caregiver_portal_screen.dart';
 import '../state/session_state.dart';
 import 'mode_switch_gate.dart';
 import 'safety_contact_avatar.dart';
@@ -141,7 +142,13 @@ class CallShortcutButton extends StatelessWidget {
                 label: const Text('Continue as caregiver'),
                 onPressed: () {
                   Navigator.of(sheetContext).pop();
-                  showCaregiverEntrySheet(context);
+                  // Lands on the Safety tab after the password gate, so
+                  // the caregiver is one tap from adding contacts. The
+                  // gate itself never leaks portal content.
+                  showCaregiverEntrySheet(
+                    context,
+                    initialPortalTab: CaregiverPortalScreen.safetyTab,
+                  );
                 },
               ),
             ],

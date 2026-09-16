@@ -4,6 +4,14 @@ import 'package:provider/provider.dart';
 import '../services/proxy_client.dart';
 import '../state/session_state.dart';
 
+/// SUPERSEDED — do not wire this into the app. The Caregiver Portal
+/// (lib/screens/caregiver_portal_screen.dart) replaced the PIN-gated hub:
+/// caregiver devices now get a dedicated portal, and the discreet
+/// password gate (ModeSwitchGate) guards the communicator-side entry.
+/// This gate is unreachable from any route, dialog, or button in the
+/// app; it survives only because legacy tests still mount it. If those
+/// tests move on, delete this file and CaregiverPinService with it.
+///
 /// The gate in front of the caregiver hub.
 ///
 /// The hub holds every parental control — location sharing, calling &

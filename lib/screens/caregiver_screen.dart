@@ -18,6 +18,15 @@ import '../widgets/first_week_plan_section.dart';
 import '../widgets/location_section.dart';
 import '../widgets/word_finder_section.dart';
 
+/// SUPERSEDED — do not wire this into the app. The Caregiver Portal
+/// (lib/screens/caregiver_portal_screen.dart) is the caregiver home now:
+/// every section below was migrated there, tab by tab. This screen is
+/// unreachable from any route, dialog, or button in the app; it survives
+/// only because legacy widget tests (caregiver_devices_test,
+/// mode_selection_test, widget_flows_test, caregiver_pin_gate_test)
+/// still mount it as a host for the section widgets. If those tests move
+/// to the portal tabs, delete this file.
+///
 /// Caregiver hub: a customizable, collapsible set of sections.
 ///
 /// Busy by default is the enemy here — caregivers open this screen between

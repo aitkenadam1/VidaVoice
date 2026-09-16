@@ -211,26 +211,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               isThreeLine: true,
             ),
           ),
-          const SizedBox(height: 16),
-          _sectionTitle(context, 'Coming soon'),
-          const Card(
-            child: Column(
-              children: [
-                ListTile(
-                  leading: Icon(Icons.grid_on_outlined),
-                  title: Text('Vocabulary levels'),
-                  subtitle: Text(
-                    'Progressive reveal for new communicators — positions stay fixed.',
-                  ),
-                ),
-                ListTile(
-                  leading: Icon(Icons.cloud_outlined),
-                  title: Text('Backup & sync'),
-                  subtitle: Text('Profiles and custom words across devices.'),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );

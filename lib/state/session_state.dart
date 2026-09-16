@@ -139,6 +139,13 @@ class SessionState extends ChangeNotifier {
   /// router shows the role-selection screen.
   DeviceRole? deviceRole;
 
+  /// One-shot request for which Caregiver Portal tab to open. Set by the
+  /// discreet communicator-side entry (e.g. "Continue as caregiver" from
+  /// the no-contacts sheet asks for the Safety tab). Consumed and cleared
+  /// by CaregiverPortalScreen.initState; null means the default tab.
+  /// Never persisted — a transient UI hint only.
+  int? pendingPortalTab;
+
   /// End-to-end encrypted dashboard + profile sync across the family's
   /// devices. Initialized in the constructor; wired (change listeners,
   /// first pull) in [boot].
@@ -597,6 +604,9 @@ class SessionState extends ChangeNotifier {
     // question reappearing on next launch (the safe direction).
     deviceRole = null;
     unawaited(deviceRoleService.clearRole().then((_) {}, onError: (_) {}));
+    // A tab deep-link from before sign-out must not survive into the next
+    // family's session.
+    pendingPortalTab = null;
     if (tts.currentVoice?.isProxy ?? false) {
       await clearVoice();
     }

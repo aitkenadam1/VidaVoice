@@ -16,7 +16,15 @@ import '../state/session_state.dart';
 /// required); on success the caregiver chooses between opening the
 /// Caregiver Portal and signing this device out — both stay behind the
 /// same password gate, so a child can never reach a tappable sign-out.
-Future<void> showCaregiverEntrySheet(BuildContext context) {
+Future<void> showCaregiverEntrySheet(
+  BuildContext context, {
+  int initialPortalTab = 0,
+}) {
+  // One-shot deep link: when the caregiver opens the portal from here,
+  // it lands on the requested tab (e.g. Safety for "Continue as
+  // caregiver" from the no-contacts sheet). The portal consumes and
+  // clears it in initState; signOut also clears it.
+  context.read<SessionState>().pendingPortalTab = initialPortalTab;
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,

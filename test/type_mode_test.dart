@@ -131,18 +131,16 @@ Future<void> pumpTypeScreen(WidgetTester tester, SessionState session) async {
   await tester.pumpWidget(
     ChangeNotifierProvider.value(
       value: session,
-      child: const MaterialApp(
-        home: TypeBoardScreen(vocabOverride: stubVocab),
-      ),
+      child: const MaterialApp(home: TypeBoardScreen(vocabOverride: stubVocab)),
     ),
   );
   await tester.pumpAndSettle();
 }
 
-String fieldText(WidgetTester tester) =>
-    tester.widget<TextField>(find.byKey(const ValueKey('type-field')))
-        .controller!
-        .text;
+String fieldText(WidgetTester tester) => tester
+    .widget<TextField>(find.byKey(const ValueKey('type-field')))
+    .controller!
+    .text;
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -340,103 +338,108 @@ void main() {
   });
 
   group('cross-profile isolation', () {
-    test("profile A's history never influences profile B's predictions",
-        () async {
-      final tts = _RecordingTts();
-      final session = await makeTypeSession(tts);
-      final aId = session.profiles.active!.id;
+    test(
+      "profile A's history never influences profile B's predictions",
+      () async {
+        final tts = _RecordingTts();
+        final session = await makeTypeSession(tts);
+        final aId = session.profiles.active!.id;
 
-      // 'quokka' is learned AND absent from the stub vocab, so any
-      // appearance in B's suggestions would prove a leak.
-      await session.typeSpeak('quokka time');
-      final learned = session.prediction.suggest(
-        profileId: aId,
-        text: 'qu',
-        locale: 'en',
-        vocab: stubVocab,
-      );
-      expect(learned, ['quokka']);
+        // 'quokka' is learned AND absent from the stub vocab, so any
+        // appearance in B's suggestions would prove a leak.
+        await session.typeSpeak('quokka time');
+        final learned = session.prediction.suggest(
+          profileId: aId,
+          text: 'qu',
+          locale: 'en',
+          vocab: stubVocab,
+        );
+        expect(learned, ['quokka']);
 
-      final b = await session.profiles.addProfile('B');
-      await session.switchProfile(b.id);
+        final b = await session.profiles.addProfile('B');
+        await session.switchProfile(b.id);
 
-      final bSuggest = session.prediction.suggest(
-        profileId: b.id,
-        text: 'qu',
-        locale: 'en',
-        vocab: stubVocab,
-      );
-      expect(bSuggest, isNot(contains('quokka')));
-      expect(bSuggest, isEmpty);
-      expect(session.prediction.learnedWordCount(b.id), 0);
+        final bSuggest = session.prediction.suggest(
+          profileId: b.id,
+          text: 'qu',
+          locale: 'en',
+          vocab: stubVocab,
+        );
+        expect(bSuggest, isNot(contains('quokka')));
+        expect(bSuggest, isEmpty);
+        expect(session.prediction.learnedWordCount(b.id), 0);
 
-      // And A's ranks survived the round trip through storage.
-      await session.switchProfile(aId);
-      final aAgain = session.prediction.suggest(
-        profileId: aId,
-        text: 'qu',
-        locale: 'en',
-        vocab: stubVocab,
-      );
-      expect(aAgain, ['quokka']);
-    });
+        // And A's ranks survived the round trip through storage.
+        await session.switchProfile(aId);
+        final aAgain = session.prediction.suggest(
+          profileId: aId,
+          text: 'qu',
+          locale: 'en',
+          vocab: stubVocab,
+        );
+        expect(aAgain, ['quokka']);
+      },
+    );
   });
 
   group('caregiver prediction controls', () {
-    test('clear history keeps learned ranks; reset learning keeps history',
-        () async {
-      final tts = _RecordingTts();
-      final session = await makeTypeSession(tts);
-      final pid = session.profiles.active!.id;
+    test(
+      'clear history keeps learned ranks; reset learning keeps history',
+      () async {
+        final tts = _RecordingTts();
+        final session = await makeTypeSession(tts);
+        final pid = session.profiles.active!.id;
 
-      await session.typeSpeak('I want juice');
-      expect(session.history.entries.length, 1);
+        await session.typeSpeak('I want juice');
+        expect(session.history.entries.length, 1);
 
-      // Clear history: learned ranks must survive.
-      await session.clearHistoryFor(pid);
-      expect(session.history.entries, isEmpty);
-      var s = session.prediction.suggest(
-        profileId: pid,
-        text: 'I want ',
-        locale: 'en',
-        vocab: const [],
-      );
-      expect(s.first, 'juice');
+        // Clear history: learned ranks must survive.
+        await session.clearHistoryFor(pid);
+        expect(session.history.entries, isEmpty);
+        var s = session.prediction.suggest(
+          profileId: pid,
+          text: 'I want ',
+          locale: 'en',
+          vocab: const [],
+        );
+        expect(s.first, 'juice');
 
-      // Rebuild history, then reset learning: history must survive.
-      await session.typeSpeak('I want juice');
-      expect(session.history.entries.length, 1);
-      await session.resetLearningFor(pid);
-      expect(session.history.entries.length, 1);
-      expect(session.history.entries.first.text, 'I want juice');
-      s = session.prediction.suggest(
-        profileId: pid,
-        text: 'I want ',
-        locale: 'en',
-        vocab: const [],
-      );
-      expect(s, isNot(contains('juice')));
-    });
+        // Rebuild history, then reset learning: history must survive.
+        await session.typeSpeak('I want juice');
+        expect(session.history.entries.length, 1);
+        await session.resetLearningFor(pid);
+        expect(session.history.entries.length, 1);
+        expect(session.history.entries.first.text, 'I want juice');
+        s = session.prediction.suggest(
+          profileId: pid,
+          text: 'I want ',
+          locale: 'en',
+          vocab: const [],
+        );
+        expect(s, isNot(contains('juice')));
+      },
+    );
 
-    test('clearing a non-active profile keeps active entries in memory',
-        () async {
-      final tts = _RecordingTts();
-      final session = await makeTypeSession(tts);
-      final aId = session.profiles.active!.id;
-      await session.typeSpeak('active profile message');
+    test(
+      'clearing a non-active profile keeps active entries in memory',
+      () async {
+        final tts = _RecordingTts();
+        final session = await makeTypeSession(tts);
+        final aId = session.profiles.active!.id;
+        await session.typeSpeak('active profile message');
 
-      final b = await session.profiles.addProfile('B');
-      await session.switchProfile(b.id);
-      await session.typeSpeak('other profile message');
-      await session.switchProfile(aId);
+        final b = await session.profiles.addProfile('B');
+        await session.switchProfile(b.id);
+        await session.typeSpeak('other profile message');
+        await session.switchProfile(aId);
 
-      // Clear B's history while A is active: A's in-memory entries stay.
-      await session.clearHistoryFor(b.id);
-      expect(
-        session.history.entries.map((e) => e.text),
-        ['active profile message'],
-      );
-    });
+        // Clear B's history while A is active: A's in-memory entries stay.
+        await session.clearHistoryFor(b.id);
+        expect(session.history.entries.map((e) => e.text), [
+          'active profile message',
+        ]);
+      },
+    );
 
     test('disabling prediction stops learning and clears ranks', () async {
       final tts = _RecordingTts();
@@ -480,8 +483,7 @@ void main() {
   });
 
   group('network boundary', () {
-    test(
-        'prediction, learning, and the full offline flow make zero network '
+    test('prediction, learning, and the full offline flow make zero network '
         'calls; only the final text reaches speech', () async {
       HttpOverrides.global = _ThrowingHttpOverrides();
       addTearDown(() => HttpOverrides.global = null);
@@ -535,15 +537,9 @@ void main() {
       await pumpTypeScreen(tester, session);
 
       // Typing shows vocab-fallback predictions with no connectivity.
-      await tester.enterText(
-        find.byKey(const ValueKey('type-field')),
-        'wa',
-      );
+      await tester.enterText(find.byKey(const ValueKey('type-field')), 'wa');
       await tester.pump();
-      expect(
-        find.byKey(const ValueKey('type-predict-want')),
-        findsOneWidget,
-      );
+      expect(find.byKey(const ValueKey('type-predict-want')), findsOneWidget);
       expect(tts.spoken, isEmpty);
 
       // Prediction tap composes; Speak speaks exactly the composed text.
@@ -567,10 +563,7 @@ void main() {
       final session = await makeTypeSession(tts);
       await pumpTypeScreen(tester, session);
 
-      await tester.enterText(
-        find.byKey(const ValueKey('type-field')),
-        'hello',
-      );
+      await tester.enterText(find.byKey(const ValueKey('type-field')), 'hello');
       await tester.pump();
       // Speak is enabled once there is text...
       final speak = tester.widget<FilledButton>(
@@ -598,22 +591,17 @@ void main() {
       expect(tts.spoken, isEmpty);
     });
 
-    testWidgets('prediction chip completes the word without speaking',
-        (tester) async {
+    testWidgets('prediction chip completes the word without speaking', (
+      tester,
+    ) async {
       useWideSurface(tester);
       final tts = _RecordingTts();
       final session = await makeTypeSession(tts);
       await pumpTypeScreen(tester, session);
 
-      await tester.enterText(
-        find.byKey(const ValueKey('type-field')),
-        'I wan',
-      );
+      await tester.enterText(find.byKey(const ValueKey('type-field')), 'I wan');
       await tester.pump();
-      expect(
-        find.byKey(const ValueKey('type-predict-want')),
-        findsOneWidget,
-      );
+      expect(find.byKey(const ValueKey('type-predict-want')), findsOneWidget);
 
       await tester.tap(find.byKey(const ValueKey('type-predict-want')));
       await tester.pump();
@@ -621,8 +609,9 @@ void main() {
       expect(tts.spoken, isEmpty);
     });
 
-    testWidgets('saved phrase tap fills the field without speaking',
-        (tester) async {
+    testWidgets('saved phrase tap fills the field without speaking', (
+      tester,
+    ) async {
       useWideSurface(tester);
       final tts = _RecordingTts();
       final session = await makeTypeSession(tts);
@@ -639,8 +628,9 @@ void main() {
       expect(tts.spoken, isEmpty);
     });
 
-    testWidgets('history entry tap refills the field without speaking',
-        (tester) async {
+    testWidgets('history entry tap refills the field without speaking', (
+      tester,
+    ) async {
       useWideSurface(tester);
       final tts = _RecordingTts();
       final session = await makeTypeSession(tts);
@@ -669,10 +659,7 @@ void main() {
       final session = await makeTypeSession(tts);
       await pumpTypeScreen(tester, session);
 
-      await tester.enterText(
-        find.byKey(const ValueKey('type-field')),
-        'hello',
-      );
+      await tester.enterText(find.byKey(const ValueKey('type-field')), 'hello');
       await tester.pump();
       await tester.tap(find.byKey(const ValueKey('type-clear')));
       await tester.pump();
@@ -687,10 +674,7 @@ void main() {
       await session.setButtonScale(1.5);
       await pumpTypeScreen(tester, session);
 
-      await tester.enterText(
-        find.byKey(const ValueKey('type-field')),
-        'wa',
-      );
+      await tester.enterText(find.byKey(const ValueKey('type-field')), 'wa');
       await tester.pump();
 
       final field = tester.widget<TextField>(
@@ -700,8 +684,9 @@ void main() {
       final speak = tester.widget<FilledButton>(
         find.byKey(const ValueKey('type-speak')),
       );
-      final minSize =
-          (speak.style!.minimumSize!.resolve(const <WidgetState>{}));
+      final minSize = (speak.style!.minimumSize!.resolve(
+        const <WidgetState>{},
+      ));
       expect(minSize!.height, 60 * 1.5);
       expect(tts.spoken, isEmpty);
     });
@@ -727,8 +712,9 @@ void main() {
       expect(homeScreenFor(session), isA<HomeBoardScreen>());
     });
 
-    testWidgets('type profile opens the Type surface in the app',
-        (tester) async {
+    testWidgets('type profile opens the Type surface in the app', (
+      tester,
+    ) async {
       useWideSurface(tester);
       final tts = _RecordingTts();
       final session = await makeSession(tts);
@@ -743,6 +729,40 @@ void main() {
       expect(find.byType(TypeBoardScreen), findsOneWidget);
       expect(find.byKey(const ValueKey('type-field')), findsOneWidget);
       expect(find.byKey(const ValueKey('type-speak')), findsOneWidget);
+    });
+
+    testWidgets('unsent type draft never leaks across a profile switch', (
+      tester,
+    ) async {
+      useWideSurface(tester);
+      final tts = _RecordingTts();
+      final session = await makeTypeSession(tts);
+      final aId = session.profiles.active!.id;
+      final b = await session.profiles.addProfile('B');
+      await session.profiles.setCommunicationMode(b.id, CommunicationMode.type);
+      // addProfile activates B; switch back to A so the draft is typed
+      // under A's session.
+      await session.switchProfile(aId);
+
+      await tester.pumpWidget(OneVozApp(session: session));
+      await tester.pumpAndSettle();
+
+      // A types a draft but never presses Speak.
+      await tester.enterText(
+        find.byKey(const ValueKey('type-field')),
+        'unsent draft',
+      );
+      await tester.pump();
+      expect(fieldText(tester), 'unsent draft');
+
+      // Switching to B's Type session must not carry A's draft along:
+      // homeScreenFor keys the screen by active profile id, so B gets a
+      // fresh controller.
+      await session.switchProfile(b.id);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(TypeBoardScreen), findsOneWidget);
+      expect(fieldText(tester), isEmpty);
     });
   });
 }

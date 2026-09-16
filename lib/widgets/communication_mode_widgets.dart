@@ -160,7 +160,10 @@ class _ModeOptionCard extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 4),
-                    Text(info.description, style: const TextStyle(fontSize: 14)),
+                    Text(
+                      info.description,
+                      style: const TextStyle(fontSize: 14),
+                    ),
                     const SizedBox(height: 8),
                     _MiniPreview(mode: mode),
                   ],
@@ -474,8 +477,8 @@ class _BuildLengthEditorState extends State<BuildLengthEditor> {
   @override
   void initState() {
     super.initState();
-    _draft =
-        (_currentValue() ?? ProfileService.defaultBuildMaxSymbols).toDouble();
+    _draft = (_currentValue() ?? ProfileService.defaultBuildMaxSymbols)
+        .toDouble();
   }
 
   int? _currentValue() {
@@ -490,17 +493,12 @@ class _BuildLengthEditorState extends State<BuildLengthEditor> {
     final session = context.read<SessionState>();
     // The UI-level save: persists through ProfileService and notifies so
     // the phrase strip re-reads the limit immediately.
-    await session.setBuildMaxSymbols(
-      widget.profileId,
-      _draft.round(),
-    );
+    await session.setBuildMaxSymbols(widget.profileId, _draft.round());
     if (!mounted) return;
     setState(() => _saved = true);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          'Maximum phrase length saved: ${_draft.round()} symbols',
-        ),
+        content: Text('Maximum phrase length saved: ${_draft.round()} symbols'),
       ),
     );
   }
@@ -550,10 +548,7 @@ class _BuildLengthEditorState extends State<BuildLengthEditor> {
               }),
             ),
           ),
-          FilledButton(
-            onPressed: _save,
-            child: const Text('Save maximum'),
-          ),
+          FilledButton(onPressed: _save, child: const Text('Save maximum')),
           if (_saved)
             Padding(
               padding: const EdgeInsets.only(top: 4),
@@ -587,7 +582,8 @@ class PredictionPrivacyEditor extends StatefulWidget {
   final String profileId;
 
   @override
-  State<PredictionPrivacyEditor> createState() => _PredictionPrivacyEditorState();
+  State<PredictionPrivacyEditor> createState() =>
+      _PredictionPrivacyEditorState();
 }
 
 class _PredictionPrivacyEditorState extends State<PredictionPrivacyEditor> {
@@ -614,7 +610,7 @@ class _PredictionPrivacyEditorState extends State<PredictionPrivacyEditor> {
             content: Text(
               enabled
                   ? 'Prediction learning on — new spoken messages will '
-                      'improve suggestions.'
+                        'improve suggestions.'
                   : 'Prediction learning off — learned predictions cleared.',
             ),
           ),
@@ -654,9 +650,8 @@ class _PredictionPrivacyEditorState extends State<PredictionPrivacyEditor> {
     try {
       await run(context.read<SessionState>());
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(doneMessage)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(doneMessage)));
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -693,7 +688,7 @@ class _PredictionPrivacyEditorState extends State<PredictionPrivacyEditor> {
               profile.predictionEnabled
                   ? 'On — spoken messages improve suggestions'
                   : 'Off — no learning; existing learned predictions '
-                      'were cleared',
+                        'were cleared',
               style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
             ),
             value: profile.predictionEnabled,
@@ -703,9 +698,7 @@ class _PredictionPrivacyEditorState extends State<PredictionPrivacyEditor> {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  key: ValueKey(
-                    'prediction-clear-history-${widget.profileId}',
-                  ),
+                  key: ValueKey('prediction-clear-history-${widget.profileId}'),
                   onPressed: _busy
                       ? null
                       : () => _confirmAndRun(
@@ -766,9 +759,7 @@ Future<void> showModePreviewDialog(
     context: context,
     builder: (ctx) => AlertDialog(
       title: Text('${_modeInfo(mode).title} mode \u2014 preview'),
-      content: SingleChildScrollView(
-        child: _ModeSandboxPreview(mode: mode),
-      ),
+      content: SingleChildScrollView(child: _ModeSandboxPreview(mode: mode)),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(ctx).pop(),
@@ -881,11 +872,7 @@ class _TapSandboxState extends State<_TapSandbox> {
           Row(
             children: [
               Expanded(
-                child: _tile(
-                  _tiles[row * 2].$1,
-                  _tiles[row * 2].$2,
-                  scheme,
-                ),
+                child: _tile(_tiles[row * 2].$1, _tiles[row * 2].$2, scheme),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -903,7 +890,7 @@ class _TapSandboxState extends State<_TapSandbox> {
           _pressed == null
               ? 'Tap a symbol to see what would happen.'
               : 'In the real board, tapping \u201c$_pressed\u201d would speak '
-                  'it. Here, nothing speaks.',
+                    'it. Here, nothing speaks.',
           style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
           textAlign: TextAlign.center,
         ),
@@ -1078,20 +1065,21 @@ class _NudgePreferenceEditorState extends State<NudgePreferenceEditor> {
   bool _busy = false;
 
   static String _label(ModeNudgePreference p) => switch (p) {
-        ModeNudgePreference.allowed => 'On',
-        ModeNudgePreference.paused => 'Paused',
-        ModeNudgePreference.off => 'Off',
-      };
+    ModeNudgePreference.allowed => 'On',
+    ModeNudgePreference.paused => 'Paused',
+    ModeNudgePreference.off => 'Off',
+  };
 
   static String _description(ModeNudgePreference p) => switch (p) {
-        ModeNudgePreference.allowed =>
-          'Suggestions are shown in this hub when this profile is ready.',
-        ModeNudgePreference.paused =>
-          'Suggestions are hidden for now. Progress is kept, so they can '
+    ModeNudgePreference.allowed =>
+      'Suggestions are shown in this hub when this profile is ready.',
+    ModeNudgePreference.paused =>
+      'Suggestions are hidden for now. Progress is kept, so they can '
           'return later.',
-        ModeNudgePreference.off =>
-          'Never suggest a new mode for this profile. Nothing is counted.',
-      };
+    ModeNudgePreference.off =>
+      'Never suggest a new mode for this profile. Progress is kept, '
+          'so suggestions can return if you turn them back on.',
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -1114,9 +1102,7 @@ class _NudgePreferenceEditorState extends State<NudgePreferenceEditor> {
         children: [
           Text(
             'Progression suggestions',
-            style: Theme.of(context)
-                .textTheme
-                .titleSmall
+            style: Theme.of(context).textTheme.titleSmall
                 ?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 2),
@@ -1134,8 +1120,7 @@ class _NudgePreferenceEditorState extends State<NudgePreferenceEditor> {
             selected: {_draft},
             onSelectionChanged: (s) => setState(() => _draft = s.single),
             style: ButtonStyle(
-              visualDensity:
-                  const VisualDensity(horizontal: -1, vertical: -2),
+              visualDensity: const VisualDensity(horizontal: -1, vertical: -2),
             ),
           ),
           const SizedBox(height: 4),
@@ -1151,8 +1136,10 @@ class _NudgePreferenceEditorState extends State<NudgePreferenceEditor> {
                   : () async {
                       setState(() => _busy = true);
                       try {
-                        await session.profiles
-                            .setNudgePreference(widget.profileId, _draft);
+                        await session.profiles.setNudgePreference(
+                          widget.profileId,
+                          _draft,
+                        );
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(

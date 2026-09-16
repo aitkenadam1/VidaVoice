@@ -21,12 +21,23 @@ void main() {
 /// (Phase 4 of the modes plan): Build gets the phrase-strip surface, Type
 /// gets the keyboard + prediction surface, and Tap (or a missing profile)
 /// keeps the classic board.
-Widget homeScreenFor(SessionState session) =>
-    switch (session.profiles.active?.communicationMode) {
-      CommunicationMode.build => const BuildBoardScreen(),
-      CommunicationMode.type => const TypeBoardScreen(),
-      _ => const HomeBoardScreen(),
-    };
+/// Home screen for the active profile's communication mode.
+///
+/// Composition state is per profile: never leak an unsent build strip or a
+/// typed-but-never-spoken draft into another profile's session. The screens
+/// are keyed by the active profile id so a profile switch rebuilds with
+/// fresh local state (a reused [TextEditingController] would otherwise keep
+/// the previous profile's draft in the field).
+Widget homeScreenFor(SessionState session) {
+  final profileId = session.profiles.active?.id;
+  return switch (session.profiles.active?.communicationMode) {
+    CommunicationMode.build => BuildBoardScreen(
+      key: ValueKey('build-$profileId'),
+    ),
+    CommunicationMode.type => TypeBoardScreen(key: ValueKey('type-$profileId')),
+    _ => HomeBoardScreen(key: ValueKey('tap-$profileId')),
+  };
+}
 
 class OneVozApp extends StatelessWidget {
   const OneVozApp({super.key, required this.session});

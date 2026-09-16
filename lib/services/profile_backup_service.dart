@@ -473,17 +473,20 @@ class ProfileBackupService {
   ///   history is concatenated (newest first, capped), plan days are
   ///   unioned, custom symbols are unioned (the backup wins on conflict),
   ///   saved cloud voices are unioned by id (the backup wins on conflict),
-  ///   device settings are left alone.
+  ///   device settings are left alone, and the profile's communication
+  ///   mode fields are left alone. Changing the child's communication mode
+  ///   is an explicit caregiver Save, never a side effect of importing
+  ///   data.
   ///
   /// If the backup's profile id is unknown on this device it is added to
-  /// the profile list (import onto a fresh device). Nothing belonging to
-  /// any other profile is touched.
+  /// the profile list (import onto a fresh device), with the backup's mode
+  /// fields. Nothing belonging to any other profile is touched.
   Future<ProfileBackup> apply(
     ProfileBackup backup, {
     required bool merge,
   }) async {
     final prefs = await _prefsFactory();
-    await _ensureProfile(prefs, backup);
+    await _ensureProfile(prefs, backup, merge: merge);
     final overrides = SymbolOverrideService(prefsFactory: () async => prefs);
     await overrides.load();
     final voiceStore = ElevenLabsVoiceStore(prefsFactory: () async => prefs);
@@ -544,8 +547,9 @@ class ProfileBackupService {
 
   Future<void> _ensureProfile(
     SharedPreferences prefs,
-    ProfileBackup backup,
-  ) async {
+    ProfileBackup backup, {
+    required bool merge,
+  }) async {
     final raw = prefs.getString(_kProfiles);
     List<Map<String, dynamic>> list = [];
     if (raw != null) {
@@ -558,11 +562,11 @@ class ProfileBackupService {
         list = [];
       }
     }
-    // The backup carries this profile's own mode fields: restore them
-    // onto the profile list entry (both merge and replace import the same
-    // profile, so the fields always apply). Nothing from another profile
-    // is touched.
-    final entry = {
+    // The backup carries this profile's own mode fields. On replace they
+    // restore onto the profile list entry; on merge they are kept from the
+    // device's current entry so importing data can never flip the child's
+    // communication mode. Nothing from another profile is touched.
+    final fullEntry = {
       'id': backup.profileId,
       'name': backup.profileName,
       'mode': backup.communicationMode.name,
@@ -572,9 +576,11 @@ class ProfileBackupService {
     };
     final index = list.indexWhere((m) => m['id'] == backup.profileId);
     if (index >= 0) {
-      list[index] = entry;
+      list[index] = merge
+          ? {...list[index], 'name': backup.profileName}
+          : fullEntry;
     } else {
-      list.add(entry);
+      list.add(fullEntry);
     }
     await prefs.setString(_kProfiles, json.encode(list));
   }

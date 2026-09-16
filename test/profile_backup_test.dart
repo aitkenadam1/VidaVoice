@@ -217,6 +217,59 @@ void main() {
       },
     );
 
+    test('apply() merge never flips the profile communication mode', () async {
+      // The device has Build/7/false/paused; the backup carries
+      // Tap/4/true/allowed. Merge imports data, never the mode: changing
+      // the child's communication mode is an explicit caregiver Save.
+      SharedPreferences.setMockInitialValues({
+        'vidavoice.profiles.v1': json.encode([
+          {
+            'id': 'p-1',
+            'name': 'Alex',
+            'mode': 'build',
+            'buildMaxSymbols': 7,
+            'predictionEnabled': false,
+            'nudgePreference': 'paused',
+          },
+        ]),
+      });
+      final service = ProfileBackupService();
+      await service.apply(sampleBackup(), merge: true);
+      final prefs = await SharedPreferences.getInstance();
+      final profiles =
+          json.decode(prefs.getString('vidavoice.profiles.v1')!) as List;
+      final entry = Map<String, dynamic>.from(profiles.single as Map);
+      expect(entry['mode'], 'build');
+      expect(entry['buildMaxSymbols'], 7);
+      expect(entry['predictionEnabled'], isFalse);
+      expect(entry['nudgePreference'], 'paused');
+    });
+
+    test('apply() replace restores the profile communication mode', () async {
+      SharedPreferences.setMockInitialValues({
+        'vidavoice.profiles.v1': json.encode([
+          {
+            'id': 'p-1',
+            'name': 'Alex',
+            'mode': 'build',
+            'buildMaxSymbols': 7,
+            'predictionEnabled': false,
+            'nudgePreference': 'paused',
+          },
+        ]),
+      });
+      final service = ProfileBackupService();
+      await service.apply(sampleBackup(), merge: false);
+      final prefs = await SharedPreferences.getInstance();
+      final profiles =
+          json.decode(prefs.getString('vidavoice.profiles.v1')!) as List;
+      final entry = Map<String, dynamic>.from(profiles.single as Map);
+      expect(entry['mode'], 'tap');
+      expect(entry['buildMaxSymbols'], 4);
+      expect(entry['predictionEnabled'], isTrue);
+      expect(entry['nudgePreference'], 'allowed');
+    });
+
     test('apply() adds an unknown profile to the profile list', () async {
       SharedPreferences.setMockInitialValues({
         'vidavoice.profiles.v1': json.encode([

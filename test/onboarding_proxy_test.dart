@@ -315,4 +315,80 @@ void main() {
       );
     });
   });
+
+  group('login skips onboarding for existing families', () {
+    Future<SessionState> makeLoginSession({
+      List<String> profileIds = const ['p1'],
+    }) => makeSession(
+      proxyHandler: (req) async {
+        if (req.url.path == '/v1/auth/login') {
+          return http.Response(
+            json.encode({..._authBody(), 'profile_ids': profileIds}),
+            200,
+          );
+        }
+        if (req.url.path == '/v1/devices/register') {
+          return http.Response(json.encode(_registrationBody()), 201);
+        }
+        return http.Response('not found', 404);
+      },
+    );
+
+    test(
+      'signIn marks onboarding complete when the family already has profiles',
+      () async {
+        final session = await makeLoginSession();
+        expect(session.onboardingComplete, isFalse);
+
+        await session.signIn(
+          identifier: 'maya_mom',
+          password: 'a-strong-password-1',
+        );
+
+        expect(session.proxySignedIn, isTrue);
+        // No "who will use the app" re-ask: setup already happened.
+        expect(session.onboardingComplete, isTrue);
+      },
+    );
+
+    test('signIn keeps the wizard when the family has no profiles yet', () async {
+      final session = await makeLoginSession(profileIds: const []);
+
+      await session.signIn(
+        identifier: 'maya_mom',
+        password: 'a-strong-password-1',
+      );
+
+      expect(session.proxySignedIn, isTrue);
+      expect(session.onboardingComplete, isFalse);
+    });
+
+    test(
+      'signUp keeps the wizard even though the server auto-created a profile',
+      () async {
+        final session = await makeSession(
+          proxyHandler: (req) async {
+            if (req.url.path == '/v1/auth/signup') {
+              // The server auto-creates a profile at signup, but the new
+              // family still walks the wizard to name the child.
+              return http.Response(json.encode(_authBody()), 201);
+            }
+            if (req.url.path == '/v1/devices/register') {
+              return http.Response(json.encode(_registrationBody()), 201);
+            }
+            return http.Response('not found', 404);
+          },
+        );
+
+        await session.signUp(
+          email: 'caregiver@example.org',
+          username: 'maya_mom',
+          password: 'a-strong-password-1',
+        );
+
+        expect(session.proxySignedIn, isTrue);
+        expect(session.onboardingComplete, isFalse);
+      },
+    );
+  });
 }

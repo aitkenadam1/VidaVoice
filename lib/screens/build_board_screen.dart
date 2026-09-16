@@ -6,6 +6,8 @@ import '../models/dashboard.dart';
 import '../models/word.dart';
 import '../state/session_state.dart';
 import '../widgets/build_strip_bar.dart';
+import '../widgets/call_shortcut_button.dart';
+import '../widgets/emergency_shortcut_button.dart';
 import '../widgets/dashboard_tile.dart';
 import '../widgets/tts_banner.dart';
 import '../widgets/word_button.dart';
@@ -42,6 +44,8 @@ class BuildBoardScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(AppConfig.appDisplayName),
         actions: [
+          const CallShortcutButton(),
+          const EmergencyShortcutButton(),
           IconButton(
             tooltip: 'Caregiver',
             icon: const Icon(Icons.family_restroom),

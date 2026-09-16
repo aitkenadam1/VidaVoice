@@ -7,8 +7,9 @@ import '../models/dashboard.dart';
 import '../models/word.dart';
 import '../state/session_state.dart';
 import '../theme/onevoz_theme.dart';
+import '../widgets/call_shortcut_button.dart';
 import '../widgets/dashboard_tile.dart';
-import '../widgets/hold_to_confirm_button.dart';
+import '../widgets/emergency_shortcut_button.dart';
 import '../widgets/message_bar.dart';
 import '../widgets/safety_contact_avatar.dart';
 import '../widgets/tts_banner.dart';
@@ -16,7 +17,6 @@ import '../widgets/word_button.dart';
 import 'call_confirm_screen.dart';
 import 'caregiver_screen.dart';
 import 'category_screen.dart';
-import 'emergency_screen.dart';
 import 'settings_screen.dart';
 
 /// The home board: 282 core words in FIXED positions (see en.json — motor
@@ -45,6 +45,8 @@ class HomeBoardScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(AppConfig.appDisplayName),
         actions: [
+          const CallShortcutButton(),
+          const EmergencyShortcutButton(),
           IconButton(
             tooltip: 'Caregiver',
             icon: const Icon(Icons.family_restroom),
@@ -223,8 +225,7 @@ class _CallActionArea extends StatelessWidget {
     final profile = session.profiles.active;
     if (profile == null) return const SizedBox.shrink();
     final callContacts = _callContacts(profile.contacts);
-    final emergencyOn = profile.emergency.emergencyEnabled;
-    if (callContacts.isEmpty && !emergencyOn) {
+    if (callContacts.isEmpty) {
       return const SizedBox.shrink();
     }
     return Padding(
@@ -238,17 +239,6 @@ class _CallActionArea extends StatelessWidget {
         alignment: WrapAlignment.center,
         children: [
           for (final c in callContacts) _CallContactButton(contact: c),
-          if (emergencyOn)
-            HoldToConfirmButton(
-              onConfirmed: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => EmergencyScreen(
-                    emergency: profile.emergency,
-                    contacts: profile.contacts,
-                  ),
-                ),
-              ),
-            ),
         ],
       ),
     );

@@ -245,6 +245,15 @@ class SessionState extends ChangeNotifier {
           _serverProfileIds = await proxyAuth.readProfileIds();
         }
       } catch (_) {}
+      // A restored session for a family that already has profiles means
+      // setup happened: don't re-run the wizard just because the local
+      // "done" flag was wiped (same reasoning as signIn above).
+      if (proxySignedIn &&
+          _serverProfileIds.isNotEmpty &&
+          !onboardingComplete) {
+        onboardingComplete = true;
+        await _prefs!.setBool('vidavoice.onboardingComplete', true);
+      }
       unlockedLevel = _clampLevel(
         _prefs!.getInt('vidavoice.unlockedLevel') ??
             LanguagePack.minSupportedLevel,
@@ -394,6 +403,15 @@ class SessionState extends ChangeNotifier {
   }
 
   /// Sign in with email or username. Throws [ProxyException] on failure.
+  ///
+  /// A login is always to an existing family, so when the server reports
+  /// profiles, first-time setup already happened and the onboarding wizard
+  /// is skipped: its "done" flag lives in local storage, which the OS or
+  /// browser can wipe (e.g. Safari "Clear History and Website Data") while
+  /// the account — and its profiles — still exist. Re-asking "who will
+  /// use the app" on every fresh device or data wipe is wrong; the
+  /// server's profile list is the source of truth. A brand-new signup
+  /// keeps the wizard: naming the child happens there.
   Future<void> signIn({
     required String identifier,
     required String password,
@@ -405,6 +423,9 @@ class SessionState extends ChangeNotifier {
     );
     await _afterProxyAuth(result);
     await _setupSyncKey(result, password);
+    if (result.profileIds.isNotEmpty && !onboardingComplete) {
+      await setOnboardingComplete(true);
+    }
   }
 
   /// Derives the dashboard-sync key from the password the caregiver just

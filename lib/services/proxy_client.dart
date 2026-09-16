@@ -12,19 +12,20 @@ import 'elevenlabs_key_store.dart';
 /// PLACEHOLDER — MUST-REPLACE before any public build: the company domain
 /// is TBD and this host has no DNS record, so a build pointed here fails
 /// closed (which is correct) and can never reach a real backend. Override
+/// Base URL of the managed OneVoz voice proxy. Overridable
 /// per build without a code change:
 ///   flutter build ... --dart-define=VIDAVOICE_PROXY_URL=https://...
 ///
-/// The proxy is built and verified locally at
-/// ~/workspace/vidavoice-voice-proxy but is NOT deployed yet. Until Adam
-/// deploys it and points this URL at it, every proxy call fails with an
-/// "unreachable" ProxyException — which is the normal, expected state.
-/// The app treats an unreachable proxy as "offline": onboarding offers to
-/// continue with on-device voices, and speech falls back to on-device
-/// voices. Nothing in the app may break when this host doesn't resolve.
+/// The proxy is live at https://voice.onevoz.me. The default below must
+/// always be the live URL: shipping the old vidavoice.org placeholder
+/// default silently breaks cloud voices (the app reports "Couldn't reach
+/// the OneVoz service"). An unreachable proxy is still treated as
+/// "offline": onboarding offers to continue with on-device voices, and
+/// speech falls back to on-device voices. Nothing in the app may break
+/// when the host doesn't resolve.
 const kProxyBaseUrl = String.fromEnvironment(
   'VIDAVOICE_PROXY_URL',
-  defaultValue: 'https://voice.vidavoice.org',
+  defaultValue: 'https://voice.onevoz.me',
 );
 
 /// Error from the managed voice proxy (or from reaching it).

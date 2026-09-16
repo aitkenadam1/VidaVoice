@@ -197,21 +197,24 @@ class HomeBoardScreen extends StatelessWidget {
   }
 }
 
-/// Persistent calling & safety action area: photo call buttons for the
-/// active profile's Mom/Dad contacts plus the hold-to-confirm Emergency
-/// button. Sits below the board, above the [MessageBar]; the board grid
-/// itself is untouched.
+/// Persistent calling & safety action area: photo call buttons for ALL of
+/// the active profile's Mom/Dad contacts (every contact of those kinds,
+/// not just the first) plus the hold-to-confirm Emergency button. Sits
+/// below the board, above the [MessageBar]; the board grid itself is
+/// untouched.
 ///
 /// Renders nothing at all when no call contacts are configured and the
 /// emergency flow is disabled — no dead ends, no decorative buttons.
 class _CallActionArea extends StatelessWidget {
   const _CallActionArea();
 
-  SafetyContact? _byKind(List<SafetyContact> contacts, String kind) {
-    for (final c in contacts) {
-      if (c.kind == kind) return c;
-    }
-    return null;
+  /// Every contact the child can call from the board: all Mom-kind and
+  /// all Dad-kind contacts, in profile order.
+  List<SafetyContact> _callContacts(List<SafetyContact> contacts) {
+    return [
+      for (final c in contacts)
+        if (c.kind == 'mom' || c.kind == 'dad') c,
+    ];
   }
 
   @override
@@ -219,36 +222,29 @@ class _CallActionArea extends StatelessWidget {
     final session = context.watch<SessionState>();
     final profile = session.profiles.active;
     if (profile == null) return const SizedBox.shrink();
-    final mom = _byKind(profile.contacts, 'mom');
-    final dad = _byKind(profile.contacts, 'dad');
+    final callContacts = _callContacts(profile.contacts);
     final emergencyOn = profile.emergency.emergencyEnabled;
-    if (mom == null && dad == null && !emergencyOn) {
+    if (callContacts.isEmpty && !emergencyOn) {
       return const SizedBox.shrink();
     }
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
-      // NOTE: no CrossAxisAlignment.stretch here — this Row lives directly
-      // in the board's Column (unbounded height), and stretching children
-      // across an infinite cross axis explodes layout. Each child carries
-      // its own minHeight (96) instead.
-      child: Row(
+      // Wrap (not a Row of Expanded) so any number of contacts fits:
+      // buttons size to their content and flow onto more lines on
+      // narrow phones. Each child carries its own minHeight (96).
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        alignment: WrapAlignment.center,
         children: [
-          if (mom != null)
-            Expanded(child: _CallContactButton(contact: mom)),
-          if (dad != null)
-            Expanded(child: _CallContactButton(contact: dad)),
+          for (final c in callContacts) _CallContactButton(contact: c),
           if (emergencyOn)
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: HoldToConfirmButton(
-                  onConfirmed: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => EmergencyScreen(
-                        emergency: profile.emergency,
-                        contacts: profile.contacts,
-                      ),
-                    ),
+            HoldToConfirmButton(
+              onConfirmed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => EmergencyScreen(
+                    emergency: profile.emergency,
+                    contacts: profile.contacts,
                   ),
                 ),
               ),

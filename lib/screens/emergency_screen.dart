@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../models/calling_safety.dart';
 import '../services/location_service.dart';
+import '../state/session_state.dart';
 import '../theme/onevoz_theme.dart';
 import 'call_confirm_screen.dart';
 import 'call_screen.dart';
@@ -92,6 +94,9 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
   }
 
   void _callContact(SafetyContact contact) {
+    // Zero-reading confirmation, matching the home board: the child hears
+    // who they picked before the confirm screen appears.
+    context.read<SessionState>().tts.speak(contact.name);
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => CallConfirmScreen(contact: contact)),
     );

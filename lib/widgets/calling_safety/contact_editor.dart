@@ -248,6 +248,7 @@ class _ContactDialogState extends State<_ContactDialog> {
   String? _imageData;
   bool _pickingPhoto = false;
   String? _photoError;
+  String? _phoneError;
 
   @override
   void initState() {
@@ -284,14 +285,26 @@ class _ContactDialogState extends State<_ContactDialog> {
 
   void _submit() {
     final name = _name.text.trim();
+    final phone = _phone.text.trim();
     if (name.isEmpty) return;
+    // A contact without a phone number would produce a Call button that
+    // dials `tel:` with an empty path. Require the number up front, with
+    // a plain-language message; the confirm screen also defensively
+    // disables Call for any legacy contact missing a number.
+    if (phone.isEmpty) {
+      setState(() {
+        _phoneError =
+            'Add a phone number so the Call button can reach this person.';
+      });
+      return;
+    }
     final initial = widget.initial;
     Navigator.of(context).pop(
       SafetyContact(
         id: initial?.id ??
             'sc-${DateTime.now().microsecondsSinceEpoch}-${_idCounter++}',
         name: name,
-        phone: _phone.text.trim(),
+        phone: phone,
         imageData: _imageData,
         kind: _kind,
       ),
@@ -374,11 +387,15 @@ class _ContactDialogState extends State<_ContactDialog> {
             TextField(
               controller: _phone,
               keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Phone number',
                 hintText: 'e.g. +1 555 010 2030',
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
+                errorText: _phoneError,
               ),
+              onChanged: (_) => setState(() {
+                _phoneError = null;
+              }),
               onSubmitted: (_) => _submit(),
             ),
             const SizedBox(height: 12),
@@ -405,7 +422,10 @@ class _ContactDialogState extends State<_ContactDialog> {
           child: const Text('Cancel'),
         ),
         FilledButton(
-          onPressed: _name.text.trim().isEmpty ? null : _submit,
+          onPressed:
+              _name.text.trim().isEmpty || _phone.text.trim().isEmpty
+              ? null
+              : _submit,
           child: Text(isEdit ? 'Save' : 'Add'),
         ),
       ],

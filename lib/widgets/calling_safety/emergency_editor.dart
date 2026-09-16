@@ -116,7 +116,7 @@ class _EmergencyDetailsEditorState extends State<EmergencyDetailsEditor> {
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
           ),
           subtitle: const Text(
-            'Shows an emergency button on the call screen for this profile.',
+            'Shows an emergency button on the home board for this profile.',
             style: TextStyle(fontSize: 12),
           ),
           value: _emergencyEnabled,

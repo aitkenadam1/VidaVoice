@@ -75,26 +75,6 @@ void main() {
     expect(tapped, isFalse);
   });
 
-  testWidgets('OneVozEmergencyButton renders and the tap fires', (tester) async {
-    var tapped = false;
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: Center(
-            child: OneVozEmergencyButton(
-              label: 'Emergency',
-              onPressed: () => tapped = true,
-            ),
-          ),
-        ),
-      ),
-    );
-    expect(find.text('Emergency'), findsOneWidget);
-    await tester.tap(find.byType(OneVozEmergencyButton));
-    await tester.pump();
-    expect(tapped, isTrue);
-  });
-
   test('child and caregiver themes build and differ', () {
     final child = OneVozTheme.childTheme();
     final caregiver = OneVozTheme.caregiverTheme();
@@ -106,44 +86,5 @@ void main() {
         OneVozColors.caregiverBackground);
     expect(child.scaffoldBackgroundColor,
         isNot(caregiver.scaffoldBackgroundColor));
-  });
-
-  testWidgets('breakpoint helpers classify phone vs tablet widths',
-      (tester) async {
-    OneVozDeviceClass? phoneClass;
-    await tester.pumpWidget(
-      MaterialApp(
-        home: MediaQuery(
-          data: const MediaQueryData(size: Size(390, 844)),
-          child: Builder(
-            builder: (context) {
-              phoneClass = OneVozBreakpoints.deviceClassOf(context);
-              expect(OneVozBreakpoints.criticalTouchTarget(context),
-                  greaterThanOrEqualTo(64));
-              return const SizedBox();
-            },
-          ),
-        ),
-      ),
-    );
-    expect(phoneClass, OneVozDeviceClass.phone);
-
-    OneVozDeviceClass? tabletClass;
-    await tester.pumpWidget(
-      MaterialApp(
-        home: MediaQuery(
-          data: const MediaQueryData(size: Size(1024, 1366)),
-          child: Builder(
-            builder: (context) {
-              tabletClass = OneVozBreakpoints.deviceClassOf(context);
-              expect(OneVozBreakpoints.criticalTouchTarget(context),
-                  greaterThanOrEqualTo(64));
-              return const SizedBox();
-            },
-          ),
-        ),
-      ),
-    );
-    expect(tabletClass, OneVozDeviceClass.tablet);
   });
 }

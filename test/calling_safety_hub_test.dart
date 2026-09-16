@@ -187,6 +187,10 @@ void main() {
       find.widgetWithText(TextField, 'Phone number').first,
       '+1 555 010 2030',
     );
+    // The Add button enables only once both fields are non-empty; pump so
+    // the setState from the phone field's onChanged rebuilds the button
+    // before tapping (real devices pump continuously; the harness does not).
+    await tester.pump();
     await tester.tap(find.widgetWithText(FilledButton, 'Add'));
     await tester.pumpAndSettle();
 

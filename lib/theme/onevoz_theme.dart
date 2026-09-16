@@ -11,9 +11,8 @@
 /// * [OneVozTheme.caregiverTheme] — calm and clean (caregiver side).
 ///
 /// Both are unmistakably OneVoz: navy + blue-to-teal gradient + rounded shapes.
-/// Child-critical touch targets are >= 64px at every screen size — see
-/// [OneVozBreakpoints] for the responsive helpers; never assume a fixed
-/// screen size.
+/// Child-critical touch targets are >= 64px at every screen size — never
+/// assume a fixed screen size.
 library;
 
 import 'dart:math' as math;
@@ -438,78 +437,4 @@ class OneVozGradientButton extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Style hook for the child-UI agent's emergency button: same shape and
-/// 64px minimum as [OneVozGradientButton], red gradient instead of
-/// blue-to-teal. The emergency *flow* (hold-to-confirm, cancel window)
-/// belongs to the child-UI agent — this is only the visual.
-class OneVozEmergencyButton extends StatelessWidget {
-  const OneVozEmergencyButton({
-    super.key,
-    required this.onPressed,
-    required this.label,
-    this.icon = Icons.warning_amber_rounded,
-    this.minHeight = 64,
-  });
-
-  final VoidCallback? onPressed;
-  final String label;
-  final IconData? icon;
-  final double minHeight;
-
-  @override
-  Widget build(BuildContext context) {
-    return OneVozGradientButton(
-      onPressed: onPressed,
-      label: label,
-      icon: icon,
-      gradient: OneVozColors.emergencyGradient,
-      minHeight: minHeight,
-    );
-  }
-}
-
-/// Device classes for responsive layout. Breakpoints are on logical width.
-enum OneVozDeviceClass { phone, tablet, wide }
-
-/// Responsive helpers. Everything scales from [MediaQuery] — never from
-/// fixed pixel assumptions, so layouts hold from a small phone to a large
-/// tablet.
-abstract final class OneVozBreakpoints {
-  OneVozBreakpoints._();
-
-  /// Widths below this are phones.
-  static const double phoneMaxWidth = 600;
-
-  /// Widths below this (and >= [phoneMaxWidth]) are tablets.
-  static const double tabletMaxWidth = 1100;
-
-  static OneVozDeviceClass deviceClassOf(BuildContext context) {
-    final width = MediaQuery.sizeOf(context).width;
-    if (width < phoneMaxWidth) return OneVozDeviceClass.phone;
-    if (width < tabletMaxWidth) return OneVozDeviceClass.tablet;
-    return OneVozDeviceClass.wide;
-  }
-
-  /// Scale factor for text and spacing: 0.85 on the smallest phones, up to
-  /// 1.5 on large tablets. Touch targets have their own floor — this never
-  /// shrinks a critical target below 64px.
-  static double clampScale(BuildContext context) {
-    final shortest = MediaQuery.sizeOf(context).shortestSide;
-    return (shortest / 420).clamp(0.85, 1.5).toDouble();
-  }
-
-  /// Minimum height for child-critical actions. Never below 64px, grows on
-  /// larger screens.
-  static double criticalTouchTarget(BuildContext context) =>
-      math.max(64.0, 64.0 * clampScale(context));
-
-  /// Scaled button height for non-critical buttons (floor 48px).
-  static double buttonHeight(BuildContext context, {double base = 56}) =>
-      math.max(48.0, base * clampScale(context));
-
-  /// Convenience: true on tablets and wider.
-  static bool isTabletOrWider(BuildContext context) =>
-      deviceClassOf(context) != OneVozDeviceClass.phone;
 }

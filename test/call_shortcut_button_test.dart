@@ -11,13 +11,12 @@ import 'package:onevoz/models/word.dart';
 import 'package:onevoz/screens/call_confirm_screen.dart';
 import 'package:onevoz/screens/caregiver_screen.dart';
 import 'package:onevoz/screens/emergency_screen.dart';
-import 'package:onevoz/screens/location_screen.dart';
 import 'package:onevoz/services/tts_service.dart';
+import 'package:onevoz/services/caregiver_pin_service.dart';
+import 'package:onevoz/services/elevenlabs_key_store.dart';
 import 'package:onevoz/state/session_state.dart';
 import 'package:onevoz/widgets/call_shortcut_button.dart';
 import 'package:onevoz/widgets/emergency_shortcut_button.dart';
-import 'package:onevoz/widgets/location_section.dart';
-import 'package:onevoz/widgets/location_shortcut_button.dart';
 
 /// TTS double: never touches the platform channel.
 class _FakeTts extends TtsService {
@@ -44,6 +43,20 @@ const _dad = SafetyContact(
 
 const _noEmergency = EmergencyProfileData(emergencyEnabled: false);
 
+/// In-memory stand-in for the platform keychain (caregiver PIN gate).
+class _FakeSecureStore implements SecureValueStore {
+  final map = <String, String>{};
+
+  @override
+  Future<String?> read(String key) async => map[key];
+
+  @override
+  Future<void> write(String key, String value) async => map[key] = value;
+
+  @override
+  Future<void> delete(String key) async => map.remove(key);
+}
+
 void main() {
   LanguagePack loadPackFromFile(String locale) {
     final raw = File('assets/lang/$locale.json').readAsStringSync();
@@ -56,7 +69,10 @@ void main() {
 
   Future<SessionState> makeSession() async {
     SharedPreferences.setMockInitialValues({});
-    final session = SessionState(tts: _FakeTts());
+    final session = SessionState(
+      caregiverPin: CaregiverPinService(store: _FakeSecureStore()),
+      tts: _FakeTts(),
+    );
     await session.profiles.load();
     return session;
   }
@@ -68,10 +84,7 @@ void main() {
         child: MaterialApp(
           home: Scaffold(
             appBar: AppBar(
-              actions: const [
-                CallShortcutButton(),
-                EmergencyShortcutButton(),
-              ],
+              actions: const [CallShortcutButton(), EmergencyShortcutButton()],
             ),
           ),
         ),
@@ -160,7 +173,8 @@ void main() {
     });
   });
 
-  group('emergency shortcut button', () {    testWidgets('hidden when emergency is disabled', (tester) async {
+  group('emergency shortcut button', () {
+    testWidgets('hidden when emergency is disabled', (tester) async {
       final session = await makeSession();
       final p = await session.profiles.addProfile('Kid');
       await session.profiles.setEmergency(p.id, _noEmergency);
@@ -180,40 +194,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(EmergencyScreen), findsOneWidget);
-    });
-  });
-
-  group('location shortcut button', () {
-    testWidgets('always visible; tap opens the standalone Location page', (
-      tester,
-    ) async {
-      final session = await makeSession();
-      await session.profiles.addProfile('Kid');
-
-      await tester.pumpWidget(
-        ChangeNotifierProvider<SessionState>.value(
-          value: session,
-          child: MaterialApp(
-            home: Scaffold(
-              appBar: AppBar(
-                actions: const [LocationShortcutButton()],
-              ),
-            ),
-          ),
-        ),
-      );
-      await tester.pump();
-
-      expect(find.byIcon(Icons.location_on), findsOneWidget);
-
-      await tester.tap(find.byIcon(Icons.location_on));
-      await tester.pumpAndSettle();
-
-      // Its own page — not the caregiver settings — hosting the full
-      // location content.
-      expect(find.byType(LocationScreen), findsOneWidget);
-      expect(find.byType(LocationSection), findsOneWidget);
-      expect(find.text('Location'), findsWidgets);
     });
   });
 }

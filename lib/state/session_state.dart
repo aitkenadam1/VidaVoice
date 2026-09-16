@@ -11,6 +11,7 @@ import '../models/dashboard.dart';
 import '../models/word.dart';
 import '../services/dashboard_service.dart';
 import '../services/dashboard_sync_service.dart';
+import '../services/caregiver_pin_service.dart';
 import '../services/elevenlabs_key_store.dart';
 import '../services/elevenlabs_service.dart';
 import '../services/elevenlabs_voice_store.dart';
@@ -43,12 +44,14 @@ class SessionState extends ChangeNotifier {
     ElevenLabsKeyStore? elevenLabsKeys,
     ProxyClient? proxy,
     ProxyAuthStore? proxyAuth,
+    CaregiverPinService? caregiverPin,
     DateTime Function()? nudgeClock,
   }) : _prefsFactory = prefsFactory ?? SharedPreferences.getInstance,
        tts = tts ?? TtsService(),
        elevenLabsKeys = elevenLabsKeys ?? ElevenLabsKeyStore(),
        proxy = proxy ?? ProxyClient(),
        proxyAuth = proxyAuth ?? ProxyAuthStore(),
+       caregiverPin = caregiverPin ?? CaregiverPinService(),
        nudge = ModeNudgeService(clock: nudgeClock) {
     // The managed-voice branch of TtsService.speak needs the server-issued
     // profile id (the proxy contract requires profile_id per request) and
@@ -118,6 +121,10 @@ class SessionState extends ChangeNotifier {
 
   /// Secure storage for the proxy token / family id / install id.
   final ProxyAuthStore proxyAuth;
+
+  /// Device-local caregiver gate PIN for the caregiver hub. Injectable
+  /// for tests; production uses the platform keychain.
+  final CaregiverPinService caregiverPin;
 
   /// End-to-end encrypted dashboard + profile sync across the family's
   /// devices. Initialized in the constructor; wired (change listeners,

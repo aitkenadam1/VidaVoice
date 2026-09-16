@@ -6,9 +6,8 @@ import '../services/history_service.dart';
 import '../services/prediction_service.dart';
 import '../state/session_state.dart';
 import '../widgets/call_shortcut_button.dart';
-import '../widgets/location_shortcut_button.dart';
 import '../widgets/emergency_shortcut_button.dart';
-import '../widgets/location_status_banner.dart';
+import '../widgets/location_request_prompt.dart';
 import '../widgets/tts_banner.dart';
 import 'caregiver_screen.dart';
 import 'settings_screen.dart';
@@ -187,7 +186,6 @@ class _TypeBoardScreenState extends State<TypeBoardScreen> {
         title: Text(AppConfig.appDisplayName),
         actions: [
           const CallShortcutButton(),
-          const LocationShortcutButton(),
           const EmergencyShortcutButton(),
           IconButton(
             tooltip: 'Caregiver',
@@ -209,7 +207,7 @@ class _TypeBoardScreenState extends State<TypeBoardScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const TtsBanner(),
-          const LocationStatusBanner(),
+          const LocationRequestPrompt(),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
             child: Semantics(

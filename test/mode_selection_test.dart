@@ -11,6 +11,7 @@ import 'package:onevoz/models/word.dart';
 import 'package:onevoz/screens/caregiver_screen.dart';
 import 'package:onevoz/screens/onboarding_screen.dart';
 import 'package:onevoz/services/elevenlabs_key_store.dart';
+import 'package:onevoz/services/caregiver_pin_service.dart';
 import 'package:onevoz/services/profile_service.dart';
 import 'package:onevoz/services/proxy_client.dart';
 import 'package:onevoz/services/tts_service.dart';
@@ -119,6 +120,7 @@ void main() {
   Future<SessionState> makeOnboardingSession() async {
     SharedPreferences.setMockInitialValues({});
     final session = SessionState(
+      caregiverPin: CaregiverPinService(store: _FakeSecureStore()),
       tts: _RecordingTts(),
       proxy: ProxyClient(
         client: MockClient((_) async => throw const SocketException('nope')),
@@ -257,6 +259,18 @@ void main() {
   });
 
   group('caregiver hub mode editor', () {
+
+    /// The hub sits behind the caregiver PIN gate (PIN pre-set in
+    /// makeHubSession): unlock via the on-screen pad.
+    Future<void> unlockGate(WidgetTester tester) async {
+      await tester.pumpAndSettle();
+      for (final ch in '1234'.split('')) {
+        await tester.tap(find.text(ch));
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      await tester.pumpAndSettle();
+    }
+
     Future<SessionState> makeHubSession({
       required List<String> collapsed,
     }) async {
@@ -272,10 +286,16 @@ void main() {
         Map<String, dynamic>.from(json.decode(raw) as Map),
       );
       pack.validate();
-      final session = SessionState(tts: _RecordingTts());
+      final session = SessionState(
+        caregiverPin: CaregiverPinService(store: _FakeSecureStore()),
+        tts: _RecordingTts(),
+      );
       session.pack = pack;
       session.status = BootStatus.ready;
       await session.profiles.load();
+      // Pre-set the gate PIN before the hub pumps (the gate snapshots
+      // hasPin in initState).
+      await session.caregiverPin.setPin('1234');
       return session;
     }
 
@@ -325,6 +345,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await unlockGate(tester);
 
       // Per-profile picker: choose Type for the (only) profile and save.
       final option = find.byKey(const ValueKey('mode-option-type'));
@@ -382,6 +403,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await unlockGate(tester);
 
       await tester.scrollUntilVisible(
         find.text('Current: Build'),
@@ -395,7 +417,10 @@ void main() {
   group('sandbox preview', () {
     testWidgets('try-before-saving never speaks, in any mode', (tester) async {
       final tts = _RecordingTts();
-      final session = SessionState(tts: tts);
+      final session = SessionState(
+        caregiverPin: CaregiverPinService(store: _FakeSecureStore()),
+        tts: tts,
+      );
       await session.profiles.load();
 
       // One pump for the whole test: re-pumping the app in a loop leaves

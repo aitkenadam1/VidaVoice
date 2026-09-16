@@ -11,6 +11,7 @@ import 'package:onevoz/main.dart';
 import 'package:onevoz/models/word.dart';
 import 'package:onevoz/screens/caregiver_screen.dart';
 import 'package:onevoz/services/elevenlabs_key_store.dart';
+import 'package:onevoz/services/caregiver_pin_service.dart';
 import 'package:onevoz/services/proxy_client.dart';
 import 'package:onevoz/services/tts_service.dart';
 import 'package:onevoz/state/session_state.dart';
@@ -64,7 +65,20 @@ class _FakeSecureStore implements SecureValueStore {
 }
 
 void main() {
-  LanguagePack loadPackFromFile(String locale) {    final raw = File('assets/lang/$locale.json').readAsStringSync();
+
+/// The hub sits behind the caregiver PIN gate (PIN pre-set before the hub
+/// pumps): unlock via the on-screen pad.
+Future<void> unlockGate(WidgetTester tester) async {
+  await tester.pumpAndSettle();
+  for (final ch in '1234'.split('')) {
+    await tester.tap(find.text(ch));
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+  await tester.pumpAndSettle();
+}
+
+  LanguagePack loadPackFromFile(String locale) {
+    final raw = File('assets/lang/$locale.json').readAsStringSync();
     final pack = LanguagePack.fromJson(
       Map<String, dynamic>.from(json.decode(raw) as Map),
     );
@@ -82,6 +96,7 @@ void main() {
       'vidavoice.onboardingComplete': onboardingComplete,
     });
     final session = SessionState(
+      caregiverPin: CaregiverPinService(store: _FakeSecureStore()),
       tts: _FakeTts(),
       proxy: proxy,
       proxyAuth: ProxyAuthStore(store: _FakeSecureStore()),
@@ -144,8 +159,8 @@ void main() {
   }
 
   Finder fieldWithLabel(String label) => find.byWidgetPredicate(
-        (w) => w is TextField && (w.decoration?.labelText == label),
-      );
+    (w) => w is TextField && (w.decoration?.labelText == label),
+  );
 
   void useWideSurface(WidgetTester tester) {
     tester.view.physicalSize = const Size(1600, 2400);
@@ -214,15 +229,9 @@ void main() {
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
     expect(find.text('Your OneVoz account'), findsOneWidget);
-    await tester.enterText(
-      fieldWithLabel('Email'),
-      'caregiver@example.org',
-    );
+    await tester.enterText(fieldWithLabel('Email'), 'caregiver@example.org');
     await tester.enterText(fieldWithLabel('Username'), 'maya_mom');
-    await tester.enterText(
-      fieldWithLabel('Password'),
-      'a-strong-password-1',
-    );
+    await tester.enterText(fieldWithLabel('Password'), 'a-strong-password-1');
     await tester.tap(find.text('Create account'));
     // The real signup derives the sync key with 600k PBKDF2 iterations.
     // The KDF yields via short delayed futures that need fake time to
@@ -349,7 +358,10 @@ void main() {
     SharedPreferences.setMockInitialValues({
       'vidavoice.onboardingComplete': true,
     });
-    final session = SessionState(tts: _FakeTts());
+    final session = SessionState(
+      caregiverPin: CaregiverPinService(store: _FakeSecureStore()),
+      tts: _FakeTts(),
+    );
     session.pack = loadPackFromFile('en');
     session.status = BootStatus.ready;
     session.onboardingComplete = true;
@@ -361,6 +373,9 @@ void main() {
     await session.usage.recordTap('core.want');
     await session.usage.recordTap('core.want');
     await session.usage.recordTap('core.go');
+    // Pre-set the gate PIN before the hub pumps (the gate snapshots hasPin
+    // in initState).
+    await session.caregiverPin.setPin('1234');
 
     await tester.pumpWidget(
       ChangeNotifierProvider.value(
@@ -369,6 +384,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    await unlockGate(tester);
 
     // The hub starts with sections collapsed; expand Activity summary first.
     await tester.tap(find.text('Activity summary'));

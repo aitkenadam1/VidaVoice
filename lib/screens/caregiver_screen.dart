@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/word.dart';
 import '../state/session_state.dart';
+import '../widgets/caregiver_pin_gate.dart';
 import 'calling_safety_hub_screen.dart';
 import '../widgets/activity_summary_section.dart';
 import '../widgets/backup_section.dart';
@@ -137,6 +138,12 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
   bool _customizing = false;
   bool _ready = false;
 
+  /// The hub holds every parental control, so it stays behind the
+  /// caregiver PIN gate until unlocked. Unlocking is per visit — leaving
+  /// the screen re-arms the gate, so a child picking up the device later
+  /// can't walk into caregiver controls.
+  bool _unlocked = false;
+
   @override
   void initState() {
     super.initState();
@@ -246,13 +253,20 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
           IconButton(
             tooltip: _customizing ? 'Done' : 'Customize',
             icon: Icon(_customizing ? Icons.check : Icons.tune),
-            onPressed: _ready
+            onPressed: _ready && _unlocked
                 ? () => setState(() => _customizing = !_customizing)
                 : null,
           ),
         ],
       ),
-      body: !_ready
+      body: !_unlocked
+          ? CaregiverPinGate(
+              key: const ValueKey('caregiver-pin-gate'),
+              onUnlocked: () {
+                if (mounted) setState(() => _unlocked = true);
+              },
+            )
+          : !_ready
           ? const Center(child: CircularProgressIndicator())
           : _customizing
           ? _customizeList()

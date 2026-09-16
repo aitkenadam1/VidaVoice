@@ -8,6 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:onevoz/models/word.dart';
 import 'package:onevoz/screens/caregiver_screen.dart';
 import 'package:onevoz/services/tts_service.dart';
+import 'package:onevoz/services/caregiver_pin_service.dart';
+import 'package:onevoz/services/elevenlabs_key_store.dart';
 import 'package:onevoz/state/session_state.dart';
 
 /// TTS double: never touches the platform channel.
@@ -48,6 +50,21 @@ class _FakeTts extends TtsService {
 /// The Devices card is a signed-in-only section: with no caregiver
 /// account the hub must not show it at all, and signing in must reveal
 /// it without restarting the app.
+
+/// In-memory stand-in for the platform keychain (caregiver PIN gate).
+class _FakeSecureStore implements SecureValueStore {
+  final map = <String, String>{};
+
+  @override
+  Future<String?> read(String key) async => map[key];
+
+  @override
+  Future<void> write(String key, String value) async => map[key] = value;
+
+  @override
+  Future<void> delete(String key) async => map.remove(key);
+}
+
 void main() {
   const sectionIds = [
     'level',
@@ -75,11 +92,17 @@ void main() {
       Map<String, dynamic>.from(json.decode(raw) as Map),
     );
     pack.validate();
-    final session = SessionState(tts: _FakeTts());
+    final session = SessionState(
+      caregiverPin: CaregiverPinService(store: _FakeSecureStore()),
+      tts: _FakeTts(),
+    );
     session.pack = pack;
     session.status = BootStatus.ready;
     await session.profiles.load();
     await session.plan.load(session.profiles.active?.id ?? '');
+    // Pre-set the gate PIN before the hub pumps (the gate snapshots hasPin
+    // in initState).
+    await session.caregiverPin.setPin('1234');
     return session;
   }
 
@@ -90,6 +113,12 @@ void main() {
         child: const MaterialApp(home: CaregiverScreen()),
       ),
     );
+    await tester.pumpAndSettle();
+    // The hub sits behind the caregiver PIN gate: unlock via the pad.
+    for (final ch in '1234'.split('')) {
+      await tester.tap(find.text(ch));
+      await tester.pump(const Duration(milliseconds: 50));
+    }
     await tester.pumpAndSettle();
   }
 

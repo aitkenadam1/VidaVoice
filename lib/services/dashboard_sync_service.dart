@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/dashboard.dart';
 import '../models/calling_safety.dart';
+import '../models/safe_zone.dart';
 import 'dashboard_service.dart';
 import 'profile_service.dart';
 import 'proxy_client.dart';
@@ -55,6 +56,11 @@ class DashboardSyncService {
   static const _kMirror = 'vidavoice.sync.mirrorActiveProfile';
   static const _kMirrorUpdatedAt = 'vidavoice.sync.mirrorUpdatedAt';
 
+  /// Phase 2B safe zones: family-wide, stored as a JSON list inside the
+  /// encrypted blob (doc type `safe_zones`) and mirrored in local prefs
+  /// so zones survive restarts before the first pull completes.
+  static const _kSafeZones = 'vidavoice.sync.safeZones';
+
   /// PBKDF2 iteration count for the sync key. Production value; tests pass
   /// a small count for speed via [deriveSyncKey]'s parameter.
   static const defaultPbkdf2Iterations = 600000;
@@ -62,6 +68,10 @@ class DashboardSyncService {
   List<int>? _key;
   int _lastSeenRemoteVersion = 0;
   bool _mirror = false;
+
+  /// Family-wide safe zones (Phase 2B). Kept in memory, persisted to
+  /// local prefs, and published inside the encrypted payload.
+  final List<SafeZone> _zones = [];
 
   /// When the mirror flag was last changed locally. The flag itself is
   /// last-write-wins across devices, like profile/dashboard content.
@@ -89,6 +99,63 @@ class DashboardSyncService {
 
   bool get mirrorActiveProfile => _mirror;
 
+  /// The family's safe zones (Phase 2B). Unmodifiable; mutate through
+  /// [upsertSafeZone]/[removeSafeZone] so persistence, sync, and
+  /// listeners stay consistent.
+  List<SafeZone> get safeZones => List.unmodifiable(_zones);
+
+  /// Adds or replaces a zone by id, persists locally, and notifies
+  /// listeners. Callers push explicitly (e.g. [pushNow]) when they want
+  /// the change published immediately.
+  Future<void> upsertSafeZone(SafeZone zone) async {
+    final problems = zone.validate();
+    if (problems.isNotEmpty) {
+      throw ArgumentError('Invalid safe zone: ${problems.join(' ')}');
+    }
+    final next = [for (final z in _zones) if (z.id != zone.id) z, zone]
+      ..sort(
+        (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+      );
+    _zones
+      ..clear()
+      ..addAll(next);
+    await _persistZones();
+    _notify();
+  }
+
+  /// Removes a zone by id. No tombstones in P1: a zone deleted here can
+  /// be re-adopted from another device's blob on the next merge (see
+  /// [SafeZone.merge]).
+  Future<void> removeSafeZone(String id) async {
+    _zones.removeWhere((z) => z.id == id);
+    await _persistZones();
+    _notify();
+  }
+
+  Future<void> _persistZones() async {
+    try {
+      final prefs = await _prefsFactory();
+      await prefs.setString(
+        _kSafeZones,
+        json.encode([for (final z in _zones) z.toJson()]),
+      );
+    } catch (_) {}
+  }
+
+  List<SafeZone> _parseZones(Object? raw) {
+    final out = <SafeZone>[];
+    if (raw is! List) return out;
+    for (final entry in raw) {
+      if (entry is! Map) continue;
+      try {
+        out.add(SafeZone.fromJson(Map<String, dynamic>.from(entry)));
+      } catch (_) {
+        // One bad zone must not abort the whole merge.
+      }
+    }
+    return out;
+  }
+
   void setKey(List<int> key) {
     _key = List<int>.of(key);
   }
@@ -113,8 +180,22 @@ class DashboardSyncService {
           ? null
           : DateTime.fromMillisecondsSinceEpoch(at);
       _lastSeenRemoteVersion = prefs.getInt(_kLastVersion) ?? 0;
+      _zones
+        ..clear()
+        ..addAll(_parseZones(_tryDecodeZones(prefs.getString(_kSafeZones))));
       _notify();
     } catch (_) {}
+  }
+
+  /// Local prefs hold a JSON string; tolerate anything corrupt by
+  /// treating it as "no zones".
+  Object? _tryDecodeZones(String? raw) {
+    if (raw == null || raw.isEmpty) return null;
+    try {
+      return json.decode(raw);
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Derives the 32-byte sync key from the caregiver password and the
@@ -222,6 +303,10 @@ class DashboardSyncService {
           },
       ],
       'dashboards': dashboards,
+      // Phase 2B safe zones: family-wide zone definitions. Coordinates
+      // and names live ONLY inside this encrypted blob — the server
+      // stores the ciphertext opaquely, exactly like dashboard words.
+      'safe_zones': [for (final z in _zones) z.toJson()],
     };
   }
 
@@ -414,6 +499,21 @@ class DashboardSyncService {
       }
     }
 
+    // Phase 2B safe zones: merge by id, last-writer-wins on updated_ts.
+    // Family-wide — not per-profile. Bad zone entries are skipped, never
+    // fatal to the merge.
+    final remoteZones = _parseZones(payload['safe_zones']);
+    if (payload.containsKey('safe_zones')) {
+      final merged = SafeZone.merge(_zones, remoteZones);
+      if (!_sameZones(_zones, merged)) {
+        _zones
+          ..clear()
+          ..addAll(merged);
+        await _persistZones();
+        result.safeZonesChanged = true;
+      }
+    }
+
     // Active profile follows only when the family enabled mirroring.
     if (_mirror) {
       final key = payload['activeProfileSyncKey'];
@@ -493,8 +593,17 @@ class DashboardSyncService {
     }
   }
 
-  Future<void> _mergeDashboard(
-    String syncKey,
+  /// Order-insensitive zone equality for merge change detection.
+  bool _sameZones(List<SafeZone> a, List<SafeZone> b) {
+    if (a.length != b.length) return false;
+    final byId = {for (final z in b) z.id: z};
+    for (final z in a) {
+      if (byId[z.id] != z) return false;
+    }
+    return true;
+  }
+
+  Future<void> _mergeDashboard(    String syncKey,
     Map<String, dynamic> json,
     DashboardSyncResult result,
   ) async {
@@ -583,7 +692,14 @@ class DashboardSyncResult {
   bool dashboardsChanged = false;
   bool activeChanged = false;
 
-  bool get changed => profilesChanged || dashboardsChanged || activeChanged;
+  /// Phase 2B: a pull added, updated, or reordered safe zones.
+  bool safeZonesChanged = false;
+
+  bool get changed =>
+      profilesChanged ||
+      dashboardsChanged ||
+      activeChanged ||
+      safeZonesChanged;
 }
 
 /// An AES-GCM encrypted blob, base64-encoded for transport.

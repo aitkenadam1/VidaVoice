@@ -18,13 +18,29 @@ class LocationAlertKind {
   static const shareStarted = 'share_started';
   static const shareStopped = 'share_stopped';
 
-  /// The only kinds the 2A client ever sends or honors. Geofence kinds
-  /// (`geofence_enter`/`geofence_exit`) arrive with Phase 2B.
+  /// Phase 2B geofence event kinds. The child's device will send these
+  /// once native geofence watching lands; client-side only for now — the
+  /// worker ingest update ships separately.
+  static const geofenceEnter = 'geofence_enter';
+  static const geofenceExit = 'geofence_exit';
+
+  /// Reserved for a later phase. Never sent yet.
+  static const geofenceDwell = 'geofence_dwell';
+
+  /// The only kinds the 2A client ever sends or honors.
   static const allowed2A = {
     sos,
     locationRequest,
     shareStarted,
     shareStopped,
+  };
+
+  /// Kinds the Phase 2B client may send once child-side geofence
+  /// watching lands (P2). Client-side only for now: the worker's
+  /// ALERT_KINDS validation accepts these separately.
+  static const allowed2B = {
+    geofenceEnter,
+    geofenceExit,
   };
 }
 

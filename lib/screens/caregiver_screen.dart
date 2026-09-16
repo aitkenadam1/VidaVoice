@@ -14,6 +14,7 @@ import '../widgets/dashboard_section.dart';
 import '../widgets/device_section.dart';
 import '../widgets/device_sync_section.dart';
 import '../widgets/first_week_plan_section.dart';
+import '../widgets/location_section.dart';
 import '../widgets/word_finder_section.dart';
 
 /// Caregiver hub: a customizable, collapsible set of sections.
@@ -811,6 +812,19 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
         icon: Icons.sync_outlined,
         summary: (session) => 'Encrypted dashboard sync across devices',
         content: (context, session, refresh) => const DeviceSyncSection(),
+      ),
+      _Section(
+        id: 'location',
+        title: 'Location',
+        icon: Icons.location_on_outlined,
+        summary: (session) {
+          final enabled = session.profiles.profiles
+              .where((p) => p.locationSharingEnabled)
+              .length;
+          if (enabled == 0) return 'Sharing is off';
+          return 'Sharing on for $enabled profile${enabled == 1 ? '' : 's'}';
+        },
+        content: (context, session, refresh) => const LocationSection(),
       ),
       _Section(
         id: 'calling-safety',

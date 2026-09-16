@@ -194,6 +194,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(session.onboardingComplete, isTrue);
       expect(session.proxySignedIn, isTrue);
+      // beginPolling() started a real periodic timer on signup; dispose the
+      // session before the test ends so no timer outlives the widget tree.
+      session.dispose();
     });
   });
 

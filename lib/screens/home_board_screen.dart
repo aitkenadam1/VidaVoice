@@ -10,6 +10,7 @@ import '../theme/onevoz_theme.dart';
 import '../widgets/call_shortcut_button.dart';
 import '../widgets/dashboard_tile.dart';
 import '../widgets/emergency_shortcut_button.dart';
+import '../widgets/location_status_banner.dart';
 import '../widgets/message_bar.dart';
 import '../widgets/safety_contact_avatar.dart';
 import '../widgets/tts_banner.dart';
@@ -66,6 +67,7 @@ class HomeBoardScreen extends StatelessWidget {
       body: Column(
         children: [
           const TtsBanner(),
+          const LocationStatusBanner(),
           Expanded(
             child: showDashboard
                 ? _dashboardGrid(session, pack, scale)

@@ -15,6 +15,8 @@ import '../services/elevenlabs_key_store.dart';
 import '../services/elevenlabs_service.dart';
 import '../services/elevenlabs_voice_store.dart';
 import '../services/language_pack_service.dart';
+import '../services/location_service.dart';
+import '../services/location_share_service.dart';
 import '../services/profile_service.dart';
 import '../services/proxy_client.dart';
 import '../services/symbol_override_service.dart';
@@ -73,6 +75,15 @@ class SessionState extends ChangeNotifier {
       dashboards: dashboards,
       prefsFactory: _prefsFactory,
     );
+    locationShare = LocationShareService(
+      proxy: this.proxy,
+      proxyAuth: this.proxyAuth,
+      profiles: profiles,
+      dashboardSync: dashboardSync,
+      gps: locationService,
+      prefsFactory: _prefsFactory,
+    );
+    locationShare.addListener(notifyListeners);
   }
 
   final Future<SharedPreferences> Function() _prefsFactory;
@@ -112,6 +123,14 @@ class SessionState extends ChangeNotifier {
   /// devices. Initialized in the constructor; wired (change listeners,
   /// first pull) in [boot].
   late final DashboardSyncService dashboardSync;
+
+  /// Phase 2A GPS. Production default; widget tests inject
+  /// [NoopLocationService] into screens directly so they stay hermetic.
+  final LocationService locationService = const GpsLocationService();
+
+  /// Phase 2A on-demand location sharing (caregiver opt-in per profile).
+  /// Initialized in the constructor; polling starts after sign-in.
+  late final LocationShareService locationShare;
 
   /// True when a proxy token is in hand (restored from secure storage on
   /// boot, or freshly signed in). The token is validated lazily on first
@@ -339,6 +358,7 @@ class SessionState extends ChangeNotifier {
       final keyB64 = await proxyAuth.readSyncKey();
       if (keyB64 == null || keyB64.isEmpty) return;
       dashboardSync.setKey(base64.decode(keyB64));
+      locationShare.beginPolling();
       final result = await dashboardSync.pullNow();
       if (result.changed) {
         await dashboards.backfillLabels(pack);
@@ -467,6 +487,7 @@ class SessionState extends ChangeNotifier {
       await proxyAuth.save(result);
     } catch (_) {}
     await _registerDevice();
+    locationShare.beginPolling();
     notifyListeners();
   }
 
@@ -534,6 +555,10 @@ class SessionState extends ChangeNotifier {
     _entitlementVoices = null;
     _entitlementFetched = null;
     dashboardSync.clearKey();
+    locationShare.stopPolling();
+    try {
+      await locationShare.stopSession(quiet: true);
+    } catch (_) {}
     try {
       await proxyAuth.clear();
     } catch (_) {}
@@ -1265,6 +1290,15 @@ class SessionState extends ChangeNotifier {
     }
     _announceBuild('Speaking: $text');
     notifyListeners();
+  }
+
+  /// Session teardown. Stops location polling and disposes the share service
+  /// so no periodic timer outlives the session (widget tests fail on leaked
+  /// timers; production disposes this once at app shutdown).
+  @override
+  void dispose() {
+    locationShare.dispose();
+    super.dispose();
   }
 }
 

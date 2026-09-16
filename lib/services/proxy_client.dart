@@ -720,6 +720,101 @@ class ProxyClient {
       rethrow;
     }
   }
+
+  // ---- Phase 2A location sharing (E2E-encrypted; same no-content ----
+  // ---- guarantee as dashboard sync: the server stores opaque blobs) ----
+
+  /// Upload one encrypted position ping (last-write-wins). The payload is
+  /// ciphertext the server never decrypts; [installId] identifies the
+  /// sharing device. Throws [ProxyException] on transport/server errors —
+  /// share sessions treat failures as best-effort and keep going.
+  Future<void> putLocationLatest({
+    required String installId,
+    required String ciphertext,
+    required String nonce,
+    required int version,
+  }) async {
+    _requireAuth();
+    await _putJson('/v1/sync/location/latest', {
+      'install_id': installId,
+      'ciphertext': ciphertext,
+      'nonce': nonce,
+      'version': version,
+    });
+  }
+
+  /// Download the encrypted latest-position blob for [installId], or null
+  /// when that device never shared (404). Other errors are rethrown.
+  Future<Map<String, dynamic>?> getLocationLatest(String installId) async {
+    _requireAuth();
+    try {
+      return await _getJson(
+        '/v1/sync/location/latest?install_id=${Uri.encodeComponent(installId)}',
+      );
+    } on ProxyException catch (e) {
+      if (e.statusCode == 404) return null;
+      rethrow;
+    }
+  }
+
+  /// Upload a batch of encrypted history points (≤500 per call). Each
+  /// point is {ciphertext, nonce, ts}. Best-effort like [putLocationLatest].
+  Future<void> postLocationPoints({
+    required String installId,
+    required List<Map<String, dynamic>> points,
+  }) async {
+    _requireAuth();
+    await _postJson('/v1/sync/location/points', {
+      'install_id': installId,
+      'points': points,
+    });
+  }
+
+  /// Download encrypted history points for [installId] in [since, until)
+  /// (unix ms). Returns {'points': [...], 'next_before': ...} for paging.
+  Future<Map<String, dynamic>> getLocationPoints({
+    required String installId,
+    required int since,
+    required int until,
+    int limit = 500,
+  }) async {
+    _requireAuth();
+    final q = 'install_id=${Uri.encodeComponent(installId)}'
+        '&since=$since&until=$until&limit=$limit';
+    return await _getJson('/v1/sync/location/points?$q');
+  }
+
+  /// Post an alert event. [kind] is plaintext (routing only): 'sos',
+  /// 'location_request', 'share_started', 'share_stopped'. Everything
+  /// sensitive (coordinates, zone names) is inside [ciphertext].
+  Future<void> postAlert({
+    required String installId,
+    required String kind,
+    required String ciphertext,
+    required String nonce,
+  }) async {
+    _requireAuth();
+    await _postJson('/v1/alerts', {
+      'install_id': installId,
+      'kind': kind,
+      'ciphertext': ciphertext,
+      'nonce': nonce,
+    });
+  }
+
+  /// List alert events since [sinceMs] (unix ms), newest last. Each item
+  /// is {id, install_id, kind, ciphertext, nonce, ts}; content decrypts
+  /// client-side with the family sync key.
+  Future<List<Map<String, dynamic>>> getAlerts({required int sinceMs}) async {
+    _requireAuth();
+    final res = await _getJson('/v1/alerts?since=$sinceMs');
+    final raw = res['alerts'];
+    if (raw is! List) return const [];
+    return [
+      for (final e in raw)
+        if (e is Map) Map<String, dynamic>.from(e),
+    ];
+  }
 }
 
 /// Secure storage for the proxy auth material: the bearer token, the

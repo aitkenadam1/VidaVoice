@@ -33,6 +33,7 @@ class EmergencyShortcutButton extends StatelessWidget {
           builder: (_) => EmergencyScreen(
             emergency: profile.emergency,
             contacts: profile.contacts,
+            locationService: session.locationService,
           ),
         ),
       ),

@@ -53,7 +53,7 @@ class _CallScreenState extends State<CallScreen> {
   @override
   void initState() {
     super.initState();
-    // Phase 1: NoopLocationService always resolves null. The UI degrades
+    // NoopLocationService always resolves null (tests / denied permission). The UI degrades
     // honestly — {gps} renders as "location unavailable", never a guess.
     widget.locationService.currentCoords().then((coords) {
       if (mounted) setState(() => _gps = coords);

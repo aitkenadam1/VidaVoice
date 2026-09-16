@@ -8,6 +8,7 @@ import '../state/session_state.dart';
 import '../widgets/build_strip_bar.dart';
 import '../widgets/call_shortcut_button.dart';
 import '../widgets/emergency_shortcut_button.dart';
+import '../widgets/location_status_banner.dart';
 import '../widgets/dashboard_tile.dart';
 import '../widgets/tts_banner.dart';
 import '../widgets/word_button.dart';
@@ -65,6 +66,7 @@ class BuildBoardScreen extends StatelessWidget {
       body: Column(
         children: [
           const TtsBanner(),
+          const LocationStatusBanner(),
           Expanded(
             child: showDashboard
                 ? _dashboardGrid(session, pack, scale)

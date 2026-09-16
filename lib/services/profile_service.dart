@@ -67,6 +67,25 @@ class UserProfile {
   /// Phase 1 calling & safety: behavior toggles for the calling flow.
   SafetySettings safety = const SafetySettings();
 
+  /// Phase 2A location sharing: caregiver opt-in per profile. OFF by
+  /// default — enabling it is an explicit caregiver action recorded with
+  /// [locationSharingConsentAt] as the consent record (COPPA). When false,
+  /// this profile's device never uploads position pings; SOS is the only
+  /// exception (the child explicitly asked for help).
+  bool locationSharingEnabled = false;
+
+  /// When the caregiver enabled location sharing for this profile, or
+  /// null when never enabled. Kept as the consent record; disabling
+  /// sharing keeps the last timestamp (the record of *when* consent was
+  /// given) while [locationSharingEnabled] gates actual uploads.
+  DateTime? locationSharingConsentAt;
+
+  /// Phase 2A: when true, a caregiver "Request location" alert auto-starts
+  /// a 15-minute share session on this profile's device without prompting.
+  /// Explicit caregiver opt-in per profile, default false — no silent
+  /// tracking without prior consent.
+  bool locationAutoShare = false;
+
   Map<String, dynamic> toJson() => {
     'id': id,
     'name': name,
@@ -79,6 +98,9 @@ class UserProfile {
     'callPhrases': callPhrases.map((p) => p.toJson()).toList(),
     'emergency': emergency.toJson(),
     'safety': safety.toJson(),
+    'locationSharingEnabled': locationSharingEnabled,
+    'locationSharingConsentAt': locationSharingConsentAt?.toIso8601String(),
+    'locationAutoShare': locationAutoShare,
     'updatedAt': updatedAt.toIso8601String(),
   };
 
@@ -119,6 +141,18 @@ class UserProfile {
     profile.callPhrases = _parseCallPhrases(json['callPhrases']);
     profile.emergency = _parseEmergency(json['emergency']);
     profile.safety = _parseSafetySettings(json['safety']);
+    // Phase 2A location opt-in: migration-safe, defaults OFF. The consent
+    // timestamp survives a disable so the consent record is kept.
+    profile.locationSharingEnabled = json['locationSharingEnabled'] is bool
+        ? json['locationSharingEnabled'] as bool
+        : false;
+    final consentRaw = json['locationSharingConsentAt'];
+    profile.locationSharingConsentAt = consentRaw is String
+        ? DateTime.tryParse(consentRaw)
+        : null;
+    profile.locationAutoShare = json['locationAutoShare'] is bool
+        ? json['locationAutoShare'] as bool
+        : false;
     final updatedRaw = json['updatedAt'];
     if (updatedRaw is String) {
       profile.updatedAt =
@@ -387,6 +421,33 @@ class ProfileService {
     _notifyChanged();
   }
 
+  /// Phase 2A location sharing opt-in for [id]. Enabling records the
+  /// consent timestamp (the COPPA consent record); disabling keeps the
+  /// last timestamp while stopping all uploads. Persisted locally and
+  /// synced inside the encrypted dashboard blob.
+  Future<void> setLocationSharingEnabled(String id, bool enabled) async {
+    final p = _byId(id);
+    if (p == null) return;
+    p.locationSharingEnabled = enabled;
+    if (enabled) {
+      p.locationSharingConsentAt = DateTime.now();
+    }
+    p.touch();
+    await _persist(await SharedPreferences.getInstance());
+    _notifyChanged();
+  }
+
+  /// Phase 2A: whether a caregiver "Request location" alert auto-starts
+  /// sharing for [id] (default false — explicit opt-in).
+  Future<void> setLocationAutoShare(String id, bool allowed) async {
+    final p = _byId(id);
+    if (p == null) return;
+    p.locationAutoShare = allowed;
+    p.touch();
+    await _persist(await SharedPreferences.getInstance());
+    _notifyChanged();
+  }
+
   UserProfile? _byId(String id) {
     for (final p in _profiles) {
       if (p.id == id) return p;
@@ -440,6 +501,9 @@ class ProfileService {
     required List<CallPhrase> callPhrases,
     required EmergencyProfileData emergency,
     required SafetySettings safety,
+    required bool locationSharingEnabled,
+    required DateTime? locationSharingConsentAt,
+    required bool locationAutoShare,
   }) async {
     profile.name = name;
     profile.communicationMode = mode;
@@ -453,6 +517,18 @@ class ProfileService {
     profile.callPhrases = List<CallPhrase>.of(callPhrases);
     profile.emergency = emergency;
     profile.safety = safety;
+    // Phase 2A: the location opt-in converges across devices like any
+    // other profile setting. The consent timestamp is the later of the two
+    // records — consent was given at least as recently as the newest stamp.
+    profile.locationSharingEnabled = locationSharingEnabled;
+    final localConsent = profile.locationSharingConsentAt;
+    profile.locationSharingConsentAt =
+        (localConsent != null &&
+            (locationSharingConsentAt == null ||
+                localConsent.isAfter(locationSharingConsentAt)))
+        ? localConsent
+        : locationSharingConsentAt;
+    profile.locationAutoShare = locationAutoShare;
     profile.updatedAt = updatedAt;
     await _persist(await SharedPreferences.getInstance());
   }

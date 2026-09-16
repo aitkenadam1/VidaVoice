@@ -221,7 +221,11 @@ String composeEmergencySms(EmergencyProfileData e, {String? gps}) {
   }
   final loc = gps?.trim() ?? '';
   if (loc.isNotEmpty) {
-    parts.add('GPS: $loc.');
+    // Phase 2A: a tappable maps link goes out with the coordinates —
+    // dispatchers and first responders tap instead of retyping them in a
+    // crisis. The link costs ~40 chars of the SMS segment; the raw
+    // coordinates stay so the message is still useful if the link breaks.
+    parts.add('GPS: $loc. Map: https://maps.google.com/?q=$loc');
   }
   return parts.join(' ');
 }

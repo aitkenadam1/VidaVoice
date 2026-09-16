@@ -81,6 +81,12 @@ class DashboardSyncService {
 
   bool get hasKey => _key != null && _key!.length == 32;
 
+  /// The raw 32-byte sync key, for sibling E2E services (e.g. location
+  /// sharing) that encrypt blobs the server stores opaquely under the
+  /// same no-content guarantee. Null when no key is derived. Callers must
+  /// never log, transmit, or persist these bytes outside an encrypted blob.
+  List<int>? get keyBytes => _key == null ? null : List<int>.of(_key!);
+
   bool get mirrorActiveProfile => _mirror;
 
   void setKey(List<int> key) {
@@ -205,6 +211,13 @@ class DashboardSyncService {
             'callPhrases': p.callPhrases.map((cp) => cp.toJson()).toList(),
             'emergency': p.emergency.toJson(),
             'safety': p.safety.toJson(),
+            // Phase 2A location opt-in + consent record ride the encrypted
+            // blob with the rest of the per-profile content — never
+            // plaintext. All devices agree on whether sharing is allowed.
+            'locationSharingEnabled': p.locationSharingEnabled,
+            'locationSharingConsentAt':
+                p.locationSharingConsentAt?.toIso8601String(),
+            'locationAutoShare': p.locationAutoShare,
             'updatedAt': p.updatedAt.toIso8601String(),
           },
       ],
@@ -451,6 +464,9 @@ class DashboardSyncService {
         callPhrases: _parseCallPhrases(entry['callPhrases']),
         emergency: _parseEmergency(entry['emergency']),
         safety: _parseSafety(entry['safety']),
+        locationSharingEnabled: _parseBool(entry['locationSharingEnabled'], false),
+        locationSharingConsentAt: _parseDateOrNull(entry['locationSharingConsentAt']),
+        locationAutoShare: _parseBool(entry['locationAutoShare'], false),
         updatedAt: updatedAt,
       );
       result.profilesChanged = true;
@@ -468,6 +484,9 @@ class DashboardSyncService {
         callPhrases: _parseCallPhrases(entry['callPhrases']),
         emergency: _parseEmergency(entry['emergency']),
         safety: _parseSafety(entry['safety']),
+        locationSharingEnabled: _parseBool(entry['locationSharingEnabled'], false),
+        locationSharingConsentAt: _parseDateOrNull(entry['locationSharingConsentAt']),
+        locationAutoShare: _parseBool(entry['locationAutoShare'], false),
         updatedAt: updatedAt,
       );
       result.profilesChanged = true;
@@ -491,6 +510,10 @@ class DashboardSyncService {
 
   DateTime _parseDate(Object? v) =>
       v is String ? (DateTime.tryParse(v) ?? DateTime.now()) : DateTime.now();
+
+  /// Phase 2A location consent: null when never enabled (migration-safe).
+  DateTime? _parseDateOrNull(Object? v) =>
+      v is String ? DateTime.tryParse(v) : null;
 
   int _parseInt(Object? v, int fallback) =>
       v is int ? v : (v is num ? v.toInt() : fallback);

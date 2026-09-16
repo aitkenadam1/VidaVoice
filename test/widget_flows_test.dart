@@ -270,6 +270,9 @@ void main() {
     expect(find.text('want'), findsOneWidget);
     expect(session.onboardingComplete, isTrue);
     expect(session.profiles.activeName, 'Maya');
+    // beginPolling() started a real periodic timer on signup; dispose the
+    // session before the test ends so no timer outlives the widget tree.
+    session.dispose();
   });
 
   testWidgets('Spanish pack renders Spanish labels on the board', (

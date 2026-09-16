@@ -250,7 +250,8 @@ void main() {
       expect(
         composeEmergencySms(full, gps: '40.7128,-74.0060'),
         'EMERGENCY - Leo is nonverbal, please communicate by text. '
-        'Address: 123 Main St. Parent: Ann 555-0101. GPS: 40.7128,-74.0060.',
+        'Address: 123 Main St. Parent: Ann 555-0101. '
+        'GPS: 40.7128,-74.0060. Map: https://maps.google.com/?q=40.7128,-74.0060',
       );
     });
 

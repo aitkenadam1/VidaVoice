@@ -69,6 +69,7 @@ class CallConfirmScreen extends StatelessWidget {
           phrases: profile?.callPhrases ?? const [],
           emergency: profile?.emergency,
           safety: profile?.safety ?? const SafetySettings(),
+          locationService: session.locationService,
         ),
       ),
     );

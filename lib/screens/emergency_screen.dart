@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'dart:async';
+
 import '../models/calling_safety.dart';
 import '../services/location_service.dart';
 import '../state/session_state.dart';
@@ -17,7 +19,7 @@ import 'call_screen.dart';
 ///
 /// - Call 911 / Text 911 go straight to the OS dialer / SMS composer.
 ///   The Text-911 body is pre-composed by [composeEmergencySms]; the GPS
-///   line is omitted when no location is available (Phase 1: always).
+///   line is omitted when no location is available.
 /// - Call Mom / Call Dad reuse the normal 2-tap confirm flow.
 /// - The emergency card is a full-screen, high-contrast info sheet meant
 ///   to be held up to a bystander.
@@ -43,12 +45,18 @@ class EmergencyScreen extends StatefulWidget {
 
 class _EmergencyScreenState extends State<EmergencyScreen> {
   String? _gps;
+  bool _gpsResolved = false;
 
   @override
   void initState() {
     super.initState();
     widget.locationService.currentCoords().then((coords) {
-      if (mounted) setState(() => _gps = coords);
+      if (mounted) {
+        setState(() {
+          _gps = coords;
+          _gpsResolved = true;
+        });
+      }
     });
   }
 
@@ -78,13 +86,20 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
     );
   }
 
-  Future<void> _call911() =>
-      _launch(telUri('911'), 'Could not open the phone app on this device.');
+  Future<void> _call911() {
+    // SOS location: one encrypted position + alert, even when sharing is
+    // off — the child explicitly asked for help. Best-effort and never
+    // blocking: the dialer opens regardless of the upload outcome.
+    unawaited(context.read<SessionState>().locationShare.uploadSos());
+    return _launch(telUri('911'), 'Could not open the phone app on this device.');
+  }
 
   Future<void> _text911() {
     // Phase 1 opens the native SMS composer: the OS Send button is the
     // human gate before anything goes out. Nothing sends silently.
     // iOS needs `&body=`, Android needs `?body=` for the prefill to land.
+    // The SOS location upload rides along (best-effort, non-blocking).
+    unawaited(context.read<SessionState>().locationShare.uploadSos());
     final uri = smsUri(
       '911',
       composeEmergencySms(widget.emergency, gps: _gps),
@@ -112,12 +127,14 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
   }
 
   void _practiceReplies() {
+    final locationService = context.read<SessionState>().locationService;
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => CallScreen(
           emergencyMode: true,
           phrases: const [],
           emergency: widget.emergency,
+          locationService: locationService,
         ),
       ),
     );
@@ -233,9 +250,9 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                       onTap: _showCard,
                     ),
                     const SizedBox(height: 4),
-                    // Honest location strip. Phase 1 has no GPS, so this
-                    // never claims "GPS ready" — the saved address fills
-                    // phrases and texts instead.
+                    // Honest location strip. Phase 2A fills real GPS when
+                    // the OS provides it; otherwise it says so plainly and
+                    // the saved address fills phrases and texts instead.
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(14),
@@ -245,11 +262,15 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                             .surfaceContainerLow,
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: const Text(
-                        'Location sharing arrives in a later update — for '
-                        'now, phrases and texts use your saved address.',
+                      child: Text(
+                        !_gpsResolved
+                            ? 'Checking location\u2026'
+                            : (_gps != null && _gps!.trim().isNotEmpty)
+                            ? 'GPS ready \u2014 your texts include your location.'
+                            : 'Location unavailable \u2014 texts will use your '
+                                  'saved address.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 14),
+                        style: const TextStyle(fontSize: 14),
                       ),
                     ),
                     const SizedBox(height: 8),

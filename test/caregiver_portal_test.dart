@@ -193,6 +193,22 @@ void main() {
       expect(find.text('Re-run setup'), findsOneWidget);
     });
 
+    testWidgets('settings tab has a plain sign out button at the bottom', (
+      tester,
+    ) async {
+      final session = await _makeSession(_FakeDeviceBackend());
+      await _pumpPortal(tester, session);
+
+      await tester.tap(find.text('Settings'));
+      await tester.pumpAndSettle();
+
+      // Scroll to the bottom of the settings list so the button is visible.
+      await tester.drag(find.byType(ListView).first, const Offset(0, -2000));
+      await tester.pumpAndSettle();
+
+      expect(find.widgetWithText(OutlinedButton, 'Sign out'), findsOneWidget);
+    });
+
     testWidgets('devices tab lists devices and marks this one', (
       tester,
     ) async {

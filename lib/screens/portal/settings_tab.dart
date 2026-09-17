@@ -96,8 +96,49 @@ class PortalSettingsTab extends StatelessWidget {
           icon: Icons.more_horiz,
           child: _SetupAndNext(session: session),
         ),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            icon: const Icon(Icons.logout_outlined),
+            label: const Text('Sign out'),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+            ),
+            onPressed: () => _signOut(context),
+          ),
+        ),
+        const SizedBox(height: 16),
       ],
     );
+  }
+
+  /// Plain sign-out at the bottom of Settings: the same confirm-then-sign-out
+  /// flow as the Account tab, duplicated here on purpose so it is easy to
+  /// find (owner request — it took a minute to locate in the Account tab).
+  Future<void> _signOut(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Sign out?'),
+        content: const Text(
+          'This device will be signed out of the family account. '
+          'Boards already on this device keep working offline.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Sign out'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !context.mounted) return;
+    await context.read<SessionState>().signOut();
   }
 }
 

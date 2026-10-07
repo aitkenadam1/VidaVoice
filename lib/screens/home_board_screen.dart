@@ -19,7 +19,6 @@ import '../widgets/tts_banner.dart';
 import '../widgets/word_button.dart';
 import 'call_confirm_screen.dart';
 import 'category_screen.dart';
-import 'settings_screen.dart';
 
 /// The home board: 282 core words in FIXED positions (see en.json — motor
 /// planning is sacred) plus 4 folder tiles. Max 2 taps to any word.
@@ -55,13 +54,9 @@ class HomeBoardScreen extends StatelessWidget {
         actions: [
           const CallShortcutButton(),
           const EmergencyShortcutButton(),
-          IconButton(
-            tooltip: 'Settings',
-            icon: const Icon(Icons.settings),
-            onPressed: () => Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
-          ),
+          // No Settings gear here, on purpose: caregiver controls (account,
+          // voices, keys, sign-out) live only in the Caregiver Portal,
+          // reached through the password gate — never from an AAC board.
         ],
       ),
       body: Column(

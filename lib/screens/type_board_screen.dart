@@ -10,7 +10,6 @@ import '../widgets/call_shortcut_button.dart';
 import '../widgets/emergency_shortcut_button.dart';
 import '../widgets/location_request_prompt.dart';
 import '../widgets/tts_banner.dart';
-import 'settings_screen.dart';
 
 /// The Type-mode home screen (Phase 4 of the modes plan): a real text
 /// keyboard, a deterministic on-device prediction row, saved phrases,
@@ -193,13 +192,9 @@ class _TypeBoardScreenState extends State<TypeBoardScreen> {
         actions: [
           const CallShortcutButton(),
           const EmergencyShortcutButton(),
-          IconButton(
-            tooltip: 'Settings',
-            icon: const Icon(Icons.settings),
-            onPressed: () => Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
-          ),
+          // No Settings gear here, on purpose: caregiver controls (account,
+          // voices, keys, sign-out) live only in the Caregiver Portal,
+          // reached through the password gate — never from an AAC board.
         ],
       ),
       body: Column(

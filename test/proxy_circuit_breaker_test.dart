@@ -306,24 +306,31 @@ void main() {
       expect(spoken, ['Hello']);
     });
 
-    test('SessionState wires onProxyUnauthorized to signOut', () async {
-      final proxy = ProxyClient(
-        client: MockClient((_) async => http.Response('unused', 500)),
-        baseUrl: 'https://proxy.test',
-      );
-      final session = SessionState(
-        tts: TtsService(),
-        proxy: proxy,
-        proxyAuth: ProxyAuthStore(store: _FakeSecureStore()),
-      );
-      expect(session.tts.onProxyUnauthorized, isNotNull);
-      // Simulate what the speech path does on a 401.
-      proxy.setToken('tok-1');
-      session.proxySignedIn = true;
-      await session.tts.onProxyUnauthorized!();
-      expect(session.proxy.hasToken, isFalse);
-      expect(session.proxySignedIn, isFalse);
-    });
+    test(
+      'SessionState wires onProxyUnauthorized to degrade, not signOut',
+      () async {
+        final proxy = ProxyClient(
+          client: MockClient((_) async => http.Response('unused', 500)),
+          baseUrl: 'https://proxy.test',
+        );
+        final session = SessionState(
+          tts: TtsService(),
+          proxy: proxy,
+          proxyAuth: ProxyAuthStore(store: _FakeSecureStore()),
+        );
+        expect(session.tts.onProxyUnauthorized, isNotNull);
+        // Simulate what the speech path does on a 401.
+        proxy.setToken('tok-1');
+        session.proxySignedIn = true;
+        await session.tts.onProxyUnauthorized!();
+        // Cloud access is dropped, so cloud voices stop presenting as
+        // live...
+        expect(session.proxy.hasToken, isFalse);
+        // ...but the session survives: a rejected token must never strand
+        // a communicator on the role question. Boards keep working.
+        expect(session.proxySignedIn, isTrue);
+      },
+    );
   });
 
   group('ElevenLabs path circuit breaker', () {

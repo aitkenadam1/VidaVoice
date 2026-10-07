@@ -64,6 +64,36 @@ class _PortalProfilesTabState extends State<PortalProfilesTab> {
                                 tooltip: 'Remove profile',
                                 icon: const Icon(Icons.delete_outline),
                                 onPressed: () async {
+                                  // Destructive and irreversible (custom
+                                  // words, voices, history) — confirm first,
+                                  // like every other destructive action.
+                                  final confirm = await showDialog<bool>(
+                                    context: context,
+                                    builder: (ctx) => AlertDialog(
+                                      title: Text('Remove "${p.name}"?'),
+                                      content: const Text(
+                                        'This deletes the profile and its '
+                                        'custom words, saved voices, and '
+                                        'history on this device. '
+                                        "This can't be undone.",
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.of(ctx).pop(false),
+                                          child: const Text('Cancel'),
+                                        ),
+                                        FilledButton(
+                                          onPressed: () =>
+                                              Navigator.of(ctx).pop(true),
+                                          child: const Text('Remove profile'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  if (confirm != true || !context.mounted) {
+                                    return;
+                                  }
                                   await session.removeProfile(p.id);
                                   _refresh();
                                 },

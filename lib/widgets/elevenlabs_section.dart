@@ -135,6 +135,27 @@ class _ProxyVoiceCardState extends State<_ProxyVoiceCard> {
   }
 
   Future<void> _signOut() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Sign out?'),
+        content: const Text(
+          'This device will be signed out of the family account. '
+          'Boards already on this device keep working offline.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Sign out'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
     await context.read<SessionState>().signOut();
     widget.onVoicesChanged();
   }

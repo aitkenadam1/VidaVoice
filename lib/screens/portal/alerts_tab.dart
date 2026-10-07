@@ -18,7 +18,7 @@ class PortalAlertsTab extends StatelessWidget {
         title: 'Alert history',
         body:
             'Safe-zone enter/leave alerts and the alert history feed will '
-            'live here. Alerts already reach this device as push '
+            'live here. Alerts will reach this device as push '
             'notifications once automatic zone watching ships.',
         icon: Icons.notifications_outlined,
       ),

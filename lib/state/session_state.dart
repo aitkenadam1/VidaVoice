@@ -71,10 +71,10 @@ class SessionState extends ChangeNotifier {
     this.tts.proxyProfileIdProvider = () =>
         _serverProfileIds.isNotEmpty ? _serverProfileIds.first : null;
     // The speech path calls proxy.synthesize directly (it must never throw
-    // past the UI), so a 401 there bypasses _authed: this closes the gap —
-    // an expired session signs out instead of invisibly switching the
-    // child's voice to the system voice.
-    this.tts.onProxyUnauthorized = () => signOut();
+    // past the UI), so a 401 there bypasses _authed. It degrades the voice
+    // (see handleProxySessionExpired) — it must never sign the device out
+    // from under a communicator mid-conversation.
+    this.tts.onProxyUnauthorized = () => handleProxySessionExpired();
     dashboardSync = DashboardSyncService(
       proxy: this.proxy,
       profiles: profiles,
@@ -577,6 +577,27 @@ class SessionState extends ChangeNotifier {
     }
   }
 
+  /// A proxy 401 (expired or rejected family token) degrades cloud
+  /// features — it never signs the device out. Signing out from under a
+  /// communicator would strand them on the role question, and account or
+  /// cloud trouble must never block AAC communication. Instead: drop the
+  /// in-memory token so cloud features stop presenting as live, forget
+  /// the cloud-voice choice so speech honestly falls back to on-device
+  /// voices, and keep the session, the device role, and every cached
+  /// board. A caregiver restores cloud access by signing in again from
+  /// the Portal; a revoked device simply never gets cloud access back,
+  /// while its cached boards keep working.
+  Future<void> handleProxySessionExpired() async {
+    if (!proxy.hasToken) return; // already degraded — stay quiet
+    proxy.setToken(null);
+    _entitlementVoices = null;
+    _entitlementFetched = null;
+    if (tts.currentVoice?.isProxy ?? false) {
+      await clearVoice();
+    }
+    notifyListeners();
+  }
+
   /// Sign out of the managed backend: drop the token (secure storage too)
   /// and forget any proxy voice choice. The install id is kept so a
   /// re-sign-in re-registers the same device instead of burning a slot.
@@ -613,14 +634,15 @@ class SessionState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Run a proxy call, signing out silently when the token is rejected.
-  /// "Silently" means no error surfacing — listeners are still notified so
-  /// the UI reflects the signed-out state.
+  /// Run a proxy call, degrading cloud features when the token is
+  /// rejected. A 401 drops the in-memory token (see
+  /// [handleProxySessionExpired]) but never signs the device out —
+  /// listeners are still notified so the UI reflects the degraded state.
   Future<T> _authed<T>(Future<T> Function() call) async {
     try {
       return await call();
     } on ProxyException catch (e) {
-      if (e.code == 'unauthorized') await signOut();
+      if (e.code == 'unauthorized') await handleProxySessionExpired();
       rethrow;
     }
   }
@@ -630,8 +652,8 @@ class SessionState extends ChangeNotifier {
   static const _entitlementTtl = Duration(seconds: 60);
 
   /// The family's cloud voices, cached briefly in memory. Throws
-  /// [ProxyException] on failure (including "unauthorized", which signs
-  /// out first).
+  /// [ProxyException] on failure (an "unauthorized" first degrades the
+  /// session via [_authed]; it never signs the device out).
   Future<List<ProxyVoice>> proxyEntitlement({bool force = false}) async {
     final now = DateTime.now();
     if (!force &&

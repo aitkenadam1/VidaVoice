@@ -14,7 +14,6 @@ import '../widgets/dashboard_tile.dart';
 import '../widgets/tts_banner.dart';
 import '../widgets/word_button.dart';
 import 'category_screen.dart';
-import 'settings_screen.dart';
 
 /// The Build-mode home board (Phase 3 of the modes plan): the same
 /// 282-word home grid, folder tiles, and personal-dashboard support as
@@ -53,13 +52,9 @@ class BuildBoardScreen extends StatelessWidget {
         actions: [
           const CallShortcutButton(),
           const EmergencyShortcutButton(),
-          IconButton(
-            tooltip: 'Settings',
-            icon: const Icon(Icons.settings),
-            onPressed: () => Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
-          ),
+          // No Settings gear here, on purpose: caregiver controls (account,
+          // voices, keys, sign-out) live only in the Caregiver Portal,
+          // reached through the password gate — never from an AAC board.
         ],
       ),
       body: Column(

@@ -19,13 +19,14 @@ import '../state/session_state.dart';
 Future<void> showCaregiverEntrySheet(
   BuildContext context, {
   int initialPortalTab = 0,
-}) {
+}) async {
+  final session = context.read<SessionState>();
   // One-shot deep link: when the caregiver opens the portal from here,
   // it lands on the requested tab (e.g. Safety for "Continue as
   // caregiver" from the no-contacts sheet). The portal consumes and
   // clears it in initState; signOut also clears it.
-  context.read<SessionState>().pendingPortalTab = initialPortalTab;
-  return showModalBottomSheet(
+  session.pendingPortalTab = initialPortalTab;
+  await showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     builder: (_) => ModeSwitchGate(
@@ -34,6 +35,11 @@ Future<void> showCaregiverEntrySheet(
       onVerified: () => Navigator.of(context).pop(),
     ),
   );
+  // Dismissed without verifying (still a communicator): the staged hint
+  // must not leak into the next portal visit.
+  if (session.deviceRole != DeviceRole.caregiver) {
+    session.pendingPortalTab = null;
+  }
 }
 
 /// Password gate for switching a device between communicator and
@@ -105,7 +111,22 @@ class _ModeSwitchGateState extends State<ModeSwitchGate> {
       // Verification login only: the returned token is discarded. This
       // must never call session.signIn — that would re-register the
       // device and re-derive the sync key mid-session.
-      await session.proxy.login(identifier: identifier, password: password);
+      final result =
+          await session.proxy.login(identifier: identifier, password: password);
+      // The gate must prove THIS family's caregiver, not just any valid
+      // OneVoz account: a sibling's or classmate's login must not unlock
+      // this family's portal on this device.
+      final sessionFamily = session.proxyFamilyId;
+      if (sessionFamily != null && result.familyId != sessionFamily) {
+        if (!mounted) return;
+        setState(() {
+          _busy = false;
+          _error =
+              "That account belongs to a different family. Use this "
+              "family's caregiver account.";
+        });
+        return;
+      }
       if (!mounted) return;
       if (widget.offerSignOut) {
         // Communicator-side entry: don't switch yet. The caregiver

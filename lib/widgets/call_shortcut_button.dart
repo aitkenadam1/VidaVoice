@@ -84,6 +84,15 @@ class CallShortcutButton extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
+                  // The number rides on the sheet itself (not only on the
+                  // confirm screen one tap later) so a caregiver can see
+                  // exactly which number each name will dial.
+                  subtitle: c.phone.isNotEmpty
+                      ? Text(
+                          c.phone,
+                          style: const TextStyle(fontSize: 15),
+                        )
+                      : null,
                   trailing: const Icon(Icons.call),
                   onTap: () {
                     Navigator.of(sheetContext).pop();

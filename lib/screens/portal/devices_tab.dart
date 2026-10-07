@@ -142,13 +142,13 @@ class _PortalDevicesTabState extends State<PortalDevicesTab> {
     await _load();
   }
 
-  Future<void> _assign(ProxyDevice device, String? profileId) async {
+  Future<void> _assign(ProxyDevice device, String? profileKey) async {
     final session = context.read<SessionState>();
     setState(() => _busy = true);
     try {
       await session.dashboardSync.setDeviceAssignment(
         device.installId,
-        profileId,
+        profileKey,
       );
       // Best-effort publish: the assignment is saved locally either way,
       // and converges on the next sync.
@@ -250,7 +250,7 @@ class _PortalDevicesTabState extends State<PortalDevicesTab> {
               context,
               device: device,
               isSelf: device.installId == _thisInstallId,
-              assignedProfileId: assignments[device.installId],
+              assignedProfileKey: assignments[device.installId],
               profiles: profiles,
             ),
           if ((list?.devices ?? const []).isEmpty)
@@ -270,13 +270,21 @@ class _PortalDevicesTabState extends State<PortalDevicesTab> {
     BuildContext context, {
     required ProxyDevice device,
     required bool isSelf,
-    required String? assignedProfileId,
+    required String? assignedProfileKey,
     required List<UserProfile> profiles,
   }) {
     final scheme = Theme.of(context).colorScheme;
-    final assigned = assignedProfileId == null
+    // Assignments carry the profile's stable syncKey so they resolve on
+    // every device; fall back to a local-id match for values a legacy
+    // blob wrote before the sync identity landed.
+    final assigned = assignedProfileKey == null
         ? null
-        : profiles.where((p) => p.id == assignedProfileId).firstOrNull;
+        : (profiles
+                  .where((p) => p.syncKey == assignedProfileKey)
+                  .firstOrNull ??
+              profiles
+                  .where((p) => p.id == assignedProfileKey)
+                  .firstOrNull);
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: Padding(
@@ -371,7 +379,9 @@ class _PortalDevicesTabState extends State<PortalDevicesTab> {
         children: [
           for (final p in profiles)
             SimpleDialogOption(
-              onPressed: () => Navigator.of(ctx).pop(p.id),
+              // The assignment stores the profile's stable syncKey, so
+              // it means the same profile on every device in the family.
+              onPressed: () => Navigator.of(ctx).pop(p.syncKey),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text(p.name, style: const TextStyle(fontSize: 16)),

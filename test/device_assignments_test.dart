@@ -62,6 +62,27 @@ Future<DashboardSyncService> _makeDevice(
   return sync;
 }
 
+/// Same device factory, but the test keeps the [ProfileService] handle
+/// so it can reason about local ids vs syncKeys.
+Future<(DashboardSyncService, ProfileService)> _makeDeviceWithProfiles(
+  _FakeSyncServer server,
+  List<int> key,
+) async {
+  final profiles = ProfileService();
+  final dashboards = DashboardService();
+  await profiles.load();
+  await dashboards.load();
+  final sync = DashboardSyncService(
+    proxy: server.client(),
+    profiles: profiles,
+    dashboards: dashboards,
+    prefsFactory: () async => await SharedPreferences.getInstance(),
+  );
+  await sync.loadPersisted();
+  sync.setKey(key);
+  return (sync, profiles);
+}
+
 void main() {
   // One shared mock-prefs store per test: _makeDevice must NOT reset it,
   // or a "second device" would wipe the first device's persisted state.
@@ -135,6 +156,81 @@ void main() {
       final result = await local.pullNow();
       expect(result.assignmentsChanged, isFalse);
       expect(local.deviceAssignments, {'dev-a': 'profile-1'});
+    });
+  });
+
+  group('syncKey identity', () {
+    test('setting an assignment by local id stores the syncKey', () async {
+      final (sync, profiles) = await _makeDeviceWithProfiles(
+        _FakeSyncServer(),
+        List.filled(32, 7),
+      );
+      final kid = profiles.active!;
+      await sync.setDeviceAssignment('dev-a', kid.id);
+      // Stored value is the stable cross-device identity, not the
+      // device-local id (which no other device could resolve).
+      expect(sync.deviceAssignments, {'dev-a': kid.syncKey});
+      expect(kid.syncKey, isNot(kid.id));
+    });
+
+    test('a legacy persisted blob migrates to syncKeys on load', () async {
+      final server = _FakeSyncServer();
+      final key = List.filled(32, 7);
+      final (first, firstProfiles) = await _makeDeviceWithProfiles(server, key);
+      final kid = firstProfiles.active!;
+      // Simulate a pre-syncKey build: the persisted assignments name
+      // the profile by its LOCAL id.
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+        'vidavoice.sync.deviceAssignments',
+        json.encode({'dev-a': kid.id}),
+      );
+      // A fresh service instance over the same stored state (the
+      // upgraded app's next launch).
+      final (second, _) = await _makeDeviceWithProfiles(server, key);
+      expect(second.deviceAssignments, {'dev-a': kid.syncKey});
+    });
+
+    test('assignments converge across devices by syncKey', () async {
+      final server = _FakeSyncServer();
+      final key = List.filled(32, 7);
+      final (a, aProfiles) = await _makeDeviceWithProfiles(server, key);
+      final kid = await aProfiles.addProfile('Kid');
+      await a.setDeviceAssignment('tablet-1', kid.id);
+      expect(a.deviceAssignments, {'tablet-1': kid.syncKey});
+      await a.pushNow();
+
+      // A genuinely fresh device: wipe local prefs (same server, same key).
+      SharedPreferences.setMockInitialValues({});
+      final (b, bProfiles) = await _makeDeviceWithProfiles(server, key);
+      final result = await b.pullNow();
+      expect(result.assignmentsChanged, isTrue);
+      expect(b.deviceAssignments, {'tablet-1': kid.syncKey});
+      // And the value RESOLVES on this device: the profile itself
+      // synced in under the same syncKey.
+      expect(bProfiles.bySyncKey(kid.syncKey)?.name, 'Kid');
+    });
+
+    test('a remote legacy value upgrades on merge when known here', () async {
+      final server = _FakeSyncServer();
+      final key = List.filled(32, 7);
+      // Device B and its profile; a pre-upgrade build on B would have
+      // written this LOCAL id into the blob.
+      final (b, bProfiles) = await _makeDeviceWithProfiles(server, key);
+      final kid = bProfiles.active!;
+      // A genuinely separate writer (fresh local state) does not know
+      // B's local id, so it passes the legacy value through untouched —
+      // the blob now carries it, like a pre-upgrade writer would.
+      SharedPreferences.setMockInitialValues({});
+      final (writer, _) = await _makeDeviceWithProfiles(server, key);
+      await writer.setDeviceAssignment('dev-a', kid.id);
+      expect(writer.deviceAssignments, {'dev-a': kid.id});
+      await writer.pushNow();
+
+      final result = await b.pullNow();
+      expect(result.assignmentsChanged, isTrue);
+      // B recognizes its own local id and upgrades it to the syncKey.
+      expect(b.deviceAssignments, {'dev-a': kid.syncKey});
     });
   });
 }

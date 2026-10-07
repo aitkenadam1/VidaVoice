@@ -61,11 +61,13 @@ class DashboardSyncService {
   /// so zones survive restarts before the first pull completes.
   static const _kSafeZones = 'vidavoice.sync.safeZones';
 
-  /// Device → communicator-profile assignments (install id → local
-  /// profile id). Family-wide, inside the encrypted blob like safe
-  /// zones, so every caregiver device agrees which device serves which
-  /// communicator. Local profile ids are meaningless to the server —
-  /// they travel only inside the ciphertext.
+  /// Device → communicator-profile assignments (install id → profile
+  /// syncKey). Family-wide, inside the encrypted blob like safe zones,
+  /// so every caregiver device agrees which device serves which
+  /// communicator. The value is the profile's stable cross-device
+  /// [UserProfile.syncKey] — never a local profile id, which means
+  /// nothing on any other device. Both stay opaque to the server: they
+  /// travel only inside the ciphertext.
   static const _kDeviceAssignments = 'vidavoice.sync.deviceAssignments';
 
   /// PBKDF2 iteration count for the sync key. Production value; tests pass
@@ -80,7 +82,7 @@ class DashboardSyncService {
   /// local prefs, and published inside the encrypted payload.
   final List<SafeZone> _zones = [];
 
-  /// install_id → local profile id assignments. Kept in memory,
+  /// install_id → profile syncKey assignments. Kept in memory,
   /// persisted to local prefs, and published inside the encrypted
   /// payload.
   final Map<String, String> _deviceAssignments = {};
@@ -168,21 +170,52 @@ class DashboardSyncService {
     return out;
   }
 
-  /// The family's device → profile assignments. Unmodifiable; mutate
-  /// through [setDeviceAssignment] so persistence, sync, and listeners
-  /// stay consistent.
+  /// Translates an assignment value to the profile's stable syncKey.
+  /// Blobs written before assignments carried sync identity hold LOCAL
+  /// profile ids, which only mean something on the device that created
+  /// them; when this device knows that local id, the value upgrades so
+  /// it converges family-wide. A value that already is a syncKey — or
+  /// that matches nothing known here — passes through untouched: it
+  /// may resolve once the profile itself syncs in.
+  String _normalizeAssignmentValue(String value) {
+    if (_profiles.bySyncKey(value) != null) return value;
+    for (final p in _profiles.profiles) {
+      if (p.id == value) return p.syncKey;
+    }
+    return value;
+  }
+
+  /// Normalizes every stored assignment value in place. Returns true
+  /// when at least one value changed (callers re-persist/publish then).
+  bool _normalizeAssignments() {
+    var changed = false;
+    for (final installId in _deviceAssignments.keys.toList()) {
+      final v = _normalizeAssignmentValue(_deviceAssignments[installId]!);
+      if (v != _deviceAssignments[installId]) {
+        _deviceAssignments[installId] = v;
+        changed = true;
+      }
+    }
+    return changed;
+  }
+
+  /// The family's device → profile assignments (install id → profile
+  /// syncKey). Unmodifiable; mutate through [setDeviceAssignment] so
+  /// persistence, sync, and listeners stay consistent.
   Map<String, String> get deviceAssignments =>
       Map.unmodifiable(_deviceAssignments);
 
-  /// Assigns the device [installId] to the communicator profile
-  /// [profileId], or clears the assignment when [profileId] is null.
+  /// Assigns the device [installId] to a communicator profile, or
+  /// clears the assignment when [profileKey] is null. [profileKey] is
+  /// the profile's stable syncKey; a local profile id is also accepted
+  /// and upgraded, so older callers and blobs migrate transparently.
   /// Persists locally and notifies listeners; callers push explicitly
   /// (e.g. [pushNow]) when they want the change published immediately.
-  Future<void> setDeviceAssignment(String installId, String? profileId) async {
-    if (profileId == null || profileId.isEmpty) {
+  Future<void> setDeviceAssignment(String installId, String? profileKey) async {
+    if (profileKey == null || profileKey.isEmpty) {
       _deviceAssignments.remove(installId);
     } else {
-      _deviceAssignments[installId] = profileId;
+      _deviceAssignments[installId] = _normalizeAssignmentValue(profileKey);
     }
     await _persistAssignments();
     _notify();
@@ -243,6 +276,11 @@ class DashboardSyncService {
         ..addAll(
           _parseAssignments(_tryDecodeZones(prefs.getString(_kDeviceAssignments))),
         );
+      // Migrate legacy local-id values to syncKeys when the profiles
+      // they name are already known on this device. Best-effort at
+      // this stage of boot — merge/push normalize again once profiles
+      // have fully loaded and converged.
+      if (_normalizeAssignments()) await _persistAssignments();
       _notify();
     } catch (_) {}
   }
@@ -367,9 +405,9 @@ class DashboardSyncService {
       // and names live ONLY inside this encrypted blob — the server
       // stores the ciphertext opaquely, exactly like dashboard words.
       'safe_zones': [for (final z in _zones) z.toJson()],
-      // Device → communicator-profile assignments. Local profile ids
-      // are meaningless outside the family — encrypted like everything
-      // else in this payload.
+      // Device → communicator-profile assignments (install id →
+      // profile syncKey). Meaningless outside the family — encrypted
+      // like everything else in this payload.
       'device_assignments': Map<String, String>.of(_deviceAssignments),
     };
   }
@@ -380,6 +418,9 @@ class DashboardSyncService {
   Future<void> pushNow() async {
     final key = _key;
     if (key == null || !_proxy.hasToken) return;
+    // Publish syncKeys, never local profile ids: upgrade anything a
+    // legacy blob left behind now that profiles are loaded.
+    if (_normalizeAssignments()) await _persistAssignments();
     final prefs = await _prefsFactory();
     final blob = await encrypt(key, json.encode(buildPayload()));
     final nextVersion =
@@ -585,6 +626,12 @@ class DashboardSyncService {
       final remote = _parseAssignments(payload['device_assignments']);
       final merged = Map<String, String>.of(_deviceAssignments)
         ..addAll(remote);
+      // Upgrade legacy local-id values (ours, or a pre-sync-identity
+      // writer's) now that this payload's profiles have merged, so the
+      // result is comparable and resolvable on every device.
+      for (final k in merged.keys.toList()) {
+        merged[k] = _normalizeAssignmentValue(merged[k]!);
+      }
       if (!_sameAssignments(_deviceAssignments, merged)) {
         _deviceAssignments
           ..clear()

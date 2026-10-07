@@ -122,7 +122,7 @@ void main() {
       expect(b.deviceAssignments, {'dev-a': 'profile-1'});
     });
 
-    test('merge unions assignments; remote wins on conflict', () async {
+    test('merge unions assignments; newest write wins on conflict', () async {
       final server = _FakeSyncServer();
       final key = List.filled(32, 7);
       final a = await _makeDevice(server, key);
@@ -131,7 +131,10 @@ void main() {
       await a.pushNow();
 
       // A genuinely separate device: wipe local prefs, then assign
-      // dev-b differently and add dev-c before pulling.
+      // dev-b differently and add dev-c before pulling. B's dev-b write
+      // is NEWER than A's, so per-install last-write-wins keeps it —
+      // the old blind "remote wins" merge would have silently undone
+      // the caregiver's most recent change.
       SharedPreferences.setMockInitialValues({});
       final b = await _makeDevice(server, key);
       await b.setDeviceAssignment('dev-b', 'profile-2');
@@ -140,8 +143,42 @@ void main() {
       expect(result.assignmentsChanged, isTrue);
       expect(
         b.deviceAssignments,
-        {'dev-a': 'profile-1', 'dev-b': 'profile-9', 'dev-c': 'profile-3'},
+        {'dev-a': 'profile-1', 'dev-b': 'profile-2', 'dev-c': 'profile-3'},
       );
+    });
+
+    test('a cleared assignment stays cleared across devices', () async {
+      final server = _FakeSyncServer();
+      final key = List.filled(32, 7);
+      final a = await _makeDevice(server, key);
+      await a.setDeviceAssignment('dev-a', 'profile-1');
+      await a.pushNow();
+
+      // Device C learns the assignment now — and never syncs again
+      // until after the clear, so it holds only the older copy.
+      SharedPreferences.setMockInitialValues({});
+      final c = await _makeDevice(server, key);
+      await c.pullNow();
+      expect(c.deviceAssignments, {'dev-a': 'profile-1'});
+
+      // B learns the assignment, then clears it and publishes.
+      SharedPreferences.setMockInitialValues({});
+      final b = await _makeDevice(server, key);
+      await b.pullNow();
+      expect(b.deviceAssignments, {'dev-a': 'profile-1'});
+      await b.setDeviceAssignment('dev-a', null);
+      expect(b.deviceAssignments, isEmpty);
+      await b.pushNow();
+
+      // A pulls: the clear propagates; the assignment does not return.
+      await a.pullNow();
+      expect(a.deviceAssignments, isEmpty);
+
+      // C (never saw the clear) re-publishes its older copy; the
+      // tombstone still wins on the next merge.
+      await c.pushNow();
+      await a.pullNow();
+      expect(a.deviceAssignments, isEmpty);
     });
 
     test('blobs without the key leave local assignments untouched', () async {

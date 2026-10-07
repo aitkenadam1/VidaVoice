@@ -176,6 +176,65 @@ void main() {
       expect(c.safeZones.single.name, 'Casa');
     });
 
+    test('a deleted zone stays deleted everywhere', () async {
+      final server = _FakeSyncServer();
+      final a = await _makeDevice(server, key);
+      await a.upsertSafeZone(
+          _zone('zone_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'Home', 1000));
+      await a.pushNow();
+
+      // C learns the zone now and goes stale — it never syncs again
+      // until after the deletion.
+      final c = await _makeDevice(server, key);
+      await c.pullNow();
+      expect(c.safeZones, hasLength(1));
+
+      // B learns the zone, then A deletes it and publishes.
+      final b = await _makeDevice(server, key);
+      await b.pullNow();
+      expect(b.safeZones, hasLength(1));
+      await a.removeSafeZone('zone_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+      expect(a.safeZones, isEmpty);
+      await a.pushNow();
+
+      // B pulls: the deletion propagates.
+      final result = await b.pullNow();
+      expect(result.safeZonesChanged, isTrue);
+      expect(b.safeZones, isEmpty);
+
+      // C (never saw the deletion) re-publishes its stale copy; the
+      // tombstone still wins — the zone does not come back on A.
+      await c.pushNow();
+      await a.pullNow();
+      expect(a.safeZones, isEmpty);
+    });
+
+    test('a zone edited after deletion comes back', () async {
+      final server = _FakeSyncServer();
+      final a = await _makeDevice(server, key);
+      await a.upsertSafeZone(
+          _zone('zone_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'Home', 1000));
+      await a.pushNow();
+
+      final b = await _makeDevice(server, key);
+      await b.pullNow();
+      await a.removeSafeZone('zone_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+      await a.pushNow();
+      await b.pullNow();
+      expect(b.safeZones, isEmpty);
+
+      // B deliberately re-creates the zone — an edit stamped after the
+      // deletion — and that newer write wins over the tombstone.
+      final later = DateTime.now()
+          .add(const Duration(days: 1))
+          .millisecondsSinceEpoch;
+      await b.upsertSafeZone(
+          _zone('zone_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'Home again', later));
+      await b.pushNow();
+      await a.pullNow();
+      expect(a.safeZones.map((z) => z.name), ['Home again']);
+    });
+
     test('malformed remote zone entries are skipped, merge survives',
         () async {
       final server = _FakeSyncServer();

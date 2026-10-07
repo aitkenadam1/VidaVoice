@@ -70,6 +70,13 @@ class DashboardSyncService {
   /// travel only inside the ciphertext.
   static const _kDeviceAssignments = 'vidavoice.sync.deviceAssignments';
 
+  /// Tombstone/metadata companions for safe zones and device
+  /// assignments (see the state fields below).
+  static const _kSafeZoneTombstones = 'vidavoice.sync.safeZoneTombstones';
+  static const _kAssignmentMeta = 'vidavoice.sync.deviceAssignmentMeta';
+  static const _kAssignmentTombstones =
+      'vidavoice.sync.deviceAssignmentTombstones';
+
   /// PBKDF2 iteration count for the sync key. Production value; tests pass
   /// a small count for speed via [deriveSyncKey]'s parameter.
   static const defaultPbkdf2Iterations = 600000;
@@ -82,10 +89,24 @@ class DashboardSyncService {
   /// local prefs, and published inside the encrypted payload.
   final List<SafeZone> _zones = [];
 
+  /// Deleted-zone tombstones (zone id → when it was deleted). Without
+  /// these, a zone deleted on one device would be re-adopted from any
+  /// other device's stale blob on the next merge. Tombstones travel
+  /// inside the encrypted payload like the zones themselves and are
+  /// kept indefinitely (a handful of ids — negligible size).
+  final Map<String, DateTime> _zoneTombstones = {};
+
   /// install_id → profile syncKey assignments. Kept in memory,
   /// persisted to local prefs, and published inside the encrypted
   /// payload.
   final Map<String, String> _deviceAssignments = {};
+
+  /// Per-install assignment timestamps (ms) and cleared-assignment
+  /// tombstones. Merges are last-write-wins per install; without the
+  /// tombstones, clearing an assignment on one device would be undone
+  /// by any other device re-publishing its older copy.
+  final Map<String, int> _assignmentUpdatedMs = {};
+  final Map<String, int> _assignmentTombstones = {};
 
   /// When the mirror flag was last changed locally. The flag itself is
   /// last-write-wins across devices, like profile/dashboard content.
@@ -137,12 +158,15 @@ class DashboardSyncService {
     _notify();
   }
 
-  /// Removes a zone by id. No tombstones in P1: a zone deleted here can
-  /// be re-adopted from another device's blob on the next merge (see
-  /// [SafeZone.merge]).
+  /// Removes a zone by id and records a tombstone, so the deletion
+  /// propagates: other devices drop their copies instead of the zone
+  /// being re-adopted from a stale blob on the next merge. A zone only
+  /// comes back if it is edited AFTER the deletion (newer updatedTs).
   Future<void> removeSafeZone(String id) async {
     _zones.removeWhere((z) => z.id == id);
+    _zoneTombstones[id] = DateTime.now();
     await _persistZones();
+    await _persistZoneTombstones();
     _notify();
   }
 
@@ -154,6 +178,56 @@ class DashboardSyncService {
         json.encode([for (final z in _zones) z.toJson()]),
       );
     } catch (_) {}
+  }
+
+  Future<void> _persistZoneTombstones() async {
+    try {
+      final prefs = await _prefsFactory();
+      await prefs.setString(
+        _kSafeZoneTombstones,
+        json.encode({
+          for (final e in _zoneTombstones.entries)
+            e.key: e.value.millisecondsSinceEpoch,
+        }),
+      );
+    } catch (_) {}
+  }
+
+  /// Parses zone tombstones out of a payload (list of {id, deleted_ts})
+  /// or local prefs ({id: deleted_ms}). Malformed entries are skipped.
+  Map<String, DateTime> _parseZoneTombstones(Object? raw) {
+    final out = <String, DateTime>{};
+    void put(String id, Object? v) {
+      if (id.isEmpty) return;
+      DateTime? ts;
+      if (v is int) {
+        ts = DateTime.fromMillisecondsSinceEpoch(v);
+      } else if (v is num) {
+        ts = DateTime.fromMillisecondsSinceEpoch(v.toInt());
+      } else if (v is String) {
+        ts = DateTime.tryParse(v);
+      }
+      if (ts != null) out[id] = ts;
+    }
+
+    if (raw is List) {
+      for (final entry in raw) {
+        if (entry is! Map) continue;
+        put(entry['id']?.toString() ?? '', entry['deleted_ts']);
+      }
+    } else if (raw is Map) {
+      for (final entry in raw.entries) {
+        put(entry.key.toString(), entry.value);
+      }
+    }
+    return out;
+  }
+
+  /// A zone survives its tombstone only when it was mutated after the
+  /// deletion (a genuine later edit — never a stale copy).
+  bool _zoneSurvives(SafeZone z, Map<String, DateTime> tombstones) {
+    final t = tombstones[z.id];
+    return t == null || z.updatedTs.isAfter(t);
   }
 
   List<SafeZone> _parseZones(Object? raw) {
@@ -212,10 +286,16 @@ class DashboardSyncService {
   /// Persists locally and notifies listeners; callers push explicitly
   /// (e.g. [pushNow]) when they want the change published immediately.
   Future<void> setDeviceAssignment(String installId, String? profileKey) async {
+    final nowMs = DateTime.now().millisecondsSinceEpoch;
     if (profileKey == null || profileKey.isEmpty) {
+      // Clearing records a tombstone: without one, any device still
+      // holding the old assignment would resurrect it on the next merge.
       _deviceAssignments.remove(installId);
+      _assignmentUpdatedMs.remove(installId);
+      _assignmentTombstones[installId] = nowMs;
     } else {
       _deviceAssignments[installId] = _normalizeAssignmentValue(profileKey);
+      _assignmentUpdatedMs[installId] = nowMs;
     }
     await _persistAssignments();
     _notify();
@@ -228,7 +308,30 @@ class DashboardSyncService {
         _kDeviceAssignments,
         json.encode(_deviceAssignments),
       );
+      await prefs.setString(
+        _kAssignmentMeta,
+        json.encode(_assignmentUpdatedMs),
+      );
+      await prefs.setString(
+        _kAssignmentTombstones,
+        json.encode(_assignmentTombstones),
+      );
     } catch (_) {}
+  }
+
+  /// Parses an install-id → milliseconds map (assignment meta /
+  /// tombstones) out of a payload or local prefs blob. Malformed
+  /// entries are skipped, never fatal.
+  Map<String, int> _parseMsMap(Object? raw) {
+    final out = <String, int>{};
+    if (raw is! Map) return out;
+    for (final entry in raw.entries) {
+      final k = entry.key.toString();
+      final v = entry.value;
+      final ms = v is int ? v : (v is num ? v.toInt() : null);
+      if (k.isNotEmpty && ms != null) out[k] = ms;
+    }
+    return out;
   }
 
   /// Parses the device_assignments map out of a payload or local prefs
@@ -268,14 +371,42 @@ class DashboardSyncService {
           ? null
           : DateTime.fromMillisecondsSinceEpoch(at);
       _lastSeenRemoteVersion = prefs.getInt(_kLastVersion) ?? 0;
+      _zoneTombstones
+        ..clear()
+        ..addAll(
+          _parseZoneTombstones(
+            _tryDecodeZones(prefs.getString(_kSafeZoneTombstones)),
+          ),
+        );
       _zones
         ..clear()
-        ..addAll(_parseZones(_tryDecodeZones(prefs.getString(_kSafeZones))));
+        ..addAll(
+          _parseZones(
+            _tryDecodeZones(prefs.getString(_kSafeZones)),
+          ).where((z) => _zoneSurvives(z, _zoneTombstones)),
+        );
+      _assignmentUpdatedMs
+        ..clear()
+        ..addAll(_parseMsMap(_tryDecodeZones(prefs.getString(_kAssignmentMeta))));
+      _assignmentTombstones
+        ..clear()
+        ..addAll(
+          _parseMsMap(_tryDecodeZones(prefs.getString(_kAssignmentTombstones))),
+        );
       _deviceAssignments
         ..clear()
         ..addAll(
           _parseAssignments(_tryDecodeZones(prefs.getString(_kDeviceAssignments))),
         );
+      // A locally-cleared assignment stays cleared even if the values
+      // blob still holds a stale copy: tombstones win ties at load.
+      for (final installId in _deviceAssignments.keys.toList()) {
+        final tomb = _assignmentTombstones[installId];
+        if (tomb != null && tomb >= (_assignmentUpdatedMs[installId] ?? 0)) {
+          _deviceAssignments.remove(installId);
+          _assignmentUpdatedMs.remove(installId);
+        }
+      }
       // Migrate legacy local-id values to syncKeys when the profiles
       // they name are already known on this device. Best-effort at
       // this stage of boot — merge/push normalize again once profiles
@@ -405,10 +536,23 @@ class DashboardSyncService {
       // and names live ONLY inside this encrypted blob — the server
       // stores the ciphertext opaquely, exactly like dashboard words.
       'safe_zones': [for (final z in _zones) z.toJson()],
+      // Deleted-zone tombstones, so a deletion on one device is not
+      // undone by another device's stale copy on the next merge.
+      'safe_zone_tombstones': [
+        for (final e in _zoneTombstones.entries)
+          {'id': e.key, 'deleted_ts': e.value.millisecondsSinceEpoch},
+      ],
       // Device → communicator-profile assignments (install id →
       // profile syncKey). Meaningless outside the family — encrypted
       // like everything else in this payload.
       'device_assignments': Map<String, String>.of(_deviceAssignments),
+      // Per-install assignment timestamps + clear tombstones: merges
+      // are last-write-wins per install, and a cleared assignment
+      // stays cleared (see _mergeInner).
+      'device_assignment_meta': Map<String, int>.of(_assignmentUpdatedMs),
+      'device_assignment_tombstones': Map<String, int>.of(
+        _assignmentTombstones,
+      ),
     };
   }
 
@@ -606,38 +750,105 @@ class DashboardSyncService {
 
     // Phase 2B safe zones: merge by id, last-writer-wins on updated_ts.
     // Family-wide — not per-profile. Bad zone entries are skipped, never
-    // fatal to the merge.
+    // fatal to the merge. Tombstones merge per-id (latest deletion
+    // wins) and filter the result, so a zone deleted anywhere stays
+    // deleted everywhere unless it was edited after the deletion.
     final remoteZones = _parseZones(payload['safe_zones']);
-    if (payload.containsKey('safe_zones')) {
-      final merged = SafeZone.merge(_zones, remoteZones);
-      if (!_sameZones(_zones, merged)) {
+    if (payload.containsKey('safe_zones') ||
+        payload.containsKey('safe_zone_tombstones')) {
+      final mergedTombs = Map<String, DateTime>.of(_zoneTombstones);
+      for (final e
+          in _parseZoneTombstones(payload['safe_zone_tombstones']).entries) {
+        final cur = mergedTombs[e.key];
+        if (cur == null || e.value.isAfter(cur)) mergedTombs[e.key] = e.value;
+      }
+      final merged = SafeZone.merge(_zones, remoteZones)
+          .where((z) => _zoneSurvives(z, mergedTombs))
+          .toList();
+      final tombsChanged = !_sameTombstones(_zoneTombstones, mergedTombs);
+      if (!_sameZones(_zones, merged) || tombsChanged) {
         _zones
           ..clear()
           ..addAll(merged);
+        _zoneTombstones
+          ..clear()
+          ..addAll(mergedTombs);
         await _persistZones();
+        await _persistZoneTombstones();
         result.safeZonesChanged = true;
       }
     }
 
-    // Device → profile assignments: union, remote wins on conflict
-    // (same "ties to remote" policy as safe zones). Migration-safe:
-    // blobs without the key leave local assignments untouched.
+    // Device → profile assignments: per-install last-write-wins by
+    // assignment timestamp; a clear tombstone at or after the winning
+    // write deletes the assignment, so cleared assignments cannot be
+    // resurrected by a stale device re-publishing its older copy.
+    // Blobs without meta (pre-timestamp writers) count as ts 0, so any
+    // current-build write wins over them. Migration-safe: blobs
+    // without the key leave local assignments untouched.
     if (payload.containsKey('device_assignments')) {
       final remote = _parseAssignments(payload['device_assignments']);
-      final merged = Map<String, String>.of(_deviceAssignments)
-        ..addAll(remote);
+      final remoteMeta = _parseMsMap(payload['device_assignment_meta']);
+      final mergedTombs = Map<String, int>.of(_assignmentTombstones);
+      for (final e
+          in _parseMsMap(payload['device_assignment_tombstones']).entries) {
+        final cur = mergedTombs[e.key];
+        if (cur == null || e.value > cur) mergedTombs[e.key] = e.value;
+      }
+      final merged = <String, String>{};
+      final mergedMeta = <String, int>{};
+      final installs = <String>{
+        ..._deviceAssignments.keys,
+        ...remote.keys,
+        ..._assignmentUpdatedMs.keys,
+        ...remoteMeta.keys,
+        ...mergedTombs.keys,
+      };
+      for (final install in installs) {
+        // Winning write: newest stamp; ties go to the remote side,
+        // matching the long-standing policy.
+        String? winner;
+        var winnerTs = -1;
+        final localVal = _deviceAssignments[install];
+        if (localVal != null) {
+          winner = localVal;
+          winnerTs = _assignmentUpdatedMs[install] ?? 0;
+        }
+        final remoteVal = remote[install];
+        if (remoteVal != null) {
+          final remoteTs = remoteMeta[install] ?? 0;
+          if (remoteTs >= winnerTs) {
+            winner = remoteVal;
+            winnerTs = remoteTs;
+          }
+        }
+        final tomb = mergedTombs[install];
+        if (winner != null && (tomb == null || winnerTs > tomb)) {
+          merged[install] = winner;
+          mergedMeta[install] = winnerTs;
+        }
+      }
       // Upgrade legacy local-id values (ours, or a pre-sync-identity
       // writer's) now that this payload's profiles have merged, so the
       // result is comparable and resolvable on every device.
       for (final k in merged.keys.toList()) {
         merged[k] = _normalizeAssignmentValue(merged[k]!);
       }
-      if (!_sameAssignments(_deviceAssignments, merged)) {
+      if (!_sameAssignments(_deviceAssignments, merged) ||
+          !_sameMsMap(_assignmentUpdatedMs, mergedMeta) ||
+          !_sameMsMap(_assignmentTombstones, mergedTombs)) {
+        final valuesChanged = !_sameAssignments(_deviceAssignments, merged);
         _deviceAssignments
           ..clear()
           ..addAll(merged);
+        _assignmentUpdatedMs
+          ..clear()
+          ..addAll(mergedMeta);
+        _assignmentTombstones
+          ..clear()
+          ..addAll(mergedTombs);
         await _persistAssignments();
-        result.assignmentsChanged = true;
+        if (valuesChanged) result.assignmentsChanged = true;
       }
     }
 
@@ -731,6 +942,22 @@ class DashboardSyncService {
   }
 
   bool _sameAssignments(Map<String, String> a, Map<String, String> b) {
+    if (a.length != b.length) return false;
+    for (final entry in a.entries) {
+      if (b[entry.key] != entry.value) return false;
+    }
+    return true;
+  }
+
+  bool _sameMsMap(Map<String, int> a, Map<String, int> b) {
+    if (a.length != b.length) return false;
+    for (final entry in a.entries) {
+      if (b[entry.key] != entry.value) return false;
+    }
+    return true;
+  }
+
+  bool _sameTombstones(Map<String, DateTime> a, Map<String, DateTime> b) {
     if (a.length != b.length) return false;
     for (final entry in a.entries) {
       if (b[entry.key] != entry.value) return false;

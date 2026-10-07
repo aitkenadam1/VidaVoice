@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:onevoz/models/safe_zone.dart';
 import 'package:onevoz/models/word.dart';
 import 'package:onevoz/screens/caregiver_portal_screen.dart';
+import 'package:onevoz/screens/portal/account_tab.dart';
 import 'package:onevoz/widgets/mode_switch_gate.dart';
 import 'package:onevoz/services/device_role_service.dart';
 import 'package:onevoz/services/elevenlabs_key_store.dart';
@@ -393,6 +394,55 @@ void main() {
 
       expect(find.text('Switch to communicator mode'), findsOneWidget);
       expect(find.text('Sign out'), findsOneWidget);
+    });
+
+    testWidgets('account tab invites a donation, no subscription promise', (
+      tester,
+    ) async {
+      final session = await _makeSession(_FakeDeviceBackend());
+      await _pumpPortal(tester, session);
+
+      await tester.tap(find.text('Account'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Support OneVoz'), findsOneWidget);
+      expect(find.widgetWithText(FilledButton, 'Donate'), findsOneWidget);
+      // The free-for-everyone nonprofit model retired the subscription
+      // promise; it must not reappear as a fake future feature.
+      expect(find.text('Voice quota & subscription'), findsNothing);
+    });
+
+    testWidgets('donate button opens the VidaCare donation page', (
+      tester,
+    ) async {
+      final session = await _makeSession(_FakeDeviceBackend());
+      Uri? launched;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ChangeNotifierProvider<SessionState>.value(
+            value: session,
+            child: Scaffold(
+              body: PortalAccountTab(
+                donateLauncher: (uri) async {
+                  launched = uri;
+                  return true;
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final donateButton = find.widgetWithText(FilledButton, 'Donate');
+      await tester.ensureVisible(donateButton);
+      await tester.pumpAndSettle();
+      await tester.tap(donateButton);
+      await tester.pumpAndSettle();
+
+      expect(
+        launched,
+        Uri.parse('https://vidacarefoundation.org/donate/money'),
+      );
     });
 
     testWidgets('offline devices tab shows an honest error with retry', (

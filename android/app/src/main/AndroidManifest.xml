@@ -5,12 +5,19 @@
          caregiver is asked at recording time; audio is uploaded only when
          they explicitly create a voice. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
-    <!-- Phase 2A foreground-only location: emergency SMS coordinates and
-         caregiver-approved on-demand sharing (15/30/60 min or until stopped).
-         Requested at runtime only when the feature is used; never in the
-         background — no ACCESS_BACKGROUND_LOCATION is declared on purpose. -->
+    <!-- Phase 2A foreground location: emergency SMS coordinates and
+         caregiver-approved on-demand sharing (15/30/60 min or until
+         stopped). Phase 2B adds OS safe-zone geofencing on assigned
+         communicator devices only: ACCESS_BACKGROUND_LOCATION lets the
+         OS fire enter/exit transitions while the app is closed, and
+         RECEIVE_BOOT_COMPLETED lets the regions re-register after a
+         reboot. Requested at runtime only when zone watching is active
+         for the device's assigned profile; never used to track in the
+         background outside caregiver-defined safe zones. -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <application
         android:label="OneVoz"
         android:name="${applicationName}"
@@ -37,6 +44,20 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- Geofence transition sink (invoked via our own PendingIntent,
+             never exported) and reboot re-registration. -->
+        <receiver
+            android:name=".GeofenceBroadcastReceiver"
+            android:enabled="true"
+            android:exported="false"/>
+        <receiver
+            android:name=".GeofenceBootReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

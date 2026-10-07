@@ -14,6 +14,8 @@ import UIKit
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     registerPersonalVoiceChannel(with: engineBridge.applicationRegistrar.messenger())
+    GeofenceIosBridge.shared.register(
+      with: engineBridge.applicationRegistrar.messenger())
   }
 
   /// Lets the Dart side ask iOS for Personal Voice access.

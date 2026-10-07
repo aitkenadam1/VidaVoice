@@ -47,3 +47,8 @@ kotlin {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // GeofencingClient (native safe-zone monitoring, Phase 2B).
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+}

@@ -813,6 +813,7 @@ class ProxyClient {
     required String ciphertext,
     required String nonce,
     int? ts,
+    Map<String, String>? envelope,
   }) async {
     _requireAuth();
     await _postJson(
@@ -823,6 +824,10 @@ class ProxyClient {
         'ciphertext': ciphertext,
         'nonce': nonce,
         'ts': ts ?? DateTime.now().millisecondsSinceEpoch,
+        // Optional opaque routing IDs (safe-zone fanout): the worker
+        // validates their shape and passes them to push routing only —
+        // never names or coordinates.
+        'envelope': ?envelope,
       },
       timeout: _locationTimeout,
     );

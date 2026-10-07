@@ -11,8 +11,14 @@
 	<!-- Phase 2A: foreground-only location for emergency texts and
 	     caregiver-approved on-demand sharing. No background location:
 	     sharing stops when the app is closed. -->
+	<!-- Phase 2B safe-zone geofencing: iOS region monitoring needs
+	     "Always" authorization; the OS fires enter/exit transitions
+	     for caregiver-defined safe zones even while the app is closed.
+	     The when-in-use text below stays scoped to foreground use. -->
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>OneVoz watches caregiver-defined safe zones (like home or school) so your caregiver can be alerted when you arrive or leave, even while the app is closed. This only runs on a communicator device your caregiver set up, and only for the zones they defined.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>OneVoz uses your location to include GPS coordinates in emergency texts and to share your location with your caregiver only while a sharing session you start is active. Location is never tracked in the background.</string>
+	<string>OneVoz uses your location to include GPS coordinates in emergency texts and to share your location with your caregiver only while a sharing session you start is active.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

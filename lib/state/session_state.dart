@@ -11,6 +11,7 @@ import '../models/dashboard.dart';
 import '../models/word.dart';
 import '../services/dashboard_service.dart';
 import '../services/dashboard_sync_service.dart';
+import '../services/geofence_service.dart';
 import '../services/caregiver_pin_service.dart';
 import '../services/device_role_service.dart';
 import '../services/elevenlabs_key_store.dart';
@@ -90,6 +91,14 @@ class SessionState extends ChangeNotifier {
       prefsFactory: _prefsFactory,
     );
     locationShare.addListener(notifyListeners);
+    geofence = GeofenceService(
+      proxy: this.proxy,
+      proxyAuth: this.proxyAuth,
+      profiles: profiles,
+      dashboardSync: dashboardSync,
+      gps: locationService,
+      prefsFactory: _prefsFactory,
+    );
   }
 
   final Future<SharedPreferences> Function() _prefsFactory;
@@ -158,6 +167,11 @@ class SessionState extends ChangeNotifier {
   /// Phase 2A on-demand location sharing (caregiver opt-in per profile).
   /// Initialized in the constructor; polling starts after sign-in.
   late final LocationShareService locationShare;
+
+  /// Native geofence watching for this device's assigned communicator
+  /// profile (safe-zone enter/exit events). Constructed with the
+  /// session; started after sign-in alongside location polling.
+  late final GeofenceService geofence;
 
   /// True when a proxy token is in hand (restored from secure storage on
   /// boot, or freshly signed in). The token is validated lazily on first
@@ -376,7 +390,10 @@ class SessionState extends ChangeNotifier {
   void _wireDashboardSync() {
     if (_syncWired) return;
     _syncWired = true;
-    dashboardSync.onChanged = notifyListeners;
+    dashboardSync.onChanged = () {
+      notifyListeners();
+      geofence.onSyncChanged();
+    };
     unawaited(dashboardSync.loadPersisted());
     dashboards.onChanged = () => dashboardSync.schedulePush();
     profiles.onChanged = () => dashboardSync.schedulePush();
@@ -394,6 +411,7 @@ class SessionState extends ChangeNotifier {
       if (keyB64 == null || keyB64.isEmpty) return;
       dashboardSync.setKey(base64.decode(keyB64));
       locationShare.beginPolling();
+      unawaited(geofence.start());
       final result = await dashboardSync.pullNow();
       if (result.changed) {
         await dashboards.backfillLabels(pack);
@@ -523,6 +541,7 @@ class SessionState extends ChangeNotifier {
     } catch (_) {}
     await _registerDevice();
     locationShare.beginPolling();
+    unawaited(geofence.start());
     notifyListeners();
   }
 
@@ -612,6 +631,7 @@ class SessionState extends ChangeNotifier {
     _entitlementFetched = null;
     dashboardSync.clearKey();
     locationShare.stopPolling();
+    unawaited(geofence.stop());
     try {
       await locationShare.stopSession(quiet: true);
     } catch (_) {}
@@ -1385,6 +1405,7 @@ class SessionState extends ChangeNotifier {
   @override
   void dispose() {
     locationShare.dispose();
+    unawaited(geofence.stop());
     super.dispose();
   }
 }

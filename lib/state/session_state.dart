@@ -50,6 +50,7 @@ class SessionState extends ChangeNotifier {
     CaregiverPinService? caregiverPin,
     DeviceRoleService? deviceRoleService,
     DateTime Function()? nudgeClock,
+    SecureValueStore? secureStore,
   }) : _prefsFactory = prefsFactory ?? SharedPreferences.getInstance,
        tts = tts ?? TtsService(),
        elevenLabsKeys = elevenLabsKeys ?? ElevenLabsKeyStore(),
@@ -82,6 +83,11 @@ class SessionState extends ChangeNotifier {
       profiles: profiles,
       dashboards: dashboards,
       prefsFactory: _prefsFactory,
+      // Zone definitions + device assignments are location data: encrypt
+      // them at rest in the platform keychain/keystore (review m4). Tests
+      // inject an in-memory store — the platform channel never completes
+      // inside a widget test's fake-async zone.
+      secureStore: secureStore ?? PlatformSecureValueStore(),
     );
     locationShare = LocationShareService(
       proxy: this.proxy,
@@ -99,6 +105,7 @@ class SessionState extends ChangeNotifier {
       dashboardSync: dashboardSync,
       gps: locationService,
       prefsFactory: _prefsFactory,
+      secureStore: secureStore ?? PlatformSecureValueStore(),
     );
     pushTokens = PushTokenService(
       proxy: this.proxy,

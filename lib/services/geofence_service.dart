@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/safe_zone.dart';
 import 'dashboard_sync_service.dart';
+import 'elevenlabs_key_store.dart';
 import 'location_service.dart';
 import 'location_share_service.dart' show LocationAlertKind;
 import 'profile_service.dart';
@@ -348,6 +349,7 @@ class GeofenceService {
     required this._dashboardSync,
     required this._gps,
     required this._prefsFactory,
+    this._secureStore,
     GeofencePlatform? platform,
     DateTime Function()? clock,
     Duration? evalInterval,
@@ -361,6 +363,11 @@ class GeofenceService {
   final DashboardSyncService _dashboardSync;
   final LocationService _gps;
   final Future<SharedPreferences> Function() _prefsFactory;
+
+  /// At-rest encryption (review m4): the durable outbox and zone state
+  /// carry zone/profile ids and must not sit in plaintext prefs when a
+  /// secure store is wired. Legacy prefs values migrate on first read.
+  final SecureValueStore? _secureStore;
   final GeofencePlatform _platform;
   final DateTime Function() _clock;
   final Duration _evalInterval;
@@ -591,10 +598,54 @@ class GeofenceService {
     return null;
   }
 
-  Future<void> _loadPersisted() async {
+  /// Secure-store read with plaintext-prefs migration (review m4).
+  Future<String?> _secureGet(String key) async {
+    final store = _secureStore;
+    if (store != null) {
+      try {
+        final v = await store.read(key);
+        if (v != null) return v;
+      } catch (_) {}
+    }
+    String? legacy;
     try {
       final prefs = await _prefsFactory();
-      final rawOutbox = prefs.getString(_kOutbox);
+      legacy = prefs.getString(key);
+    } catch (_) {}
+    if (store != null && legacy != null) {
+      try {
+        await store.write(key, legacy);
+        final prefs = await _prefsFactory();
+        await prefs.remove(key);
+      } catch (_) {}
+    }
+    return legacy;
+  }
+
+  /// Secure-store write (review m4); evicts any plaintext prefs copy.
+  /// On a store failure the plaintext copy is dropped so reads never
+  /// come back stale; prefs stay the last resort.
+  Future<void> _secureSet(String key, String value) async {
+    final store = _secureStore;
+    if (store != null) {
+      try {
+        await store.write(key, value);
+        final prefs = await _prefsFactory();
+        await prefs.remove(key);
+        return;
+      } catch (_) {
+        try {
+          await store.delete(key);
+        } catch (_) {}
+      }
+    }
+    final prefs = await _prefsFactory();
+    await prefs.setString(key, value);
+  }
+
+  Future<void> _loadPersisted() async {
+    try {
+      final rawOutbox = await _secureGet(_kOutbox);
       if (rawOutbox != null && rawOutbox.isNotEmpty) {
         final decoded = json.decode(rawOutbox);
         if (decoded is List) {
@@ -605,7 +656,7 @@ class GeofenceService {
             ]);
         }
       }
-      final rawState = prefs.getString(_kZoneState);
+      final rawState = await _secureGet(_kZoneState);
       if (rawState != null && rawState.isNotEmpty) {
         final decoded = json.decode(rawState);
         if (decoded is Map) {
@@ -620,8 +671,7 @@ class GeofenceService {
 
   Future<void> _persistOutbox() async {
     try {
-      final prefs = await _prefsFactory();
-      await prefs.setString(
+      await _secureSet(
         _kOutbox,
         json.encode([for (final e in _outbox) e.toJson()]),
       );
@@ -630,8 +680,7 @@ class GeofenceService {
 
   Future<void> _persistZoneState() async {
     try {
-      final prefs = await _prefsFactory();
-      await prefs.setString(_kZoneState, json.encode(_tracker.state));
+      await _secureSet(_kZoneState, json.encode(_tracker.state));
     } catch (_) {}
   }
 

@@ -132,7 +132,13 @@ class _Harness {
   /// HTTP status for /v1/alerts; null means "throw" (network outage).
   int? alertStatus = 200;
 
-  static Future<_Harness> create({bool assign = true}) async {
+  /// When set, both sync + geofence persist sensitive keys here (m4).
+  _FakeSecureStore? secureStore;
+
+  static Future<_Harness> create({
+    bool assign = true,
+    _FakeSecureStore? secureStore,
+  }) async {
     final h = _Harness._();
     SharedPreferences.setMockInitialValues({});
     h.now = DateTime.utc(2026, 9, 16, 12);
@@ -156,11 +162,13 @@ class _Harness {
     h.profile = await h.profiles.addProfile('Mia');
     final dashboards = DashboardService();
     await dashboards.load();
+    h.secureStore = secureStore;
     h.sync = DashboardSyncService(
       proxy: h.proxy,
       profiles: h.profiles,
       dashboards: dashboards,
       prefsFactory: SharedPreferences.getInstance,
+      secureStore: secureStore,
     );
     h.key = List<int>.generate(32, (i) => i + 1);
     h.sync.setKey(h.key);
@@ -177,6 +185,7 @@ class _Harness {
       dashboardSync: h.sync,
       gps: h.gps,
       prefsFactory: SharedPreferences.getInstance,
+      secureStore: secureStore,
       platform: h.platform,
       clock: () => h.now,
       evalInterval: const Duration(days: 365),
@@ -375,6 +384,35 @@ void main() {
       expect(h.alertPosts.length, greaterThan(before));
       expect(geo2.pendingEvents, 0);
       await geo2.stop();
+    });
+
+    test('outbox + zone state persist to the secure store, not prefs (m4)',
+        () async {
+      final secure = _FakeSecureStore();
+      final h = await _Harness.create(secureStore: secure);
+      h.alertStatus = null; // offline: the event stays queued in the outbox
+      await h.geo.start();
+      await h.settle();
+      h.platform.emit(GeofenceTransition(
+          zoneId: _zone().id, inside: true, ts: h.now));
+      h.platform.emit(GeofenceTransition(
+          zoneId: _zone().id, inside: false, ts: h.now));
+      await h.settle();
+      expect(h.geo.pendingEvents, 1);
+      await h.geo.stop();
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('vidavoice.geofence.outbox'), isNull);
+      expect(prefs.getString('vidavoice.geofence.zoneState'), isNull);
+      // Queue + state are in the secure store instead.
+      final queued = json.decode(secure.map['vidavoice.geofence.outbox']!)
+          as List;
+      expect(queued, hasLength(1));
+      expect(secure.map.keys, contains('vidavoice.geofence.zoneState'));
+      // And so are the sync-side zone definitions + assignments.
+      expect(prefs.getString('vidavoice.sync.safeZones'), isNull);
+      expect(prefs.getString('vidavoice.sync.deviceAssignments'), isNull);
+      expect(secure.map.keys, contains('vidavoice.sync.safeZones'));
     });
 
     test('poison (4xx) events drop instead of wedging the outbox',

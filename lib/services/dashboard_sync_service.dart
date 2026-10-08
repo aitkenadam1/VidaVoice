@@ -10,6 +10,7 @@ import '../models/dashboard.dart';
 import '../models/calling_safety.dart';
 import '../models/safe_zone.dart';
 import 'dashboard_service.dart';
+import 'elevenlabs_key_store.dart';
 import 'profile_service.dart';
 import 'proxy_client.dart';
 
@@ -38,12 +39,20 @@ class DashboardSyncService {
     required this._profiles,
     required this._dashboards,
     required this._prefsFactory,
+    this._secureStore,
   });
 
   final ProxyClient _proxy;
   final ProfileService _profiles;
   final DashboardService _dashboards;
   final Future<SharedPreferences> Function() _prefsFactory;
+
+  /// At-rest encryption (review m4): safe-zone definitions and device
+  /// assignments are location data — they must not sit in plaintext
+  /// SharedPreferences. When a secure store is wired (production), the
+  /// five keys below persist there; a value still in prefs migrates on
+  /// first read. Without one (tests), prefs remain the fallback.
+  final SecureValueStore? _secureStore;
 
   /// Called after every mutation (merge, mirror change, sync-state update)
   /// so UI can rebuild.
@@ -170,10 +179,56 @@ class DashboardSyncService {
     _notify();
   }
 
-  Future<void> _persistZones() async {
+  /// Reads a sensitive key from the secure store when wired. A value
+  /// still in plaintext prefs (pre-m4 install) is returned and migrated
+  /// up best-effort. Null store → prefs only.
+  Future<String?> _secureGet(String key) async {
+    final store = _secureStore;
+    if (store != null) {
+      try {
+        final v = await store.read(key);
+        if (v != null) return v;
+      } catch (_) {}
+    }
+    String? legacy;
     try {
       final prefs = await _prefsFactory();
-      await prefs.setString(
+      legacy = prefs.getString(key);
+    } catch (_) {}
+    if (store != null && legacy != null) {
+      try {
+        await store.write(key, legacy);
+        final prefs = await _prefsFactory();
+        await prefs.remove(key);
+      } catch (_) {}
+    }
+    return legacy;
+  }
+
+  /// Writes a sensitive key to the secure store when wired (and evicts
+  /// any plaintext prefs copy). On a store failure the plaintext copy is
+  /// dropped so reads never come back stale; prefs stay the last resort.
+  Future<void> _secureSet(String key, String value) async {
+    final store = _secureStore;
+    if (store != null) {
+      try {
+        await store.write(key, value);
+        final prefs = await _prefsFactory();
+        await prefs.remove(key);
+        return;
+      } catch (_) {
+        try {
+          await store.delete(key);
+        } catch (_) {}
+      }
+    }
+    final prefs = await _prefsFactory();
+    await prefs.setString(key, value);
+  }
+
+  Future<void> _persistZones() async {
+    try {
+      await _secureSet(
         _kSafeZones,
         json.encode([for (final z in _zones) z.toJson()]),
       );
@@ -182,8 +237,7 @@ class DashboardSyncService {
 
   Future<void> _persistZoneTombstones() async {
     try {
-      final prefs = await _prefsFactory();
-      await prefs.setString(
+      await _secureSet(
         _kSafeZoneTombstones,
         json.encode({
           for (final e in _zoneTombstones.entries)
@@ -303,16 +357,15 @@ class DashboardSyncService {
 
   Future<void> _persistAssignments() async {
     try {
-      final prefs = await _prefsFactory();
-      await prefs.setString(
+      await _secureSet(
         _kDeviceAssignments,
         json.encode(_deviceAssignments),
       );
-      await prefs.setString(
+      await _secureSet(
         _kAssignmentMeta,
         json.encode(_assignmentUpdatedMs),
       );
-      await prefs.setString(
+      await _secureSet(
         _kAssignmentTombstones,
         json.encode(_assignmentTombstones),
       );
@@ -371,32 +424,40 @@ class DashboardSyncService {
           ? null
           : DateTime.fromMillisecondsSinceEpoch(at);
       _lastSeenRemoteVersion = prefs.getInt(_kLastVersion) ?? 0;
+      // Sensitive keys (zones/assignments) come from the secure store
+      // when wired; _secureGet migrates any legacy plaintext copy (m4).
       _zoneTombstones
         ..clear()
         ..addAll(
           _parseZoneTombstones(
-            _tryDecodeZones(prefs.getString(_kSafeZoneTombstones)),
+            _tryDecodeZones(await _secureGet(_kSafeZoneTombstones)),
           ),
         );
       _zones
         ..clear()
         ..addAll(
           _parseZones(
-            _tryDecodeZones(prefs.getString(_kSafeZones)),
+            _tryDecodeZones(await _secureGet(_kSafeZones)),
           ).where((z) => _zoneSurvives(z, _zoneTombstones)),
         );
       _assignmentUpdatedMs
         ..clear()
-        ..addAll(_parseMsMap(_tryDecodeZones(prefs.getString(_kAssignmentMeta))));
+        ..addAll(
+          _parseMsMap(_tryDecodeZones(await _secureGet(_kAssignmentMeta))),
+        );
       _assignmentTombstones
         ..clear()
         ..addAll(
-          _parseMsMap(_tryDecodeZones(prefs.getString(_kAssignmentTombstones))),
+          _parseMsMap(
+            _tryDecodeZones(await _secureGet(_kAssignmentTombstones)),
+          ),
         );
       _deviceAssignments
         ..clear()
         ..addAll(
-          _parseAssignments(_tryDecodeZones(prefs.getString(_kDeviceAssignments))),
+          _parseAssignments(
+            _tryDecodeZones(await _secureGet(_kDeviceAssignments)),
+          ),
         );
       // A locally-cleared assignment stays cleared even if the values
       // blob still holds a stale copy: tombstones win ties at load.

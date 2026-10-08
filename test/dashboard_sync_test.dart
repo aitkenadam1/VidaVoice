@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onevoz/models/dashboard.dart';
+import 'package:onevoz/models/safe_zone.dart';
 import 'package:onevoz/services/dashboard_service.dart';
 import 'package:onevoz/services/dashboard_sync_service.dart';
 import 'package:onevoz/services/elevenlabs_key_store.dart';
@@ -141,6 +142,8 @@ _makeDevice(_FakeSyncServer server, List<int> key) async {
     profiles: profiles,
     dashboards: dashboards,
     prefsFactory: () async => await SharedPreferences.getInstance(),
+    // Per-device keychain: simulated devices must NOT share secure storage.
+    secureStore: _FakeSecureStore(),
   );
   await sync.loadPersisted();
   sync.setKey(key);
@@ -592,6 +595,7 @@ void main() {
           baseUrl: 'https://proxy.test',
         ),
         proxyAuth: ProxyAuthStore(store: _FakeSecureStore()),
+        secureStore: _FakeSecureStore(),
       );
       await session.profiles.load();
       return session;
@@ -623,6 +627,88 @@ void main() {
       server.deviceLimit = false;
       await session.retryDeviceRegistration();
       expect(session.deviceLicenseBlocked, isFalse);
+    });
+  });
+
+  group('safe-zone / assignment storage encryption (m4)', () {
+    SafeZone zone() => SafeZone(
+          id: 'zone_11111111-2222-4333-8444-555555555555',
+          name: 'Home',
+          lat: 40.7128,
+          lng: -74.006,
+          radiusM: 300,
+          enabled: true,
+          notifyEnter: true,
+          notifyExit: true,
+          updatedTs: DateTime.utc(2026, 9, 16, 12),
+        );
+
+    DashboardSyncService makeSync(
+      _FakeSyncServer server,
+      _FakeSecureStore store,
+    ) =>
+        DashboardSyncService(
+          proxy: server.client(),
+          profiles: ProfileService(),
+          dashboards: DashboardService(),
+          prefsFactory: () async => await SharedPreferences.getInstance(),
+          secureStore: store,
+        );
+
+    test('zones + assignments persist to the secure store, never prefs',
+        () async {
+      SharedPreferences.setMockInitialValues({});
+      final server = _FakeSyncServer();
+      final store = _FakeSecureStore();
+      final sync = makeSync(server, store);
+      await sync.loadPersisted();
+
+      await sync.upsertSafeZone(zone());
+      await sync.setDeviceAssignment('install-xyz', 'prof_abc');
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('vidavoice.sync.safeZones'), isNull);
+      expect(prefs.getString('vidavoice.sync.deviceAssignments'), isNull);
+      expect(prefs.getString('vidavoice.sync.deviceAssignmentMeta'), isNull);
+      expect(store.map['vidavoice.sync.safeZones'], contains('Home'));
+      expect(
+        store.map['vidavoice.sync.deviceAssignments'],
+        contains('"install-xyz"'),
+      );
+
+      // A fresh service on empty prefs reloads them from the secure store.
+      final reloaded = makeSync(server, store);
+      await reloaded.loadPersisted();
+      expect(reloaded.safeZones.map((z) => z.name), ['Home']);
+      expect(reloaded.deviceAssignments['install-xyz'], 'prof_abc');
+    });
+
+    test('legacy plaintext copies migrate to the secure store on load',
+        () async {
+      final z = zone();
+      SharedPreferences.setMockInitialValues({
+        'vidavoice.sync.safeZones': json.encode([z.toJson()]),
+        'vidavoice.sync.deviceAssignments':
+            json.encode({'install-xyz': 'prof_abc'}),
+        'vidavoice.sync.deviceAssignmentMeta':
+            json.encode({'install-xyz': 1700000000000}),
+      });
+      final server = _FakeSyncServer();
+      final store = _FakeSecureStore();
+      final sync = makeSync(server, store);
+      await sync.loadPersisted();
+
+      expect(sync.safeZones.single.id, z.id);
+      expect(sync.deviceAssignments['install-xyz'], 'prof_abc');
+      // Migrated up; plaintext copies evicted.
+      expect(store.map.keys, contains('vidavoice.sync.safeZones'));
+      expect(store.map.keys, contains('vidavoice.sync.deviceAssignments'));
+      expect(store.map.keys,
+          contains('vidavoice.sync.deviceAssignmentMeta'));
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('vidavoice.sync.safeZones'), isNull);
+      expect(prefs.getString('vidavoice.sync.deviceAssignments'), isNull);
+      expect(prefs.getString('vidavoice.sync.deviceAssignmentMeta'), isNull);
     });
   });
 }

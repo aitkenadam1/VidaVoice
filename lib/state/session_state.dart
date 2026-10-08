@@ -12,6 +12,7 @@ import '../models/word.dart';
 import '../services/dashboard_service.dart';
 import '../services/dashboard_sync_service.dart';
 import '../services/geofence_service.dart';
+import '../services/push_token_service.dart';
 import '../services/caregiver_pin_service.dart';
 import '../services/device_role_service.dart';
 import '../services/elevenlabs_key_store.dart';
@@ -99,6 +100,11 @@ class SessionState extends ChangeNotifier {
       gps: locationService,
       prefsFactory: _prefsFactory,
     );
+    pushTokens = PushTokenService(
+      proxy: this.proxy,
+      proxyAuth: this.proxyAuth,
+      role: () => deviceRole,
+    );
   }
 
   final Future<SharedPreferences> Function() _prefsFactory;
@@ -172,6 +178,11 @@ class SessionState extends ChangeNotifier {
   /// profile (safe-zone enter/exit events). Constructed with the
   /// session; started after sign-in alongside location polling.
   late final GeofenceService geofence;
+
+  /// Push-token registration lifecycle (safe-zone alert fanout).
+  /// Constructed with the session; started after sign-in, unregistered
+  /// on sign-out/revocation.
+  late final PushTokenService pushTokens;
 
   /// True when a proxy token is in hand (restored from secure storage on
   /// boot, or freshly signed in). The token is validated lazily on first
@@ -412,6 +423,7 @@ class SessionState extends ChangeNotifier {
       dashboardSync.setKey(base64.decode(keyB64));
       locationShare.beginPolling();
       unawaited(geofence.start());
+      unawaited(pushTokens.start());
       final result = await dashboardSync.pullNow();
       if (result.changed) {
         await dashboards.backfillLabels(pack);
@@ -542,6 +554,7 @@ class SessionState extends ChangeNotifier {
     await _registerDevice();
     locationShare.beginPolling();
     unawaited(geofence.start());
+    unawaited(pushTokens.start());
     notifyListeners();
   }
 
@@ -608,6 +621,9 @@ class SessionState extends ChangeNotifier {
   /// while its cached boards keep working.
   Future<void> handleProxySessionExpired() async {
     if (!proxy.hasToken) return; // already degraded — stay quiet
+    // A 401 here often means this device was revoked: end push delivery
+    // while the (possibly still valid) token can authorize the delete.
+    await pushTokens.stop(unregister: true);
     proxy.setToken(null);
     _entitlementVoices = null;
     _entitlementFetched = null;
@@ -621,6 +637,10 @@ class SessionState extends ChangeNotifier {
   /// and forget any proxy voice choice. The install id is kept so a
   /// re-sign-in re-registers the same device instead of burning a slot.
   Future<void> signOut() async {
+    // Unregister push delivery while the session token is still valid,
+    // so this device stops receiving family alerts the moment it signs
+    // out. Best-effort: never blocks sign-out.
+    await pushTokens.stop(unregister: true);
     proxy.setToken(null);
     proxySignedIn = false;
     proxyFamilyId = null;
@@ -1025,6 +1045,9 @@ class SessionState extends ChangeNotifier {
     try {
       await deviceRoleService.writeRole(role);
     } catch (_) {}
+    // Push registration carries the role (caregiver-preferred fanout);
+    // refresh it now that the role is known/changed.
+    unawaited(pushTokens.refreshRegistration());
     notifyListeners();
   }
 
@@ -1406,6 +1429,7 @@ class SessionState extends ChangeNotifier {
   void dispose() {
     locationShare.dispose();
     unawaited(geofence.stop());
+    unawaited(pushTokens.stop());
     super.dispose();
   }
 }

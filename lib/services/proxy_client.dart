@@ -676,6 +676,34 @@ class ProxyClient {
     await _deleteJson('/v1/devices/$installId');
   }
 
+  /// Register (or refresh) this install's push token for safe-zone
+  /// alert fanout. The token is a routing endpoint only — it is never
+  /// echoed back by the server. [role] is the device's caregiver/
+  /// communicator role when known; the worker stores it so fanout can
+  /// prefer caregiver devices (worker-side filtering).
+  Future<void> registerPushToken({
+    required String installId,
+    required String fcmToken,
+    required String platform,
+    String? role,
+  }) async {
+    _requireAuth();
+    await _postJson('/v1/devices/push-token', {
+      'install_id': installId,
+      'fcm_token': fcmToken,
+      'platform': platform,
+      'role': ?role,
+    });
+  }
+
+  /// Remove this install's push token (sign-out). 404
+  /// ("push_token_not_found") is a normal outcome when no token was
+  /// registered — callers treat unregistration as best-effort.
+  Future<void> deletePushToken(String installId) async {
+    _requireAuth();
+    await _deleteJson('/v1/devices/push-token/$installId');
+  }
+
   // --------------------------------- dashboard sync (E2E encrypted) -----
   // The dashboard sync blob is END-TO-END ENCRYPTED on the device before
   // upload: it contains the family's AAC dashboard content (words and

@@ -76,8 +76,6 @@ class _FakeDeviceBackend {
     if (request.method == 'GET' && path == '/v1/devices') {
       return http.Response(
         json.encode({
-          'device_slots': 3,
-          'subscription_tier': 'base',
           'devices_used': devices.length,
           'devices': devices,
         }),
@@ -222,10 +220,7 @@ void main() {
       expect(find.text('Caregiver phone'), findsOneWidget);
       expect(find.text('Lost iPad'), findsOneWidget);
       expect(find.text('This device'), findsOneWidget);
-      expect(
-        find.text('2 of 3 device licenses in use.'),
-        findsOneWidget,
-      );
+      expect(find.text('2 devices registered.'), findsOneWidget);
     });
 
     testWidgets('revoking a device calls delete and refreshes the list', (

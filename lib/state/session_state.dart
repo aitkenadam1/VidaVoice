@@ -203,17 +203,6 @@ class SessionState extends ChangeNotifier {
   /// note: the first is used as the speech profile_id).
   List<String> _serverProfileIds = const [];
 
-  /// Set when device registration hit the family's device cap: the
-  /// server's caregiver-readable message, shown once in the device
-  /// section. Null otherwise.
-  String? deviceLimitNotice;
-
-  /// True when the last device registration hit the family's device cap.
-  /// The session stays signed in (the token is needed to list and remove
-  /// devices) but the app shows the blocking device-license screen instead
-  /// of the home board until a slot is freed.
-  bool deviceLicenseBlocked = false;
-
   BootStatus status = BootStatus.loading;
   String bootError = '';
   String currentLocale = AppConfig.defaultLocale;
@@ -443,8 +432,6 @@ class SessionState extends ChangeNotifier {
       // A failed first pull must not disable auto-push forever: local
       // edits should still converge once connectivity returns.
       dashboardSync.autoPushEnabled = true;
-      // Registration may have flipped the device-license block; make
-      // sure the router rebuilds.
       notifyListeners();
     }
   }
@@ -484,7 +471,6 @@ class SessionState extends ChangeNotifier {
     required String username,
     required String password,
   }) async {
-    deviceLimitNotice = null;
     final result = await proxy.signup(
       email: email,
       username: username,
@@ -508,7 +494,6 @@ class SessionState extends ChangeNotifier {
     required String identifier,
     required String password,
   }) async {
-    deviceLimitNotice = null;
     final result = await proxy.login(
       identifier: identifier,
       password: password,
@@ -553,8 +538,6 @@ class SessionState extends ChangeNotifier {
     proxySignedIn = true;
     proxyFamilyId = result.familyId;
     _serverProfileIds = List<String>.of(result.profileIds);
-    deviceLimitNotice = null;
-    deviceLicenseBlocked = false;
     try {
       await proxyAuth.save(result);
     } catch (_) {}
@@ -565,10 +548,9 @@ class SessionState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Registers this install as a family device. Best-effort: an offline
-  /// device still gets a working account. On DEVICE_LIMIT_REACHED the
-  /// session stays signed in but [deviceLicenseBlocked] is set, so the UI
-  /// shows the blocking device-license screen instead of the home board.
+  /// Registers this install as a family device so it stays addressable
+  /// for profile assignments, sync, location, and push delivery.
+  /// Best-effort: an offline device still gets a working account.
   Future<void> _registerDevice() async {
     try {
       final installId = await proxyAuth.installId();
@@ -579,18 +561,11 @@ class SessionState extends ChangeNotifier {
           platform: kIsWeb ? 'web' : defaultTargetPlatform.name,
         ),
       );
-      deviceLicenseBlocked = false;
-      deviceLimitNotice = null;
-    } on ProxyException catch (e) {
-      if (e.code == 'DEVICE_LIMIT_REACHED') {
-        deviceLicenseBlocked = true;
-        deviceLimitNotice = e.message;
-      }
     } catch (_) {}
   }
 
-  /// Re-runs device registration — used by the device-license screen after
-  /// the caregiver frees a slot. Clears the block on success.
+  /// Re-runs device registration — used to refresh this install's
+  /// presence (e.g. after connectivity returns).
   Future<void> retryDeviceRegistration() async {
     await _registerDevice();
     notifyListeners();
@@ -642,7 +617,7 @@ class SessionState extends ChangeNotifier {
 
   /// Sign out of the managed backend: drop the token (secure storage too)
   /// and forget any proxy voice choice. The install id is kept so a
-  /// re-sign-in re-registers the same device instead of burning a slot.
+  /// re-sign-in re-registers the same device.
   Future<void> signOut() async {
     // Unregister push delivery while the session token is still valid,
     // so this device stops receiving family alerts the moment it signs
@@ -652,8 +627,6 @@ class SessionState extends ChangeNotifier {
     proxySignedIn = false;
     proxyFamilyId = null;
     _serverProfileIds = const [];
-    deviceLimitNotice = null;
-    deviceLicenseBlocked = false;
     _entitlementVoices = null;
     _entitlementFetched = null;
     dashboardSync.clearKey();

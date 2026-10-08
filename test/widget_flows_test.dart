@@ -141,8 +141,6 @@ Future<void> unlockGate(WidgetTester tester) async {
         return http.Response(
           json.encode({
             'device': {'install_id': 'install-1'},
-            'device_slots': 3,
-            'subscription_tier': 'base',
             'devices_used': 1,
           }),
           201,

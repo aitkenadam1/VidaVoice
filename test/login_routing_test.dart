@@ -8,7 +8,6 @@ import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:onevoz/main.dart';
 import 'package:onevoz/models/word.dart';
-import 'package:onevoz/screens/device_license_blocked_screen.dart';
 import 'package:onevoz/screens/home_board_screen.dart';
 import 'package:onevoz/screens/sign_in_gate_screen.dart';
 import 'package:onevoz/services/elevenlabs_key_store.dart';
@@ -57,7 +56,6 @@ void main() {
   Future<SessionState> makeSession({
     bool onboardingComplete = true,
     bool signedIn = false,
-    bool blocked = false,
     Future<http.Response> Function(http.Request)? proxyHandler,
     _FakeSecureStore? secureStore,
     DeviceRole? role = DeviceRole.communicator,
@@ -84,13 +82,9 @@ void main() {
     session.status = BootStatus.ready;
     session.onboardingComplete = onboardingComplete;
     session.proxySignedIn = signedIn;
-    session.deviceLicenseBlocked = blocked;
     if (signedIn) {
-      // A signed-in session carries a token: without it the blocked
-      // screen's first device-list call hits `unauthorized` and the
-      // session signs itself out mid-pump (real sign-ins always set one).
-      // The mock backend stays offline by default, which also proves the
-      // block screen survives a cloud error instead of dropping the gate.
+      // A signed-in session carries a token (real sign-ins always set
+      // one). The mock backend stays offline by default.
       session.proxy.setToken('tok-test');
     }
     await session.profiles.load();
@@ -127,17 +121,6 @@ void main() {
 
       expect(find.byType(HomeBoardScreen), findsOneWidget);
       expect(find.byType(SignInGateScreen), findsNothing);
-    });
-
-    testWidgets('a device over the cap shows the license block screen', (
-      tester,
-    ) async {
-      final session = await makeSession(signedIn: true, blocked: true);
-      await pumpApp(tester, session);
-
-      expect(find.byType(DeviceLicenseBlockedScreen), findsOneWidget);
-      expect(find.text('All device licenses are in use'), findsOneWidget);
-      expect(find.byType(HomeBoardScreen), findsNothing);
     });
 
     testWidgets('incomplete onboarding routes to the wizard, not the gate', (

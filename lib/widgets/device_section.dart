@@ -6,11 +6,9 @@ import '../state/session_state.dart';
 
 /// Caregiver-hub card for the family's registered devices.
 ///
-/// Hidden entirely when not signed in. Shows "X of N devices used" (N is
-/// 3 on the base tier, 4 on Plus), each device with its last-seen time,
-/// and per-row removal with confirmation. Also surfaces the server's
-/// caregiver-readable message when registration hit the device cap at
-/// sign-in.
+/// Hidden entirely when not signed in. Shows how many devices are
+/// registered, each device with its last-seen time, and per-row removal
+/// with confirmation.
 class DeviceSection extends StatefulWidget {
   const DeviceSection({super.key});
 
@@ -72,9 +70,8 @@ class _DeviceSectionState extends State<DeviceSection> {
       builder: (ctx) => AlertDialog(
         title: Text('Remove "$name"?'),
         content: const Text(
-          'This device will be signed out of the family account and its '
-          'slot freed. The app on that device keeps working with '
-          'on-device voices.',
+          'This device will be signed out of the family account. The app '
+          'on that device keeps working with on-device voices.',
         ),
         actions: [
           TextButton(
@@ -149,33 +146,11 @@ class _DeviceSectionState extends State<DeviceSection> {
       });
     }
 
-    final limitNotice = session.deviceLimitNotice;
     final list = _list;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (limitNotice != null) ...[
-          Card(
-            color: Theme.of(context).colorScheme.errorContainer,
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  const Icon(Icons.warning_amber_outlined),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      limitNotice,
-                      style: const TextStyle(fontSize: 13),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-        ],
         Row(
           children: [
             Expanded(
@@ -184,7 +159,7 @@ class _DeviceSectionState extends State<DeviceSection> {
                 child: Text(
                   list == null
                       ? 'Devices'
-                      : '${list.devicesUsed} of ${list.deviceSlots} devices used',
+                      : '${list.devicesUsed} devices registered',
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -199,14 +174,6 @@ class _DeviceSectionState extends State<DeviceSection> {
             ),
           ],
         ),
-        if (list != null && list.subscriptionTier == 'plus')
-          const Padding(
-            padding: EdgeInsets.only(left: 12, bottom: 4),
-            child: Text(
-              'Plus plan \u2014 includes an extra device slot.',
-              style: TextStyle(fontSize: 12),
-            ),
-          ),
         if (_loading && list == null)
           const Center(child: CircularProgressIndicator())
         else if (_error != null && list == null)
@@ -255,8 +222,7 @@ class _DeviceSectionState extends State<DeviceSection> {
         const Padding(
           padding: EdgeInsets.fromLTRB(12, 8, 12, 0),
           child: Text(
-            'Removing a device signs it out and frees its slot. Need more '
-            'slots? Plus adds one extra device.',
+            'Removing a device signs it out and revokes its access.',
             style: TextStyle(fontSize: 12),
           ),
         ),

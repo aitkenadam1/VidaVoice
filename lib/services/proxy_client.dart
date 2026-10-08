@@ -31,8 +31,8 @@ const kProxyBaseUrl = String.fromEnvironment(
 /// Error from the managed voice proxy (or from reaching it).
 ///
 /// [code] is the server's machine-readable error code when one was
-/// provided (e.g. "email_taken", "quota_exceeded", "DEVICE_LIMIT_REACHED",
-/// "unauthorized") or a client-side code ("unreachable", "bad_response").
+/// provided (e.g. "email_taken", "quota_exceeded", "unauthorized") or a
+/// client-side code ("unreachable", "bad_response").
 /// [fallbackAllowed] mirrors the contract: the caller may fall back to
 /// on-device voices.
 class ProxyException implements Exception {
@@ -256,16 +256,9 @@ class ProxyDevice {
 
 /// POST /v1/devices/register response (201 new, 200 re-register).
 class ProxyDeviceRegistration {
-  ProxyDeviceRegistration({
-    required this.device,
-    required this.deviceSlots,
-    required this.subscriptionTier,
-    required this.devicesUsed,
-  });
+  ProxyDeviceRegistration({required this.device, required this.devicesUsed});
 
   final ProxyDevice device;
-  final int deviceSlots;
-  final String subscriptionTier;
   final int devicesUsed;
 
   factory ProxyDeviceRegistration.fromJson(Map<String, dynamic> json) {
@@ -274,8 +267,6 @@ class ProxyDeviceRegistration {
       device: device is Map<String, dynamic>
           ? ProxyDevice.fromJson(device)
           : ProxyDevice(installId: ''),
-      deviceSlots: (json['device_slots'] as num?)?.toInt() ?? 3,
-      subscriptionTier: json['subscription_tier']?.toString() ?? 'base',
       devicesUsed: (json['devices_used'] as num?)?.toInt() ?? 0,
     );
   }
@@ -283,23 +274,14 @@ class ProxyDeviceRegistration {
 
 /// GET /v1/devices response.
 class ProxyDeviceList {
-  ProxyDeviceList({
-    required this.deviceSlots,
-    required this.subscriptionTier,
-    required this.devicesUsed,
-    required this.devices,
-  });
+  ProxyDeviceList({required this.devicesUsed, required this.devices});
 
-  final int deviceSlots;
-  final String subscriptionTier;
   final int devicesUsed;
   final List<ProxyDevice> devices;
 
   factory ProxyDeviceList.fromJson(Map<String, dynamic> json) {
     final raw = json['devices'];
     return ProxyDeviceList(
-      deviceSlots: (json['device_slots'] as num?)?.toInt() ?? 3,
-      subscriptionTier: json['subscription_tier']?.toString() ?? 'base',
       devicesUsed: (json['devices_used'] as num?)?.toInt() ?? 0,
       devices: raw is List
           ? raw
@@ -647,8 +629,7 @@ class ProxyClient {
   }
 
   /// Register this install as a family device. 201 on first registration,
-  /// 200 when the same install_id re-registers. 403 with code
-  /// "DEVICE_LIMIT_REACHED" when the family's slots are full.
+  /// 200 when the same install_id re-registers. There is no device cap.
   Future<ProxyDeviceRegistration> registerDevice({
     required String installId,
     String? deviceName,
@@ -664,13 +645,13 @@ class ProxyClient {
     return ProxyDeviceRegistration.fromJson(body);
   }
 
-  /// List the family's registered devices and slot counts.
+  /// List the family's registered devices.
   Future<ProxyDeviceList> listDevices() async {
     _requireAuth();
     return ProxyDeviceList.fromJson(await _getJson('/v1/devices'));
   }
 
-  /// Remove a device, freeing its slot. 404 → code "device_not_found".
+  /// Remove a device and revoke its access. 404 → code "device_not_found".
   Future<void> deleteDevice(String installId) async {
     _requireAuth();
     await _deleteJson('/v1/devices/$installId');

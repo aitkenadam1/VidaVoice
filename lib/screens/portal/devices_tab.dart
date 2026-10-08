@@ -10,9 +10,9 @@ import '../../state/session_state.dart';
 /// to profiles, and revokes lost devices.
 ///
 /// Revocation calls the existing device-delete endpoint, which the
-/// server fans out: the device row dies (freeing the license slot) AND
-/// that install's push-token row dies (cutting off future sync and
-/// push). Verified in the worker source — no client reimplementation.
+/// server fans out: the device row dies AND that install's push-token row
+/// dies (cutting off future sync and push). Verified in the worker
+/// source — no client reimplementation.
 
 // ---------------------------------------------------------------- devices
 
@@ -20,9 +20,9 @@ import '../../state/session_state.dart';
 /// assigns communicator devices to profiles, and revokes lost devices.
 ///
 /// Revocation calls the existing device-delete endpoint, which the
-/// server fans out: the device row dies (freeing the license slot) AND
-/// that install's push-token row dies (cutting off future sync and
-/// push). Verified in the worker source — no client reimplementation.
+/// server fans out: the device row dies AND that install's push-token row
+/// dies (cutting off future sync and push). Verified in the worker
+/// source — no client reimplementation.
 class PortalDevicesTab extends StatefulWidget {
   const PortalDevicesTab({super.key});
 
@@ -78,9 +78,9 @@ class _PortalDevicesTabState extends State<PortalDevicesTab> {
     }
   }
 
-  /// Revoke (delete) a device. Frees its license slot and kills its sync
-  /// + push access server-side. Revoking THIS device signs out locally
-  /// too, so the device doesn't linger in a half-registered state.
+  /// Revoke (delete) a device. Kills its sync + push access server-side.
+  /// Revoking THIS device signs out locally too, so the device doesn't
+  /// linger in a half-registered state.
   Future<void> _revoke(ProxyDevice device) async {
     final session = context.read<SessionState>();
     final name = _displayName(device);
@@ -92,11 +92,10 @@ class _PortalDevicesTabState extends State<PortalDevicesTab> {
         content: Text(
           isSelf
               ? 'This device will be signed out of the family account, '
-                  'its license slot freed, and its sync and push access '
-                  'cut off.'
+                  'and its sync and push access cut off.'
               : 'This device will be signed out of the family account, '
-                  'its license slot freed, and its sync and push access '
-                  'cut off. Use this for lost or stolen devices.',
+                  'and its sync and push access cut off. Use this for '
+                  'lost or stolen devices.',
         ),
         actions: [
           TextButton(
@@ -229,8 +228,9 @@ class _PortalDevicesTabState extends State<PortalDevicesTab> {
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Text(
-                '${list.devicesUsed} of ${list.deviceSlots} device '
-                'licenses in use.',
+                list.devicesUsed == 1
+                    ? '1 device registered.'
+                    : '${list.devicesUsed} devices registered.',
                 style: TextStyle(
                   fontSize: 14,
                   color: scheme.onSurfaceVariant,

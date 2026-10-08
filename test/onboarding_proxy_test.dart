@@ -74,8 +74,6 @@ Map<String, dynamic> _authBody() => {
 
 Map<String, dynamic> _registrationBody() => {
   'device': {'install_id': 'install-1'},
-  'device_slots': 3,
-  'subscription_tier': 'base',
   'devices_used': 1,
 };
 

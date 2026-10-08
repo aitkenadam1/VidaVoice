@@ -14,8 +14,8 @@ import 'proxy_account_form.dart';
 /// AI cloud voices.
 ///
 /// The primary path is the managed ("included") cloud voices: a OneVoz
-/// account adds AI voices on up to 3 devices, billed through the family's
-/// shared monthly quota — no API key needed.
+/// account adds AI voices on your family's devices, billed through the
+/// family's shared monthly quota — no API key needed.
 ///
 /// Below that, collapsed under "Advanced", is the original
 /// bring-your-own-key ElevenLabs UI, verbatim: the caregiver pastes their
@@ -209,8 +209,8 @@ class _ProxyVoiceCardState extends State<_ProxyVoiceCard> {
             const SizedBox(height: 8),
             if (!session.proxySignedIn) ...[
               const Text(
-                'A OneVoz account adds AI cloud voices on up to 3 '
-                'devices, with a shared monthly quota \u2014 no API key '
+                'A OneVoz account adds AI cloud voices on your '
+                'family\u2019s devices, with a shared monthly quota \u2014 no API key '
                 'needed. Sign up below, or keep using on-device voices: '
                 'nothing changes.',
                 style: TextStyle(fontSize: 12),
@@ -218,27 +218,6 @@ class _ProxyVoiceCardState extends State<_ProxyVoiceCard> {
               const SizedBox(height: 12),
               const ProxyAccountForm(),
             ] else ...[
-              if (session.deviceLimitNotice != null) ...[
-                Card(
-                  color: Theme.of(context).colorScheme.errorContainer,
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.warning_amber_outlined),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            session.deviceLimitNotice!,
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-              ],
               if (_loading && _voices.isEmpty)
                 const Center(child: CircularProgressIndicator())
               else if (_error != null && _voices.isEmpty)

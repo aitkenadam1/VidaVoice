@@ -30,8 +30,6 @@ String proxyErrorMessage(ProxyException e) {
       return 'That email/username and password didn\u2019t match. Try again.';
     case 'rate_limited':
       return 'Too many attempts \u2014 wait a bit and try again.';
-    case 'DEVICE_LIMIT_REACHED':
-      return e.message;
     default:
       return e.message.isNotEmpty
           ? e.message

@@ -380,8 +380,6 @@ void main() {
               'created_at': '2026-09-15T10:00:00Z',
               'last_seen_at': '2026-09-15T10:00:00Z',
             },
-            'device_slots': 3,
-            'subscription_tier': 'base',
             'devices_used': 1,
           }),
           201,
@@ -393,28 +391,23 @@ void main() {
         deviceName: 'iPad',
         platform: 'ios',
       );
-      expect(reg.deviceSlots, 3);
-      expect(reg.subscriptionTier, 'base');
       expect(reg.devicesUsed, 1);
       expect(reg.device.deviceName, 'iPad');
     });
 
     test(
-      'registerDevice 403 preserves DEVICE_LIMIT_REACHED and the message',
+      'registerDevice 409 preserves device_registered_elsewhere',
       () async {
-        const serverMessage = 'All 3 device slots are in use.';
+        const serverMessage = 'This device is already registered to another family.';
         final client = clientWith(
           (_) async => http.Response(
             json.encode({
               'error': {
-                'code': 'DEVICE_LIMIT_REACHED',
+                'code': 'device_registered_elsewhere',
                 'message': serverMessage,
               },
-              'device_slots': 3,
-              'subscription_tier': 'base',
-              'devices_used': 3,
             }),
-            403,
+            409,
           ),
         );
         client.setToken('tok-1');
@@ -422,7 +415,7 @@ void main() {
           await client.registerDevice(installId: 'install-9');
           fail('expected ProxyException');
         } on ProxyException catch (e) {
-          expect(e.code, 'DEVICE_LIMIT_REACHED');
+          expect(e.code, 'device_registered_elsewhere');
           expect(e.message, serverMessage);
         }
       },
@@ -433,8 +426,6 @@ void main() {
         expect(req.url.path, '/v1/devices');
         return http.Response(
           json.encode({
-            'device_slots': 4,
-            'subscription_tier': 'plus',
             'devices_used': 2,
             'devices': [
               {
@@ -451,8 +442,7 @@ void main() {
       });
       client.setToken('tok-1');
       final list = await client.listDevices();
-      expect(list.deviceSlots, 4);
-      expect(list.subscriptionTier, 'plus');
+      expect(list.devicesUsed, 2);
       expect(list.devices, hasLength(2));
       expect(list.devices[1].deviceName, isNull);
     });

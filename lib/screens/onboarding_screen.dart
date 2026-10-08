@@ -181,7 +181,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         const SizedBox(height: 8),
         Text(
           'An account protects your family\u2019s profiles and keeps their '
-          'dashboards identical on up to 3 devices. Sign in or create one '
+          'dashboards identical on all your devices. Sign in or create one '
           'to continue.',
           style: TextStyle(fontSize: 15, color: scheme.onSurfaceVariant),
           textAlign: TextAlign.center,

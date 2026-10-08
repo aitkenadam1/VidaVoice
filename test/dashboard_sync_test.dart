@@ -48,7 +48,8 @@ class _FakeSyncServer {
   int version = 0;
   String? lastSyncMethod;
   String? lastSyncBody;
-  bool deviceLimit = false;
+  bool failDeviceRegistration = false;
+  int registerCalls = 0;
 
   String get saltB64 =>
       base64.encode(utf8.encode('0123456789abcdef0123456789abcdef'));
@@ -88,22 +89,21 @@ class _FakeSyncServer {
       return http.Response(json.encode(_authBody()), 200);
     }
     if (path == '/v1/devices/register' && req.method == 'POST') {
-      if (deviceLimit) {
+      registerCalls++;
+      if (failDeviceRegistration) {
         return http.Response(
           json.encode({
             'error': {
-              'code': 'DEVICE_LIMIT_REACHED',
-              'message': 'All device licenses are in use.',
+              'code': 'unavailable',
+              'message': 'Device registration is unavailable.',
             },
           }),
-          403,
+          503,
         );
       }
       return http.Response(
         json.encode({
           'device': {'install_id': 'install-1'},
-          'device_slots': 3,
-          'subscription_tier': 'base',
           'devices_used': 1,
         }),
         201,
@@ -585,7 +585,7 @@ void main() {
     });
   });
 
-  group('device licensing', () {
+  group('device registration', () {
     Future<SessionState> makeSession(_FakeSyncServer server) async {
       SharedPreferences.setMockInitialValues({});
       final session = SessionState(
@@ -601,8 +601,8 @@ void main() {
       return session;
     }
 
-    test('device cap keeps the session but sets the license block', () async {
-      final server = _FakeSyncServer()..deviceLimit = true;
+    test('a failed device registration never blocks sign-in', () async {
+      final server = _FakeSyncServer()..failDeviceRegistration = true;
       final session = await makeSession(server);
 
       await session.signIn(
@@ -611,22 +611,22 @@ void main() {
       );
 
       expect(session.proxySignedIn, isTrue);
-      expect(session.deviceLicenseBlocked, isTrue);
+      expect(server.registerCalls, 1);
     });
 
-    test('retry clears the block once a slot frees up', () async {
-      final server = _FakeSyncServer()..deviceLimit = true;
+    test('retry re-runs device registration after a failure', () async {
+      final server = _FakeSyncServer()..failDeviceRegistration = true;
       final session = await makeSession(server);
 
       await session.signIn(
         identifier: 'caregiver@example.org',
         password: 'a-strong-password-1',
       );
-      expect(session.deviceLicenseBlocked, isTrue);
+      expect(server.registerCalls, 1);
 
-      server.deviceLimit = false;
+      server.failDeviceRegistration = false;
       await session.retryDeviceRegistration();
-      expect(session.deviceLicenseBlocked, isFalse);
+      expect(server.registerCalls, 2);
     });
   });
 

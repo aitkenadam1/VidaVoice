@@ -125,6 +125,11 @@ class PushTokenService {
 
   StreamSubscription<String>? _refreshSub;
   String? _registeredToken;
+
+  /// The install id resolved during registration. Cached so
+  /// unregistration can issue its DELETE immediately — no keychain
+  /// await between "sign out" and the request leaving.
+  String? _installId;
   bool _started = false;
 
   static String _defaultPlatformName() {
@@ -166,25 +171,30 @@ class PushTokenService {
   /// token is still valid — so a signed-out device stops receiving
   /// family alerts. All failures are swallowed: sign-out must never
   /// block on push bookkeeping.
-  /// Ends the lifecycle. With [unregister] (sign-out, revocation),
-  /// deletes the server-side registration first — while the session
-  /// token is still valid — so a signed-out device stops receiving
-  /// family alerts. All failures are swallowed: sign-out must never
-  /// block on push bookkeeping.
   Future<void> stop({bool unregister = false}) async {
     _started = false;
-    await _refreshSub?.cancel();
+    // Issue the DELETE before awaiting anything else: it must leave
+    // with the still-valid session token.
+    final pending = unregister ? _unregister() : null;
+    // Subscription cleanup is local bookkeeping only. Don't await it:
+    // a stream whose completion is timer-driven can starve a caller
+    // that is itself being awaited (notably sign-out in tests).
+    final sub = _refreshSub;
     _refreshSub = null;
-    if (unregister) {
-      try {
-        if (_proxy.hasToken) {
-          await _proxy.deletePushToken(await _proxyAuth.installId());
-        }
-      } catch (_) {
-        // 404 (never registered) and network failures are both fine.
-      }
-    }
+    if (sub != null) unawaited(sub.cancel());
+    await pending;
     _registeredToken = null;
+    _installId = null;
+  }
+
+  Future<void> _unregister() async {
+    try {
+      if (!_proxy.hasToken) return;
+      final id = _installId ?? await _proxyAuth.installId();
+      await _proxy.deletePushToken(id);
+    } catch (_) {
+      // 404 (never registered) and network failures are both fine.
+    }
   }
 
   Future<String?> _safeCurrentToken() async {
@@ -199,8 +209,9 @@ class PushTokenService {
     if (!force && token == _registeredToken) return;
     try {
       if (!_proxy.hasToken) return;
+      _installId ??= await _proxyAuth.installId();
       await _proxy.registerPushToken(
-        installId: await _proxyAuth.installId(),
+        installId: _installId!,
         fcmToken: token,
         platform: _platformName(),
         role: _role()?.name,

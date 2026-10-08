@@ -556,6 +556,10 @@ class GeofenceService {
             envelope: {
               'zone_id': entry.zoneId,
               'profile_id': entry.profileSyncKey,
+              // Same UUID as the encrypted payload's eventId (F4): lets the
+              // worker dedup durable-outbox retries instead of fanning the
+              // same physical event out twice.
+              'event_id': entry.eventId,
             },
           );
           _outbox.removeAt(0);

@@ -315,9 +315,12 @@ void main() {
       expect(h.alertPosts, hasLength(1));
       final body = json.decode(h.alertPosts.single.body) as Map;
       expect(body['kind'], 'geofence_exit');
+      // F4: envelope carries the outbox event id the worker dedups on.
+      expect((body['envelope'] as Map)['event_id'], isNotEmpty);
       expect(body['envelope'], {
         'zone_id': _zone().id,
         'profile_id': h.profile.syncKey,
+        'event_id': (body['envelope'] as Map)['event_id'],
       });
       // Server-visible fields carry no names or coordinates…
       expect(body.keys.toSet(),
@@ -332,6 +335,8 @@ void main() {
       expect(payload['zoneName'], 'Home');
       expect(payload['profileName'], 'Mia');
       expect(payload['eventId'], isNotEmpty);
+      // Envelope dedup key == the encrypted payload's event id (F4).
+      expect((body['envelope'] as Map)['event_id'], payload['eventId']);
       expect(h.geo.pendingEvents, 0);
       await h.geo.stop();
     });

@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
+import 'word_button.dart';
+
 /// One custom (non-vocabulary) dashboard cell: imported image or emoji
 /// above the label. Vocabulary cells reuse the standard word button;
 /// this tile is only for caregiver-authored and imported buttons.
@@ -54,19 +56,33 @@ class DashboardTile extends StatelessWidget {
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(4),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _symbol(38 * scale),
-              const SizedBox(height: 2),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 12 * scale),
-              ),
-            ],
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final sizes = fluidTileSizes(constraints, scale);
+              return FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(height: sizes.icon, child: _symbol(sizes.icon)),
+                    const SizedBox(height: 2),
+                    SizedBox(
+                      width: constraints.maxWidth,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          label,
+                          maxLines: 1,
+                          softWrap: false,
+                          style: TextStyle(fontSize: sizes.font),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ),
       ),

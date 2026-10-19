@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../models/word.dart';
 import '../../state/session_state.dart';
+import '../board_preview_screen.dart';
 import '../../widgets/custom_symbols_section.dart';
 import '../../widgets/dashboard_section.dart';
 import '../../widgets/first_week_plan_section.dart';
@@ -32,6 +33,8 @@ class _PortalContentTabState extends State<PortalContentTab> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        _previewButton(session),
+        const SizedBox(height: 16),
         PortalSection(
           title: 'Vocabulary level',
           icon: Icons.tune,
@@ -66,9 +69,16 @@ class _PortalContentTabState extends State<PortalContentTab> {
         PortalSection(
           title: 'Personal dashboard',
           icon: Icons.dashboard_outlined,
-          child: DashboardSection(
-            key: ValueKey(session.profiles.active?.id ?? 'none'),
-            refresh: _refresh,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DashboardSection(
+                key: ValueKey(session.profiles.active?.id ?? 'none'),
+                refresh: _refresh,
+              ),
+              const SizedBox(height: 8),
+              _previewButton(session, label: 'Preview this dashboard'),
+            ],
           ),
         ),
         PortalSection(
@@ -77,6 +87,26 @@ class _PortalContentTabState extends State<PortalContentTab> {
           child: _firstWeekPlan(session),
         ),
       ],
+    );
+  }
+
+  /// Opens the communicator-board preview for the active profile, so
+  /// edits here can be checked without switching modes.
+  Widget _previewButton(SessionState session, {String? label}) {
+    final active = session.profiles.active;
+    return FilledButton.tonalIcon(
+      onPressed: active == null
+          ? null
+          : () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const BoardPreviewScreen()),
+            ),
+      icon: const Icon(Icons.visibility_outlined),
+      label: Text(
+        label ??
+            (active == null
+                ? 'Preview the board'
+                : 'Preview what ${active.name} sees'),
+      ),
     );
   }
 

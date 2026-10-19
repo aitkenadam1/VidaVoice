@@ -7,10 +7,10 @@ import '../../services/proxy_client.dart';
 import '../../state/session_state.dart';
 import 'portal_section.dart';
 
-/// The invite email a caregiver sends a new team member. The system
-/// doesn't send email yet — creating an invite produces this message
-/// with a one-time link the caregiver shares themselves. Copy approved
-/// by Adam before any automated sending is connected.
+/// The invite email for a new team member — the same copy the server
+/// sends through Resend when an invite is created (the worker's
+/// buildInviteEmail mirrors it), shown here as a preview. Copy approved
+/// by Adam 2026-10-19.
 ({String subject, String body}) inviteEmailDraft({
   required String roleLabel,
   required TeamPermissions permissions,
@@ -250,20 +250,25 @@ class _TeamSectionState extends State<TeamSection> {
         permissions: permissions,
       );
       if (!mounted) return;
+      final emailed = outcome.created.emailed;
       await showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('Invite ready'),
+          title: Text(emailed ? 'Invitation sent' : 'Invite ready'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Send this link to $email. Email sending isn\u2019t '
-                  'connected yet, so share it yourself for now — the link '
-                  'only works with their email address and expires in 7 '
-                  'days.',
+                  emailed
+                      ? 'We emailed the invitation to $email from '
+                            'noreply@onevoz.me. You can also share this '
+                            'link yourself — it only works with their '
+                            'email address and expires in 7 days.'
+                      : 'Send this link to $email. The link only works '
+                            'with their email address and expires in 7 '
+                            'days.',
                 ),
                 const SizedBox(height: 12),
                 SelectableText(outcome.link),

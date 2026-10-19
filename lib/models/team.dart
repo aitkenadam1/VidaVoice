@@ -338,11 +338,22 @@ class TeamEntry {
 /// generated the token itself (for key wrapping), the server echoes
 /// neither the token nor the URL — the app already has both.
 class InviteCreated {
-  const InviteCreated({required this.invite, this.inviteToken, this.inviteUrl});
+  const InviteCreated({
+    required this.invite,
+    this.inviteToken,
+    this.inviteUrl,
+    this.emailStatus = 'link_only',
+  });
 
   final TeamInvite invite;
   final String? inviteToken;
   final String? inviteUrl;
+
+  /// 'sent' when the server emailed the invitation (Resend); anything
+  /// else means the caregiver should share the link themselves.
+  final String emailStatus;
+
+  bool get emailed => emailStatus == 'sent';
 
   factory InviteCreated.fromJson(Map<String, dynamic> json) {
     return InviteCreated(
@@ -361,6 +372,7 @@ class InviteCreated {
             ),
       inviteToken: json['invite_token']?.toString(),
       inviteUrl: json['invite_url']?.toString(),
+      emailStatus: json['email_status']?.toString() ?? 'link_only',
     );
   }
 }

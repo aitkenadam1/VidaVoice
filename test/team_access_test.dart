@@ -45,6 +45,13 @@ class _TeamServer {
   Map<String, dynamic>? inviteBody;
   int version = 0;
 
+  /// Email-flow emulation: the "server" generates this token, records
+  /// that an email went out, and accepts the wrapped key afterwards.
+  static const serverToken = 'server-generated-token-abc';
+  String? emailedTo;
+  String? attachedWrappedKey;
+  String? attachedWrapSalt;
+
   static String saltB64(String seed) =>
       base64.encode(utf8.encode(seed.padRight(32, '0').substring(0, 32)));
 
@@ -161,6 +168,8 @@ class _TeamServer {
     }
     if (path == '/v1/team/invites' && req.method == 'POST') {
       inviteBody = body();
+      final byEmail = inviteBody!['deliver'] == 'email';
+      if (byEmail) emailedTo = inviteBody!['email'] as String?;
       return http.Response(
         json.encode({
           'invite': {
@@ -172,11 +181,21 @@ class _TeamServer {
             'expires_at': 9999999999999,
             'created_at': 1,
           },
-          'invite_token': null,
-          'invite_url': null,
+          'invite_token': byEmail ? serverToken : null,
+          'invite_url': byEmail
+              ? 'https://onevoz.me/join#invite=$serverToken'
+              : null,
+          'email_status': byEmail ? 'sent' : 'link_only',
         }),
         201,
       );
+    }
+    if (path.startsWith('/v1/team/invites/') &&
+        path.endsWith('/wrapped-key') &&
+        req.method == 'POST') {
+      attachedWrappedKey = body()['wrapped_key'] as String?;
+      attachedWrapSalt = body()['wrap_salt'] as String?;
+      return http.Response(json.encode({'ok': true}), 200);
     }
     if (path == '/v1/team/accept') {
       return http.Response(
@@ -193,8 +212,8 @@ class _TeamServer {
             'safety': false,
             'team': false,
           },
-          'wrapped_key': inviteBody?['wrapped_key'],
-          'wrap_salt': inviteBody?['wrap_salt'],
+          'wrapped_key': attachedWrappedKey ?? inviteBody?['wrapped_key'],
+          'wrap_salt': attachedWrapSalt ?? inviteBody?['wrap_salt'],
         }),
         200,
       );
@@ -375,13 +394,16 @@ void main() {
         );
         final token = SessionState.parseInviteToken(outcome.link);
         expect(token, isNotEmpty);
-        // The server received only the token's hash + wrapped key.
-        expect(
-          server.inviteBody!['token_hash'],
-          crypto.sha256.convert(utf8.encode(token)).toString(),
-        );
-        expect(server.inviteBody!['wrapped_key'], isNotNull);
-        expect(server.inviteBody!.toString(), isNot(contains(token)));
+        // Email flow: the server generated the token and emailed the
+        // invite; the create call carried no token material at all,
+        // and the wrapped key arrived via the wrapped-key endpoint.
+        expect(outcome.created.emailed, isTrue);
+        expect(server.emailedTo, 'speech@example.org');
+        expect(token, _TeamServer.serverToken);
+        expect(server.inviteBody!['token_hash'], isNull);
+        expect(server.inviteBody!['wrapped_key'], isNull);
+        expect(server.attachedWrappedKey, isNotNull);
+        expect(server.attachedWrapSalt, isNotNull);
 
         // --- therapist signs in to their own family B and accepts ---
         final memberAuth = ProxyAuthStore(store: _FakeSecureStore());

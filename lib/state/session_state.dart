@@ -1096,10 +1096,62 @@ class SessionState extends ChangeNotifier {
   }
 
   /// Creates an invite for the CURRENT family and returns the shareable
-  /// link. The raw token is generated here and never sent to the server
-  /// (only its hash), because the token doubles as the wrapping key for
-  /// the family's sync key.
+  /// link. The server generates the token and emails the invitation
+  /// itself (Resend); this app then wraps the family's sync key with
+  /// that token and attaches the wrapped blob to the invite, so the
+  /// invitee's device can unwrap it from the emailed link alone. The
+  /// server stores only the token's hash + the opaque wrapped blob.
+  /// Falls back to a client-generated token (hash-only, link-share)
+  /// when an older server doesn't return one.
   Future<({InviteCreated created, String link})> createTeamInvite({
+    required String email,
+    required String role,
+    required TeamPermissions permissions,
+  }) async {
+    final created = await _authed(
+      () => proxy.createTeamInvite(
+        email: email,
+        role: role,
+        permissions: permissions,
+        deliverEmail: true,
+      ),
+    );
+    final token = created.inviteToken;
+    if (token == null || token.isEmpty) {
+      return _createTeamInviteClientToken(
+        email: email,
+        role: role,
+        permissions: permissions,
+      );
+    }
+    final familyKeyB64 = await proxyAuth.readSyncKey();
+    if (familyKeyB64 != null && familyKeyB64.isNotEmpty) {
+      final blob = await DashboardSyncService.encrypt(
+        _inviteWrapKey(token),
+        familyKeyB64,
+      );
+      try {
+        await _authed(
+          () => proxy.setInviteWrappedKey(
+            created.invite.id,
+            blob.ciphertext,
+            blob.nonce,
+          ),
+        );
+      } catch (_) {
+        // Best-effort: the invite (and its email) already succeeded.
+        // Without the wrapped key the invitee still joins the team;
+        // board sync waits for a fresh invite, as before this flow.
+      }
+    }
+    unawaited(loadTeam());
+    return (created: created, link: 'https://onevoz.me/join#invite=$token');
+  }
+
+  /// Link-share fallback: the raw token is generated here and never
+  /// sent to the server (only its hash), because the token doubles as
+  /// the wrapping key for the family's sync key.
+  Future<({InviteCreated created, String link})> _createTeamInviteClientToken({
     required String email,
     required String role,
     required TeamPermissions permissions,

@@ -676,6 +676,7 @@ class ProxyClient {
     String? tokenHash,
     String? wrappedKey,
     String? wrapSalt,
+    bool deliverEmail = false,
   }) async {
     _requireAuth();
     final body = await _postJson('/v1/team/invites', {
@@ -685,8 +686,24 @@ class ProxyClient {
       'token_hash': ?tokenHash,
       'wrapped_key': ?wrappedKey,
       'wrap_salt': ?wrapSalt,
+      if (deliverEmail) 'deliver': 'email',
     });
     return InviteCreated.fromJson(body);
+  }
+
+  /// POST /v1/team/invites/{id}/wrapped-key — attach the E2E-wrapped
+  /// family sync key to an emailed invite (server-generated token, so
+  /// wrapping happens after creation). Set-once on the server.
+  Future<void> setInviteWrappedKey(
+    String inviteId,
+    String wrappedKey,
+    String wrapSalt,
+  ) async {
+    _requireAuth();
+    await _postJson(
+      '/v1/team/invites/${Uri.encodeComponent(inviteId)}/wrapped-key',
+      {'wrapped_key': wrappedKey, 'wrap_salt': wrapSalt},
+    );
   }
 
   /// DELETE /v1/team/invites/{id} — revoke a pending invite.

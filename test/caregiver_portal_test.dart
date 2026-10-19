@@ -112,6 +112,9 @@ Future<SessionState> _makeSession(_FakeDeviceBackend backend) async {
   session.proxySignedIn = true;
   session.proxy.setToken('tok-test');
   session.deviceRole = DeviceRole.caregiver;
+  // This suite exercises the portal's FULL surface; the tier tests in
+  // portal_tier_test.dart own the Basic/Moderate folding behaviour.
+  session.portalTier = PortalTier.advanced;
   await session.profiles.load();
   return session;
 }
@@ -463,6 +466,8 @@ void main() {
       session.proxySignedIn = true;
       session.proxy.setToken('tok-test');
       session.deviceRole = DeviceRole.caregiver;
+      // Devices is a Moderate tab; raise the tier so it is visible.
+      session.portalTier = PortalTier.moderate;
       await session.profiles.load();
       await _pumpPortal(tester, session);
 

@@ -124,45 +124,65 @@ class _PortalProfilesTabState extends State<PortalProfilesTab> {
                           ),
                         )
                       else ...[
+                        // Basic view folds the editors below but still
+                        // SHOWS the facts — hiding controls must never
+                        // hide which mode a profile is in.
+                        if (!session.showTier(PortalTier.moderate))
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Text(
+                              'Mode: ${p.communicationMode.name} · '
+                              'Build length: ${p.buildMaxSymbols} · '
+                              'Predictions: '
+                              '${p.predictionEnabled ? 'on' : 'off'}',
+                            ),
+                          ),
                         // Per-profile communication-mode picker. Keyed on
                         // the saved mode so an external change resets the
                         // local selection to what is actually stored.
-                        ProfileModeEditor(
-                          key: ValueKey(
-                            'mode-editor-${p.id}-${p.communicationMode.name}',
+                        // Moderate view: picking Tap / Build / Type is a
+                        // considered step, not a day-one decision.
+                        if (session.showTier(PortalTier.moderate))
+                          ProfileModeEditor(
+                            key: ValueKey(
+                              'mode-editor-${p.id}-${p.communicationMode.name}',
+                            ),
+                            profileId: p.id,
                           ),
-                          profileId: p.id,
-                        ),
-                        // Per-profile Build length limit. Keyed on the
-                        // saved value for the same reason.
-                        BuildLengthEditor(
-                          key: ValueKey(
-                            'build-length-${p.id}-${p.buildMaxSymbols}',
+                        // Advanced view: Build length limit (keyed on the
+                        // saved value, like the mode picker).
+                        if (session.showTier(PortalTier.advanced))
+                          BuildLengthEditor(
+                            key: ValueKey(
+                              'build-length-${p.id}-${p.buildMaxSymbols}',
+                            ),
+                            profileId: p.id,
                           ),
-                          profileId: p.id,
-                        ),
-                        // Per-profile Type prediction privacy controls.
-                        // Keyed on the saved toggle for the same reason.
-                        PredictionPrivacyEditor(
-                          key: ValueKey(
-                            'prediction-${p.id}-${p.predictionEnabled}',
+                        // Advanced view: Type prediction privacy controls
+                        // (keyed on the saved toggle for the same reason).
+                        if (session.showTier(PortalTier.advanced))
+                          PredictionPrivacyEditor(
+                            key: ValueKey(
+                              'prediction-${p.id}-${p.predictionEnabled}',
+                            ),
+                            profileId: p.id,
                           ),
-                          profileId: p.id,
-                        ),
-                        // The ONE caregiver-facing mode-progression
-                        // suggestion. Renders only when eligible; never on
-                        // the communicator's board, never interrupts, never
-                        // changes the saved mode.
-                        ModeNudgeCard(profileId: p.id, onChanged: _refresh),
-                        // Durable progression-suggestion preference
-                        // (On / Paused / Off). Explicit save; keyed on the
-                        // saved value.
-                        NudgePreferenceEditor(
-                          key: ValueKey(
-                            'nudge-pref-${p.id}-${p.modeNudgePreference.name}',
+                        // Advanced view: the ONE caregiver-facing
+                        // mode-progression suggestion. Renders only when
+                        // eligible; never on the communicator's board,
+                        // never interrupts, never changes the saved mode.
+                        if (session.showTier(PortalTier.advanced))
+                          ModeNudgeCard(profileId: p.id, onChanged: _refresh),
+                        // Advanced view: durable progression-suggestion
+                        // preference (On / Paused / Off). Explicit save;
+                        // keyed on the saved value.
+                        if (session.showTier(PortalTier.advanced))
+                          NudgePreferenceEditor(
+                            key: ValueKey(
+                              'nudge-pref-${p.id}-${p.modeNudgePreference.name}',
+                            ),
+                            profileId: p.id,
                           ),
-                          profileId: p.id,
-                        ),
                       ],
                     ],
                   ),

@@ -45,16 +45,17 @@ class _PortalContentTabState extends State<PortalContentTab> {
       children: [
         _previewButton(session),
         const SizedBox(height: 16),
-        PortalSection(
-          title: 'Vocabulary level',
-          icon: Icons.tune,
-          child: _gated(
-            session,
-            session.canEditContent,
-            'vocabulary',
-            _VocabularyLevelPicker(refresh: _refresh),
+        if (session.showTier(PortalTier.moderate))
+          PortalSection(
+            title: 'Vocabulary level',
+            icon: Icons.tune,
+            child: _gated(
+              session,
+              session.canEditContent,
+              'vocabulary',
+              _VocabularyLevelPicker(refresh: _refresh),
+            ),
           ),
-        ),
         PortalSection(
           title: 'Find a word',
           icon: Icons.search,
@@ -76,16 +77,17 @@ class _PortalContentTabState extends State<PortalContentTab> {
             ],
           ),
         ),
-        PortalSection(
-          title: 'Custom symbols',
-          icon: Icons.image_outlined,
-          child: _gated(
-            session,
-            session.canEditContent,
-            'custom symbols',
-            CustomSymbolsSection(refresh: _refresh),
+        if (session.showTier(PortalTier.moderate))
+          PortalSection(
+            title: 'Custom symbols',
+            icon: Icons.image_outlined,
+            child: _gated(
+              session,
+              session.canEditContent,
+              'custom symbols',
+              CustomSymbolsSection(refresh: _refresh),
+            ),
           ),
-        ),
         PortalSection(
           title: 'Personal dashboard',
           icon: Icons.dashboard_outlined,

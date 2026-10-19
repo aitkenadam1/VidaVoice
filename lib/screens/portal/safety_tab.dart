@@ -124,13 +124,15 @@ class PortalSafetyTab extends StatelessWidget {
             ],
           ),
         ),
-        PortalSection(
-          title: 'Location',
-          icon: Icons.location_on_outlined,
-          child: const LocationSection(),
-        ),
-        PortalSection(
-          title: 'Safe zones',
+        if (session.showTier(PortalTier.moderate))
+          PortalSection(
+            title: 'Location',
+            icon: Icons.location_on_outlined,
+            child: const LocationSection(),
+          ),
+        if (session.showTier(PortalTier.moderate))
+          PortalSection(
+            title: 'Safe zones',
           icon: Icons.place_outlined,
           child: session.canManageSafety
               ? SafeZonesCard(

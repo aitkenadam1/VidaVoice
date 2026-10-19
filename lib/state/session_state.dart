@@ -40,6 +40,30 @@ import '../services/first_week_plan_service.dart';
 
 enum BootStatus { loading, ready, error }
 
+/// How much of the Caregiver Portal this device shows. The portal grew
+/// until a new caregiver faced every setting at once; tiers fold the
+/// advanced surface away until the caregiver asks for it. Tiers only
+/// ever ADD — nothing a tier hides is deleted or disabled, and team
+/// permissions apply independently underneath.
+enum PortalTier {
+  basic('Basic'),
+  moderate('Moderate'),
+  advanced('Advanced');
+
+  const PortalTier(this.label);
+
+  final String label;
+
+  /// True when this tier is at or above [required].
+  bool includes(PortalTier required) => index >= required.index;
+
+  static PortalTier fromName(String? name) => switch (name) {
+    'moderate' => PortalTier.moderate,
+    'advanced' => PortalTier.advanced,
+    _ => PortalTier.basic,
+  };
+}
+
 /// App-wide session state: current language pack, sentence under
 /// construction, TTS voice settings, symbols, profiles, onboarding flag.
 class SessionState extends ChangeNotifier {
@@ -315,6 +339,7 @@ class SessionState extends ChangeNotifier {
           ? savedLocale
           : AppConfig.defaultLocale;
       buttonScale = _prefs!.getDouble('vidavoice.buttonScale') ?? 1.0;
+      portalTier = PortalTier.fromName(_prefs!.getString(_kPortalTier));
       onboardingComplete =
           _prefs!.getBool('vidavoice.onboardingComplete') ?? false;
       // Restore the proxy session best-effort: a stored token means the
@@ -761,6 +786,31 @@ class SessionState extends ChangeNotifier {
   /// takes any board-shaping permission — the same bar the sync layer
   /// already uses for writes. View-only members can read goals and the
   /// team's feedback, which is what their role is for.
+  // ── Portal complexity tier (per-device comfort setting) ────────────
+  static const _kPortalTier = 'vidavoice.portal.tier';
+
+  /// How much of the Caregiver Portal this device shows. Per-device on
+  /// purpose: comfort is personal — a therapist's tablet can run
+  /// Advanced while a grandparent's phone stays Basic, on the same
+  /// family. Defaults to Basic so a new caregiver meets the essentials
+  /// first; raised from the switcher at the top of the Portal.
+  PortalTier portalTier = PortalTier.basic;
+
+  bool showTier(PortalTier required) => portalTier.includes(required);
+
+  Future<void> setPortalTier(PortalTier tier) async {
+    if (tier == portalTier) return;
+    portalTier = tier;
+    notifyListeners();
+    try {
+      final prefs = _prefs ?? await _prefsFactory();
+      await prefs.setString(_kPortalTier, tier.name);
+    } catch (_) {
+      // Display preference only: a failed persist just means the next
+      // launch starts at the old tier.
+    }
+  }
+
   bool get canEditGoals =>
       canEditDashboard || canEditContent || canEditProfiles;
 

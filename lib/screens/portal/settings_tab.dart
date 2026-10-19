@@ -50,23 +50,26 @@ class PortalSettingsTab extends StatelessWidget {
             ],
           ),
         ),
-        PortalSection(
-          title: 'Backup & sync',
-          icon: Icons.backup_outlined,
-          child: BackupSection(
-            onImported: () async {
-              await session.reloadProfileData();
-              await session.usage.load();
-            },
+        if (session.showTier(PortalTier.advanced))
+          PortalSection(
+            title: 'Backup & sync',
+            icon: Icons.backup_outlined,
+            child: BackupSection(
+              onImported: () async {
+                await session.reloadProfileData();
+                await session.usage.load();
+              },
+            ),
           ),
-        ),
-        PortalSection(
-          title: 'Device sync',
-          icon: Icons.sync_outlined,
-          child: const DeviceSyncSection(),
-        ),
-        PortalSection(
-          title: 'Activity',
+        if (session.showTier(PortalTier.advanced))
+          PortalSection(
+            title: 'Device sync',
+            icon: Icons.sync_outlined,
+            child: const DeviceSyncSection(),
+          ),
+        if (session.showTier(PortalTier.advanced))
+          PortalSection(
+            title: 'Activity',
           icon: Icons.insights_outlined,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

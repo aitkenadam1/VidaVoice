@@ -85,7 +85,9 @@ class _DashboardSectionState extends State<DashboardSection> {
                 label: const Text('Add custom'),
                 onPressed: () => _addCustomDialog(session, profile.id),
               ),
-              ObfImportButton(onChanged: widget.refresh),
+              // Board-file import is an Advanced-view power tool.
+              if (session.showTier(PortalTier.advanced))
+                ObfImportButton(onChanged: widget.refresh),
               if (dashboard != null)
                 TextButton.icon(
                   icon: const Icon(Icons.delete_outline),
@@ -160,11 +162,14 @@ class _DashboardSectionState extends State<DashboardSection> {
 
   Widget _cellList(SessionState session, PersonalDashboard dashboard) {
     if (dashboard.cells.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.fromLTRB(12, 8, 12, 8),
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
         child: Text(
-          'Empty — add words, add a custom button, or import a board file.',
-          style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
+          session.showTier(PortalTier.advanced)
+              ? 'Empty — add words, add a custom button, or import a '
+                    'board file.'
+              : 'Empty — add words or a custom button to get started.',
+          style: const TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
         ),
       );
     }

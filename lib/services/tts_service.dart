@@ -205,6 +205,114 @@ class TtsService {
     _proxyAudioCache[key] = bytes;
   }
 
+  /// In-flight cloud fetches, keyed like the caches. A [speak] for a
+  /// text whose [prefetch] is already under way awaits the SAME request
+  /// instead of starting a second (billed) one.
+  final Map<String, Future<Uint8List?>> _inFlight = {};
+
+  /// Returns the managed-voice audio for [text]: cache first, then a
+  /// shared in-flight fetch, then the network. Null when the cloud path
+  /// is unavailable (no client/token/profile, breaker open, failure) —
+  /// callers fall back to on-device voices. An expired session reports
+  /// through [onProxyUnauthorized] exactly as the speak path always has.
+  Future<Uint8List?> _fetchProxyAudio(TtsVoice voice, String text) {
+    final cacheKey = 'proxy::${voice.proxyVoiceId}::$text';
+    final cached = _proxyAudioCache[cacheKey];
+    if (cached != null) return Future.value(cached);
+    final running = _inFlight[cacheKey];
+    if (running != null) return running;
+    final svc = proxy;
+    final profileId = proxyProfileIdProvider?.call();
+    if (svc == null ||
+        !svc.hasToken ||
+        profileId == null ||
+        profileId.isEmpty ||
+        proxyBreaker.isOpen) {
+      return Future.value(null);
+    }
+    late final Future<Uint8List?> fut;
+    fut = () async {
+      try {
+        final audio = await svc.synthesize(
+          requestId: proxyUuid4(),
+          profileId: profileId,
+          voiceId: voice.proxyVoiceId!,
+          text: text,
+        );
+        proxyBreaker.recordSuccess();
+        _storeProxyAudio(cacheKey, audio);
+        return audio;
+      } on ProxyException catch (e) {
+        proxyBreaker.recordFailure();
+        if (e.code == 'unauthorized') {
+          await onProxyUnauthorized?.call();
+        }
+        return null;
+      } catch (_) {
+        proxyBreaker.recordFailure();
+        return null;
+      }
+    }();
+    _inFlight[cacheKey] = fut;
+    fut.whenComplete(() {
+      if (identical(_inFlight[cacheKey], fut)) _inFlight.remove(cacheKey);
+    });
+    return fut;
+  }
+
+  /// BYO-ElevenLabs twin of [_fetchProxyAudio].
+  Future<Uint8List?> _fetchCloudAudio(TtsVoice voice, String text) {
+    final cacheKey = '${voice.elevenLabsVoiceId}::$text';
+    final cached = _cloudAudioCache[cacheKey];
+    if (cached != null) return Future.value(cached);
+    final running = _inFlight[cacheKey];
+    if (running != null) return running;
+    final svc = elevenLabs;
+    if (svc == null || elevenLabsBreaker.isOpen) {
+      return Future.value(null);
+    }
+    late final Future<Uint8List?> fut;
+    fut = () async {
+      try {
+        final audio = await svc.synthesize(
+          text: text,
+          voiceId: voice.elevenLabsVoiceId!,
+        );
+        elevenLabsBreaker.recordSuccess();
+        _storeCloudAudio(cacheKey, audio);
+        return audio;
+      } catch (_) {
+        elevenLabsBreaker.recordFailure();
+        return null;
+      }
+    }();
+    _inFlight[cacheKey] = fut;
+    fut.whenComplete(() {
+      if (identical(_inFlight[cacheKey], fut)) _inFlight.remove(cacheKey);
+    });
+    return fut;
+  }
+
+  /// Warms the cloud caches for [text] WITHOUT playing it, so a later
+  /// [speak] of the same text starts instantly. Speculative by design:
+  /// no-ops for on-device voices, already-cached text, an open breaker,
+  /// or any failure. The server-side audio cache is shared across
+  /// families, so a warmed utterance is usually a one-time global cost.
+  Future<void> prefetch(String text) async {
+    if (text.trim().isEmpty) return;
+    final voice = currentVoice;
+    if (voice == null) return;
+    try {
+      if (voice.isProxy) {
+        await _fetchProxyAudio(voice, text);
+      } else if (voice.isElevenLabs) {
+        await _fetchCloudAudio(voice, text);
+      }
+    } catch (_) {
+      // Prefetch failures are silent — speech falls back as usual.
+    }
+  }
+
   double rate = AppConfig.defaultSpeechRate;
   double pitch = AppConfig.defaultSpeechPitch;
 
@@ -311,87 +419,58 @@ class TtsService {
     if (text.trim().isEmpty) return;
     final voice = currentVoice;
     if (voice != null && voice.isProxy) {
-      final svc = proxy;
-      final profileId = proxyProfileIdProvider?.call();
-      if (svc != null &&
-          svc.hasToken &&
-          profileId != null &&
-          profileId.isNotEmpty) {
-        // Shared family quota: serve repeats from the cache so a child
-        // re-tapping the same button doesn't re-bill the same utterance.
-        // Cache hits play even while the breaker is open — they cost
-        // nothing and keep the board responsive.
-        final cacheKey = 'proxy::${voice.proxyVoiceId}::$text';
-        final cached = _proxyAudioCache[cacheKey];
-        if (cached != null) {
-          try {
-            await elevenAudioPlayer.playBytes(cached);
-            return;
-          } catch (_) {
-            // Cached bytes unplayable: drop the entry and try the network.
-            _proxyAudioCache.remove(cacheKey);
-          }
+      // Shared family quota: serve repeats from the cache so a child
+      // re-tapping the same button doesn't re-bill the same utterance.
+      // Cache hits play even while the breaker is open — they cost
+      // nothing and keep the board responsive. A prefetch already under
+      // way for this text is awaited, never duplicated.
+      final cacheKey = 'proxy::${voice.proxyVoiceId}::$text';
+      final cached = _proxyAudioCache[cacheKey];
+      if (cached != null) {
+        try {
+          await elevenAudioPlayer.playBytes(cached);
+          return;
+        } catch (_) {
+          // Cached bytes unplayable: drop the entry and try the network.
+          _proxyAudioCache.remove(cacheKey);
         }
-        if (!proxyBreaker.isOpen) {
-          try {
-            final audio = await svc.synthesize(
-              requestId: proxyUuid4(),
-              profileId: profileId,
-              voiceId: voice.proxyVoiceId!,
-              text: text,
-            );
-            proxyBreaker.recordSuccess();
-            _storeProxyAudio(cacheKey, audio);
-            await elevenAudioPlayer.playBytes(audio);
-            return;
-          } on ProxyException catch (e) {
-            proxyBreaker.recordFailure();
-            if (e.code == 'unauthorized') {
-              // Expired session: clear it now so the UI stops presenting
-              // cloud voices as active; speech still falls through to the
-              // on-device voices below rather than going silent.
-              await onProxyUnauthorized?.call();
-            }
-          } catch (_) {
-            proxyBreaker.recordFailure();
-          }
-        }
-        // Breaker open or attempt failed (offline, quota, expired session):
-        // fall through to the on-device voices rather than going silent.
       }
+      final audio = await _fetchProxyAudio(voice, text);
+      if (audio != null) {
+        try {
+          await elevenAudioPlayer.playBytes(audio);
+          return;
+        } catch (_) {
+          proxyBreaker.recordFailure();
+        }
+      }
+      // Unavailable or failed (offline, quota, expired session, breaker
+      // open): fall through to the on-device voices rather than silence.
     }
     if (voice != null && voice.isElevenLabs) {
-      final svc = elevenLabs;
-      if (svc != null) {
-        // Billed per character: serve repeats from the cache so a child
-        // re-tapping the same button doesn't re-bill the same utterance.
-        final cacheKey = '${voice.elevenLabsVoiceId}::$text';
-        final cached = _cloudAudioCache[cacheKey];
-        if (cached != null) {
-          try {
-            await elevenAudioPlayer.playBytes(cached);
-            return;
-          } catch (_) {
-            // Cached bytes unplayable: drop the entry and try the network.
-            _cloudAudioCache.remove(cacheKey);
-          }
+      // Billed per character: serve repeats from the cache so a child
+      // re-tapping the same button doesn't re-bill the same utterance.
+      final cacheKey = '${voice.elevenLabsVoiceId}::$text';
+      final cached = _cloudAudioCache[cacheKey];
+      if (cached != null) {
+        try {
+          await elevenAudioPlayer.playBytes(cached);
+          return;
+        } catch (_) {
+          // Cached bytes unplayable: drop the entry and try the network.
+          _cloudAudioCache.remove(cacheKey);
         }
-        if (!elevenLabsBreaker.isOpen) {
-          try {
-            final audio = await svc.synthesize(
-              text: text,
-              voiceId: voice.elevenLabsVoiceId!,
-            );
-            elevenLabsBreaker.recordSuccess();
-            _storeCloudAudio(cacheKey, audio);
-            await elevenAudioPlayer.playBytes(audio);
-            return;
-          } catch (_) {
-            // Cloud voice unavailable (no internet, bad key, quota,
-            // timeout): record it and fall through to the on-device
-            // voices rather than going silent.
-            elevenLabsBreaker.recordFailure();
-          }
+      }
+      final audio = await _fetchCloudAudio(voice, text);
+      if (audio != null) {
+        try {
+          await elevenAudioPlayer.playBytes(audio);
+          return;
+        } catch (_) {
+          // Cloud voice unavailable (no internet, bad key, quota,
+          // timeout): record it and fall through to the on-device
+          // voices rather than going silent.
+          elevenLabsBreaker.recordFailure();
         }
       }
     }

@@ -381,6 +381,8 @@ class SessionState extends ChangeNotifier {
       if (proxySignedIn) {
         unawaited(_backgroundSyncPull());
       }
+      // Warm the speech cache for the home surface in the background.
+      prewarmSpeechCache();
       status = BootStatus.ready;
     } catch (e) {
       status = BootStatus.error;
@@ -934,6 +936,7 @@ class SessionState extends ChangeNotifier {
     _buildStrip.clear();
     buildNotice = null;
     await reloadProfileData();
+    prewarmSpeechCache();
     notifyListeners();
   }
 
@@ -1063,6 +1066,9 @@ class SessionState extends ChangeNotifier {
     }
     tts.speak(item.label);
     _sentenceIds.add(item.id);
+    // The sentence this tap is building may be spoken whole next —
+    // warm its audio in the background (debounced inside).
+    _scheduleSpeechPrefetch(sentence.map((w) => w.label).join(' '));
     // Fire-and-forget: usage counts must never block a tap.
     unawaited(usage.recordTap(item.id));
     // Phase 5: count intentional Tap-mode speaks for nudge eligibility.
@@ -1083,12 +1089,7 @@ class SessionState extends ChangeNotifier {
     tts.speak(item.label);
     // Fire-and-forget: logging must never block or delay speech.
     unawaited(usage.recordTap(item.id));
-    _logSpoken(
-      profiles.active?.id ?? '',
-      [item.id],
-      item.label,
-      currentLocale,
-    );
+    _logSpoken(profiles.active?.id ?? '', [item.id], item.label, currentLocale);
   }
 
   Future<void> speakText(String text) => tts.speak(text);
@@ -1142,7 +1143,71 @@ class SessionState extends ChangeNotifier {
     }
   }
 
+  /// Debounce timer for speculative cloud synthesis of the sentence
+  /// being composed (see [_scheduleSpeechPrefetch]).
+  Timer? _speechPrefetchTimer;
+
+  /// Starts synthesizing [text] in the background so pressing Speak is
+  /// instant with cloud voices. Debounced (500 ms): children tap in
+  /// bursts, and every intermediate state would otherwise bill the
+  /// cloud. No-ops inside TtsService for on-device voices and cache
+  /// hits; the server-side audio cache is shared across families, so a
+  /// warmed sentence is usually a one-time cost for everyone.
+  void _scheduleSpeechPrefetch(String text) {
+    _speechPrefetchTimer?.cancel();
+    if (text.trim().isEmpty) return;
+    _speechPrefetchTimer = Timer(const Duration(milliseconds: 500), () {
+      unawaited(tts.prefetch(text));
+    });
+  }
+
+  void _cancelSpeechPrefetch() {
+    _speechPrefetchTimer?.cancel();
+    _speechPrefetchTimer = null;
+  }
+
+  /// Warms the cloud speech cache for what the active profile is most
+  /// likely to say first: their personal dashboard when it is their
+  /// home, otherwise the words on the home grid. Gentle by design —
+  /// sequential, capped, fire-and-forget, and a no-op for on-device
+  /// voices (TtsService.prefetch self-gates).
+  void prewarmSpeechCache() {
+    final texts = <String>{};
+    final id = profiles.active?.id;
+    final dashboard = id == null ? null : dashboards.forProfile(id);
+    if (dashboard != null && dashboard.enabled && dashboard.cells.isNotEmpty) {
+      for (final cell in dashboard.cells) {
+        final wordId = cell.wordId;
+        if (wordId != null) {
+          try {
+            texts.add(pack.wordById(wordId).label);
+            continue;
+          } on Object {
+            // Fall through to the cell's stored text.
+          }
+        }
+        final t = cell.customText;
+        if (t.isNotEmpty) texts.add(t);
+      }
+    } else {
+      for (var r = 0; r < pack.gridRows; r++) {
+        for (var c = 0; c < pack.gridColumns; c++) {
+          final item = pack.itemAt(r, c, unlockedLevel: unlockedLevel);
+          if (item != null && !item.isFolder) texts.add(item.label);
+        }
+      }
+    }
+    if (texts.isEmpty) return;
+    final capped = texts.take(48).toList();
+    unawaited(() async {
+      for (final t in capped) {
+        await tts.prefetch(t);
+      }
+    }());
+  }
+
   void speakSentence() {
+    _cancelSpeechPrefetch();
     final text = sentence.map((w) => w.label).join(' ');
     if (text.isEmpty) return;
     tts.speak(text);
@@ -1204,12 +1269,18 @@ class SessionState extends ChangeNotifier {
 
   void clearSentence() {
     _sentenceIds.clear();
+    _cancelSpeechPrefetch();
     notifyListeners();
   }
 
   void undoLast() {
     if (_sentenceIds.isNotEmpty) {
       _sentenceIds.removeLast();
+      if (_sentenceIds.isEmpty) {
+        _cancelSpeechPrefetch();
+      } else {
+        _scheduleSpeechPrefetch(sentence.map((w) => w.label).join(' '));
+      }
       notifyListeners();
     }
   }
@@ -1323,6 +1394,8 @@ class SessionState extends ChangeNotifier {
     _buildStrip.add(BuildStripEntry(wordId: item.id, text: item.label));
     buildNotice = null;
     _announceBuild('Added ${item.label}. ${_buildStrip.length} of $max.');
+    // Warm the composed phrase's audio so Speak is instant.
+    _scheduleSpeechPrefetch(_buildStrip.map((e) => e.text).join(' '));
     // Fire-and-forget: usage counts must never block a tap.
     unawaited(usage.recordTap(item.id));
     notifyListeners();
@@ -1343,6 +1416,7 @@ class SessionState extends ChangeNotifier {
     _buildStrip.add(BuildStripEntry(text: text));
     buildNotice = null;
     _announceBuild('Added $text. ${_buildStrip.length} of $max.');
+    _scheduleSpeechPrefetch(_buildStrip.map((e) => e.text).join(' '));
     notifyListeners();
     return true;
   }
@@ -1356,6 +1430,11 @@ class SessionState extends ChangeNotifier {
     _announceBuild(
       'Removed ${removed.text}. ${_buildStrip.length} of $buildMax.',
     );
+    if (_buildStrip.isEmpty) {
+      _cancelSpeechPrefetch();
+    } else {
+      _scheduleSpeechPrefetch(_buildStrip.map((e) => e.text).join(' '));
+    }
     notifyListeners();
   }
 
@@ -1364,6 +1443,7 @@ class SessionState extends ChangeNotifier {
     if (_buildStrip.isEmpty) return;
     _buildStrip.clear();
     buildNotice = null;
+    _cancelSpeechPrefetch();
     _announceBuild('Phrase strip cleared.');
     notifyListeners();
   }
@@ -1373,13 +1453,17 @@ class SessionState extends ChangeNotifier {
   /// [speakSentence] so caregivers see Build messages in activity too. The
   /// strip is kept so the message can be replayed.
   void buildSpeak() {
+    _cancelSpeechPrefetch();
     final text = _buildStrip.map((e) => e.text).join(' ');
     if (text.isEmpty) return;
     tts.speak(text);
     // Fire-and-forget: history must never block or delay speech.
     _logSpoken(
       profiles.active?.id ?? '',
-      [for (final e in _buildStrip) if (e.wordId != null) e.wordId!],
+      [
+        for (final e in _buildStrip)
+          if (e.wordId != null) e.wordId!,
+      ],
       text,
       currentLocale,
     );

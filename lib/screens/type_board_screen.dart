@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../widgets/mode_switch_gate.dart';
 
 import '../app_config.dart';
@@ -57,6 +60,12 @@ class _TypeBoardScreenState extends State<TypeBoardScreen> {
   List<String> _suggestions = const [];
   bool _canSpeak = false;
 
+  /// Debounce for speculative cloud synthesis of the draft: typing
+  /// pauses ~700 ms → the current text starts generating, so the
+  /// explicit Speak press is usually instant. Speech itself still only
+  /// ever happens on Speak — prefetch never plays anything.
+  Timer? _prefetchTimer;
+
   @override
   void initState() {
     super.initState();
@@ -77,6 +86,13 @@ class _TypeBoardScreenState extends State<TypeBoardScreen> {
 
   void _onTextChanged() {
     _refreshSuggestions();
+    _prefetchTimer?.cancel();
+    final text = _controller.text;
+    if (text.trim().length < 2) return;
+    _prefetchTimer = Timer(const Duration(milliseconds: 700), () {
+      if (!mounted) return;
+      unawaited(context.read<SessionState>().tts.prefetch(text));
+    });
   }
 
   void _refreshSuggestions() {
@@ -170,6 +186,7 @@ class _TypeBoardScreenState extends State<TypeBoardScreen> {
 
   @override
   void dispose() {
+    _prefetchTimer?.cancel();
     _controller.dispose();
     _focus.dispose();
     super.dispose();
@@ -271,10 +288,7 @@ class _TypeBoardScreenState extends State<TypeBoardScreen> {
               icon: const Icon(Icons.volume_up),
               label: Padding(
                 padding: EdgeInsets.symmetric(vertical: 12 * scale),
-                child: Text(
-                  'Speak',
-                  style: TextStyle(fontSize: 22 * scale),
-                ),
+                child: Text('Speak', style: TextStyle(fontSize: 22 * scale)),
               ),
               style: FilledButton.styleFrom(
                 minimumSize: Size(double.infinity, 60 * scale),
@@ -343,7 +357,6 @@ class _TypeBoardScreenState extends State<TypeBoardScreen> {
       ),
     );
   }
-
 }
 
 /// Saved-phrases picker: every phrase-type [BoardItem] in the pack.

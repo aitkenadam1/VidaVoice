@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../state/session_state.dart';
 import '../../widgets/communication_mode_widgets.dart';
 import '../../widgets/mode_nudge_card.dart';
+import 'goals_section.dart';
 import 'portal_section.dart';
 import 'team_section.dart';
 
@@ -187,6 +188,7 @@ class _PortalProfilesTabState extends State<PortalProfilesTab> {
             ],
           ),
         ),
+        const GoalsSection(),
         const TeamSection(),
       ],
     );

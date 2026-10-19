@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/dashboard.dart';
 import '../models/calling_safety.dart';
+import '../models/goal.dart';
 import '../models/safe_zone.dart';
 import 'dashboard_service.dart';
 import 'elevenlabs_key_store.dart';
@@ -82,6 +83,12 @@ class DashboardSyncService {
   /// Tombstone/metadata companions for safe zones and device
   /// assignments (see the state fields below).
   static const _kSafeZoneTombstones = 'vidavoice.sync.safeZoneTombstones';
+
+  /// Communication goals (per profile, keyed by profile syncKey inside
+  /// each goal): titles, target dates, team feedback. This is progress
+  /// data about a child — same at-rest treatment as safe zones.
+  static const _kGoals = 'vidavoice.sync.goals';
+  static const _kGoalTombstones = 'vidavoice.sync.goalTombstones';
   static const _kAssignmentMeta = 'vidavoice.sync.deviceAssignmentMeta';
   static const _kAssignmentTombstones =
       'vidavoice.sync.deviceAssignmentTombstones';
@@ -104,6 +111,13 @@ class DashboardSyncService {
   /// inside the encrypted payload like the zones themselves and are
   /// kept indefinitely (a handful of ids — negligible size).
   final Map<String, DateTime> _zoneTombstones = {};
+
+  /// Communication goals for the family's profiles. Kept in memory,
+  /// persisted locally, and published inside the encrypted payload;
+  /// merges are per-goal last-writer-wins with delete tombstones,
+  /// exactly like safe zones.
+  final List<ProfileGoal> _goals = [];
+  final Map<String, DateTime> _goalTombstones = {};
 
   /// install_id → profile syncKey assignments. Kept in memory,
   /// persisted to local prefs, and published inside the encrypted
@@ -177,6 +191,103 @@ class DashboardSyncService {
     await _persistZones();
     await _persistZoneTombstones();
     _notify();
+  }
+
+  /// The family's communication goals, in display order. Unmodifiable;
+  /// mutate through [upsertGoal]/[removeGoal] so persistence, sync, and
+  /// listeners stay consistent.
+  List<ProfileGoal> get goals => List.unmodifiable(_goals);
+
+  /// Goals belonging to one profile (by its stable syncKey), in display
+  /// order: active by target date, achieved last.
+  List<ProfileGoal> goalsForSyncKey(String profileSyncKey) =>
+      ProfileGoal.sortForDisplay(
+        _goals.where((g) => g.profileSyncKey == profileSyncKey).toList(),
+      );
+
+  /// Adds or replaces a goal by id, persists locally, and notifies
+  /// listeners. The caller sets [ProfileGoal.updatedAt] — merge order
+  /// depends on it.
+  Future<void> upsertGoal(ProfileGoal goal) async {
+    if (goal.title.trim().isEmpty) {
+      throw ArgumentError('A goal needs a title.');
+    }
+    if (goal.profileSyncKey.isEmpty) {
+      throw ArgumentError('A goal needs a profile.');
+    }
+    _goals
+      ..removeWhere((g) => g.id == goal.id)
+      ..add(goal);
+    _resortGoals();
+    await _persistGoals();
+    _notify();
+  }
+
+  /// Removes a goal by id and records a tombstone so the deletion
+  /// propagates instead of the goal being re-adopted from a stale blob.
+  /// A goal only comes back if edited after the deletion.
+  Future<void> removeGoal(String id) async {
+    _goals.removeWhere((g) => g.id == id);
+    _goalTombstones[id] = DateTime.now();
+    await _persistGoals();
+    await _persistGoalTombstones();
+    _notify();
+  }
+
+  void _resortGoals() {
+    final sorted = ProfileGoal.sortForDisplay(_goals);
+    _goals
+      ..clear()
+      ..addAll(sorted);
+  }
+
+  Future<void> _persistGoals() async {
+    try {
+      await _secureSet(
+        _kGoals,
+        json.encode([for (final g in _goals) g.toJson()]),
+      );
+    } catch (_) {}
+  }
+
+  Future<void> _persistGoalTombstones() async {
+    try {
+      await _secureSet(
+        _kGoalTombstones,
+        json.encode({
+          for (final e in _goalTombstones.entries)
+            e.key: e.value.millisecondsSinceEpoch,
+        }),
+      );
+    } catch (_) {}
+  }
+
+  /// A goal survives its tombstone only when it was mutated after the
+  /// deletion (a genuine later edit — never a stale copy).
+  bool _goalSurvives(ProfileGoal g, Map<String, DateTime> tombstones) {
+    final t = tombstones[g.id];
+    return t == null || g.updatedAt.isAfter(t);
+  }
+
+  List<ProfileGoal> _parseGoals(Object? raw) {
+    final out = <ProfileGoal>[];
+    if (raw is! List) return out;
+    for (final entry in raw) {
+      if (entry is! Map) continue;
+      try {
+        out.add(ProfileGoal.fromJson(Map<String, dynamic>.from(entry)));
+      } catch (_) {
+        // One bad goal must not abort the whole merge.
+      }
+    }
+    return out;
+  }
+
+  bool _sameGoals(List<ProfileGoal> a, List<ProfileGoal> b) {
+    if (a.length != b.length) return false;
+    String enc(List<ProfileGoal> l) =>
+        json.encode([for (final g in l) g.toJson()]);
+    return enc(a) == enc(b);
   }
 
   /// Reads a sensitive key from the secure store when wired. A value
@@ -440,6 +551,21 @@ class DashboardSyncService {
             _tryDecodeZones(await _secureGet(_kSafeZones)),
           ).where((z) => _zoneSurvives(z, _zoneTombstones)),
         );
+      _goalTombstones
+        ..clear()
+        ..addAll(
+          _parseZoneTombstones(
+            _tryDecodeZones(await _secureGet(_kGoalTombstones)),
+          ),
+        );
+      _goals
+        ..clear()
+        ..addAll(
+          _parseGoals(
+            _tryDecodeZones(await _secureGet(_kGoals)),
+          ).where((g) => _goalSurvives(g, _goalTombstones)),
+        );
+      _resortGoals();
       _assignmentUpdatedMs
         ..clear()
         ..addAll(
@@ -601,6 +727,14 @@ class DashboardSyncService {
       // undone by another device's stale copy on the next merge.
       'safe_zone_tombstones': [
         for (final e in _zoneTombstones.entries)
+          {'id': e.key, 'deleted_ts': e.value.millisecondsSinceEpoch},
+      ],
+      // Communication goals: family-wide flat list; each goal carries
+      // its profile's syncKey. Feedback/comments live inside the goal —
+      // the server sees none of it (whole payload is ciphertext).
+      'goals': [for (final g in _goals) g.toJson()],
+      'goal_tombstones': [
+        for (final e in _goalTombstones.entries)
           {'id': e.key, 'deleted_ts': e.value.millisecondsSinceEpoch},
       ],
       // Device → communicator-profile assignments (install id →
@@ -837,6 +971,36 @@ class DashboardSyncService {
         await _persistZones();
         await _persistZoneTombstones();
         result.safeZonesChanged = true;
+      }
+    }
+
+    // Communication goals: merge by id, last-writer-wins on updatedAt,
+    // with delete tombstones — the safe-zone policy, per goal. Blobs
+    // without the key (older builds) leave local goals untouched.
+    if (payload.containsKey('goals') ||
+        payload.containsKey('goal_tombstones')) {
+      final remoteGoals = _parseGoals(payload['goals']);
+      final mergedGoalTombs = Map<String, DateTime>.of(_goalTombstones);
+      for (final e
+          in _parseZoneTombstones(payload['goal_tombstones']).entries) {
+        final cur = mergedGoalTombs[e.key];
+        if (cur == null || e.value.isAfter(cur)) mergedGoalTombs[e.key] = e.value;
+      }
+      final mergedGoals = ProfileGoal.merge(_goals, remoteGoals)
+          .where((g) => _goalSurvives(g, mergedGoalTombs))
+          .toList();
+      final goalTombsChanged =
+          !_sameTombstones(_goalTombstones, mergedGoalTombs);
+      if (!_sameGoals(_goals, mergedGoals) || goalTombsChanged) {
+        _goals
+          ..clear()
+          ..addAll(mergedGoals);
+        _goalTombstones
+          ..clear()
+          ..addAll(mergedGoalTombs);
+        await _persistGoals();
+        await _persistGoalTombstones();
+        result.goalsChanged = true;
       }
     }
 
@@ -1118,6 +1282,9 @@ class DashboardSyncResult {
   /// Phase 2B: a pull added, updated, or reordered safe zones.
   bool safeZonesChanged = false;
 
+  /// A pull added, updated, or removed communication goals.
+  bool goalsChanged = false;
+
   /// A pull changed device → profile assignments.
   bool assignmentsChanged = false;
 
@@ -1126,6 +1293,7 @@ class DashboardSyncResult {
       dashboardsChanged ||
       activeChanged ||
       safeZonesChanged ||
+      goalsChanged ||
       assignmentsChanged;
 }
 

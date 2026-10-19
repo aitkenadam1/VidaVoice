@@ -11,6 +11,7 @@ import 'package:crypto/crypto.dart' as crypto;
 
 import '../app_config.dart';
 import '../models/dashboard.dart';
+import '../models/goal.dart';
 import '../models/team.dart';
 import '../models/word.dart';
 import '../services/dashboard_service.dart';
@@ -753,6 +754,231 @@ class SessionState extends ChangeNotifier {
   /// family whose invite didn't carry a wrapped key has membership but
   /// no board sync until the owner re-invites.
   bool get syncKeyShared => dashboardSync.hasKey;
+
+  // ------------------------------------------------------------ goals ---
+
+  /// Editing goals (create/edit/check off/comment/link board items)
+  /// takes any board-shaping permission — the same bar the sync layer
+  /// already uses for writes. View-only members can read goals and the
+  /// team's feedback, which is what their role is for.
+  bool get canEditGoals =>
+      canEditDashboard || canEditContent || canEditProfiles;
+
+  /// Goals for [profile], in display order (active by target date,
+  /// achieved last). Goals live in the encrypted sync store, keyed by
+  /// the profile's syncKey.
+  List<ProfileGoal> goalsForProfile(UserProfile profile) =>
+      dashboardSync.goalsForSyncKey(profile.syncKey);
+
+  /// How this user's comments are attributed inside the family: their
+  /// OneVoz username when the roster knows it, else a role label.
+  String get goalCommentAuthor {
+    final roster = teamRoster;
+    if (roster != null) {
+      if (roster.youIsOwner) return roster.owner?.displayName ?? 'Caregiver';
+      for (final m in roster.members) {
+        if (m.caregiverId == roster.youCaregiverId) return m.displayName;
+      }
+      final role = roster.youRole;
+      if (role != null && role.isNotEmpty) return TeamRoles.label(role);
+      return 'Team member';
+    }
+    return 'Caregiver';
+  }
+
+  int _goalSeq = 0;
+  String _newGoalId(String prefix) =>
+      '$prefix-${DateTime.now().microsecondsSinceEpoch}-${_goalSeq++}';
+
+  Future<ProfileGoal?> createGoal({
+    required UserProfile profile,
+    required String title,
+    String notes = '',
+    DateTime? targetDate,
+  }) async {
+    final clean = title.trim();
+    if (!canEditGoals || clean.isEmpty) return null;
+    final now = DateTime.now();
+    final goal = ProfileGoal(
+      id: _newGoalId('goal'),
+      profileSyncKey: profile.syncKey,
+      title: clean,
+      notes: notes.trim(),
+      targetDate: targetDate,
+      createdAt: now,
+      updatedAt: now,
+    );
+    await dashboardSync.upsertGoal(goal);
+    dashboardSync.schedulePush();
+    notifyListeners();
+    return goal;
+  }
+
+  Future<void> updateGoal(
+    ProfileGoal goal, {
+    String? title,
+    String? notes,
+    DateTime? targetDate,
+    bool clearTargetDate = false,
+  }) async {
+    if (!canEditGoals) return;
+    final clean = title?.trim();
+    if (clean != null && clean.isEmpty) return;
+    await dashboardSync.upsertGoal(
+      goal.copyWith(
+        title: clean,
+        notes: notes?.trim(),
+        targetDate: targetDate,
+        clearTargetDate: clearTargetDate,
+        updatedAt: DateTime.now(),
+      ),
+    );
+    dashboardSync.schedulePush();
+    notifyListeners();
+  }
+
+  /// The checkbox: mark a goal achieved (or reopen it).
+  Future<void> setGoalAchieved(ProfileGoal goal, bool achieved) async {
+    if (!canEditGoals || goal.achieved == achieved) return;
+    final now = DateTime.now();
+    await dashboardSync.upsertGoal(
+      goal.copyWith(
+        achieved: achieved,
+        achievedAt: achieved ? now : null,
+        clearAchievedAt: !achieved,
+        updatedAt: now,
+      ),
+    );
+    dashboardSync.schedulePush();
+    notifyListeners();
+  }
+
+  Future<void> deleteGoal(ProfileGoal goal) async {
+    if (!canEditGoals) return;
+    await dashboardSync.removeGoal(goal.id);
+    dashboardSync.schedulePush();
+    notifyListeners();
+  }
+
+  Future<void> addGoalComment(ProfileGoal goal, String text) async {
+    final clean = text.trim();
+    if (!canEditGoals || clean.isEmpty) return;
+    final now = DateTime.now();
+    await dashboardSync.upsertGoal(
+      goal.copyWith(
+        comments: [
+          ...goal.comments,
+          GoalComment(
+            id: _newGoalId('comment'),
+            author: goalCommentAuthor,
+            text: clean,
+            createdAt: now,
+          ),
+        ],
+        updatedAt: now,
+      ),
+    );
+    dashboardSync.schedulePush();
+    notifyListeners();
+  }
+
+  Future<void> deleteGoalComment(ProfileGoal goal, String commentId) async {
+    if (!canEditGoals) return;
+    await dashboardSync.upsertGoal(
+      goal.copyWith(
+        comments: [
+          for (final c in goal.comments)
+            if (c.id != commentId) c,
+        ],
+        updatedAt: DateTime.now(),
+      ),
+    );
+    dashboardSync.schedulePush();
+    notifyListeners();
+  }
+
+  /// Adds a vocabulary word to the goal profile's personal dashboard
+  /// AND links it to the goal, so the board setup that supports the
+  /// goal is visible on the goal itself. Returns the created cell.
+  Future<DashboardCell?> addGoalWord(
+    ProfileGoal goal, {
+    required String wordId,
+    required String label,
+  }) async {
+    if (!canEditGoals) return null;
+    final profile = profiles.bySyncKey(goal.profileSyncKey);
+    if (profile == null) return null;
+    final dashboard = dashboards.ensureFor(profile.id);
+    final cell = DashboardCell(
+      id: dashboards.newCellId(dashboard),
+      wordId: wordId,
+      label: label,
+    );
+    dashboard.cells.add(cell);
+    await dashboards.save(dashboard);
+    await dashboardSync.upsertGoal(
+      goal.copyWith(
+        links: [
+          ...goal.links,
+          GoalLink(kind: 'word', cellId: cell.id, label: label),
+        ],
+        updatedAt: DateTime.now(),
+      ),
+    );
+    dashboardSync.schedulePush();
+    notifyListeners();
+    return cell;
+  }
+
+  /// Adds a custom phrase button to the goal profile's personal
+  /// dashboard AND links it to the goal. Returns the created cell.
+  Future<DashboardCell?> addGoalPhrase(
+    ProfileGoal goal, {
+    required String text,
+  }) async {
+    final clean = text.trim();
+    if (!canEditGoals || clean.isEmpty) return null;
+    final profile = profiles.bySyncKey(goal.profileSyncKey);
+    if (profile == null) return null;
+    final dashboard = dashboards.ensureFor(profile.id);
+    final cell = DashboardCell(
+      id: dashboards.newCellId(dashboard),
+      label: clean,
+      speakText: clean,
+      emoji: '💬',
+    );
+    dashboard.cells.add(cell);
+    await dashboards.save(dashboard);
+    await dashboardSync.upsertGoal(
+      goal.copyWith(
+        links: [
+          ...goal.links,
+          GoalLink(kind: 'phrase', cellId: cell.id, label: clean),
+        ],
+        updatedAt: DateTime.now(),
+      ),
+    );
+    dashboardSync.schedulePush();
+    notifyListeners();
+    return cell;
+  }
+
+  /// Removes a goal↔board link. The board item itself stays on the
+  /// dashboard — unlinking only drops the bookkeeping.
+  Future<void> unlinkGoalItem(ProfileGoal goal, String cellId) async {
+    if (!canEditGoals) return;
+    await dashboardSync.upsertGoal(
+      goal.copyWith(
+        links: [
+          for (final l in goal.links)
+            if (l.cellId != cellId) l,
+        ],
+        updatedAt: DateTime.now(),
+      ),
+    );
+    dashboardSync.schedulePush();
+    notifyListeners();
+  }
 
   /// True after a roster/families load failed with nothing to show —
   /// the team UI renders an error + Retry instead of spinning forever

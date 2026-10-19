@@ -27,6 +27,16 @@ class _PortalContentTabState extends State<PortalContentTab> {
     if (mounted) setState(() {});
   }
 
+  /// Team-access gate: members without the matching permission see why
+  /// a section is read-only instead of an editor that silently fails.
+  Widget _gated(SessionState session, bool allowed, String what, Widget child) {
+    if (allowed) return child;
+    return Text(
+      'Your team access in this family is view-only for $what. '
+      'Ask the family owner if you need edit access.',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final session = context.watch<SessionState>();
@@ -38,7 +48,12 @@ class _PortalContentTabState extends State<PortalContentTab> {
         PortalSection(
           title: 'Vocabulary level',
           icon: Icons.tune,
-          child: _VocabularyLevelPicker(refresh: _refresh),
+          child: _gated(
+            session,
+            session.canEditContent,
+            'vocabulary',
+            _VocabularyLevelPicker(refresh: _refresh),
+          ),
         ),
         PortalSection(
           title: 'Find a word',
@@ -64,7 +79,12 @@ class _PortalContentTabState extends State<PortalContentTab> {
         PortalSection(
           title: 'Custom symbols',
           icon: Icons.image_outlined,
-          child: CustomSymbolsSection(refresh: _refresh),
+          child: _gated(
+            session,
+            session.canEditContent,
+            'custom symbols',
+            CustomSymbolsSection(refresh: _refresh),
+          ),
         ),
         PortalSection(
           title: 'Personal dashboard',
@@ -72,9 +92,14 @@ class _PortalContentTabState extends State<PortalContentTab> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              DashboardSection(
-                key: ValueKey(session.profiles.active?.id ?? 'none'),
-                refresh: _refresh,
+              _gated(
+                session,
+                session.canEditDashboard,
+                'the personal dashboard',
+                DashboardSection(
+                  key: ValueKey(session.profiles.active?.id ?? 'none'),
+                  refresh: _refresh,
+                ),
               ),
               const SizedBox(height: 8),
               _previewButton(session, label: 'Preview this dashboard'),
@@ -84,7 +109,12 @@ class _PortalContentTabState extends State<PortalContentTab> {
         PortalSection(
           title: 'First week plan',
           icon: Icons.calendar_month_outlined,
-          child: _firstWeekPlan(session),
+          child: _gated(
+            session,
+            session.canEditDashboard,
+            'the first week plan',
+            _firstWeekPlan(session),
+          ),
         ),
       ],
     );

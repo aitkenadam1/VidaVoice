@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
+import '../models/team.dart';
 import 'elevenlabs_key_store.dart';
 
 /// Base URL of the managed OneVoz voice backend.
@@ -403,6 +404,33 @@ class ProxyClient {
     return _decode(res);
   }
 
+  /// PATCH [path], returning the decoded JSON body (team member updates).
+  Future<Map<String, dynamic>> _patchJson(
+    String path,
+    Map<String, dynamic> body,
+  ) async {
+    final uri = Uri.parse('$baseUrl$path');
+    late http.Response res;
+    try {
+      res = await _client
+          .patch(uri, headers: _headers(), body: json.encode(body))
+          .timeout(_timeout);
+    } on TimeoutException {
+      throw ProxyException(
+        'The request timed out.',
+        code: 'unreachable',
+        fallbackAllowed: true,
+      );
+    } catch (_) {
+      throw ProxyException(
+        'Could not reach the OneVoz service.',
+        code: 'unreachable',
+        fallbackAllowed: true,
+      );
+    }
+    return _decode(res);
+  }
+
   /// GET [path], returning the decoded JSON body.
   Future<Map<String, dynamic>> _getJson(String path) async {
     final uri = Uri.parse('$baseUrl$path');
@@ -630,6 +658,93 @@ class ProxyClient {
 
   /// Register this install as a family device. 201 on first registration,
   /// 200 when the same install_id re-registers. There is no device cap.
+  // ---- team access ----
+
+  /// GET /v1/team — roster + the caller's standing in the token's family.
+  Future<TeamRoster> getTeam() async {
+    _requireAuth();
+    return TeamRoster.fromJson(await _getJson('/v1/team'));
+  }
+
+  /// POST /v1/team/invites. When the caller generated the invite token
+  /// itself (to wrap the family sync key with it), it passes the token's
+  /// sha-256 hex as [tokenHash] plus the opaque wrapped-key pair.
+  Future<InviteCreated> createTeamInvite({
+    required String email,
+    required String role,
+    required TeamPermissions permissions,
+    String? tokenHash,
+    String? wrappedKey,
+    String? wrapSalt,
+  }) async {
+    _requireAuth();
+    final body = await _postJson('/v1/team/invites', {
+      'email': email,
+      'role': role,
+      'permissions': permissions.toJson(),
+      'token_hash': ?tokenHash,
+      'wrapped_key': ?wrappedKey,
+      'wrap_salt': ?wrapSalt,
+    });
+    return InviteCreated.fromJson(body);
+  }
+
+  /// DELETE /v1/team/invites/{id} — revoke a pending invite.
+  Future<void> revokeTeamInvite(String inviteId) async {
+    _requireAuth();
+    await _deleteJson('/v1/team/invites/${Uri.encodeComponent(inviteId)}');
+  }
+
+  /// POST /v1/team/accept — join the inviting family with this account.
+  /// Returns the family-scoped session (a NEW token for that family).
+  Future<TeamEntry> acceptTeamInvite(String inviteToken) async {
+    _requireAuth();
+    final body = await _postJson('/v1/team/accept', {
+      'invite_token': inviteToken,
+    });
+    return TeamEntry.fromJson(body);
+  }
+
+  /// POST /v1/team/enter — fresh token for a family this account owns
+  /// or belongs to (family switching / returning member).
+  Future<TeamEntry> enterTeamFamily(String familyId) async {
+    _requireAuth();
+    final body = await _postJson('/v1/team/enter', {'family_id': familyId});
+    return TeamEntry.fromJson(body);
+  }
+
+  /// GET /v1/team/families — every family this account can enter.
+  Future<List<TeamFamily>> listTeamFamilies() async {
+    _requireAuth();
+    final body = await _getJson('/v1/team/families');
+    final raw = body['families'];
+    if (raw is! List) return const [];
+    return raw
+        .whereType<Map>()
+        .map((m) => TeamFamily.fromJson(Map<String, dynamic>.from(m)))
+        .toList();
+  }
+
+  /// PATCH /v1/team/members/{caregiverId} — owner-only permission edits.
+  Future<void> updateTeamMember(
+    String caregiverId, {
+    String? role,
+    TeamPermissions? permissions,
+  }) async {
+    _requireAuth();
+    await _patchJson('/v1/team/members/${Uri.encodeComponent(caregiverId)}', {
+      'role': ?role,
+      'permissions': ?permissions?.toJson(),
+    });
+  }
+
+  /// DELETE /v1/team/members/{caregiverId} — owner removes, or a member
+  /// removes themselves (leave).
+  Future<void> removeTeamMember(String caregiverId) async {
+    _requireAuth();
+    await _deleteJson('/v1/team/members/${Uri.encodeComponent(caregiverId)}');
+  }
+
   Future<ProxyDeviceRegistration> registerDevice({
     required String installId,
     String? deviceName,
@@ -753,16 +868,12 @@ class ProxyClient {
     required int version,
   }) async {
     _requireAuth();
-    await _putJson(
-      '/v1/sync/location/latest',
-      {
-        'install_id': installId,
-        'ciphertext': ciphertext,
-        'nonce': nonce,
-        'version': version,
-      },
-      timeout: _locationTimeout,
-    );
+    await _putJson('/v1/sync/location/latest', {
+      'install_id': installId,
+      'ciphertext': ciphertext,
+      'nonce': nonce,
+      'version': version,
+    }, timeout: _locationTimeout);
   }
 
   /// Download the encrypted latest-position blob for [installId], or null
@@ -786,14 +897,10 @@ class ProxyClient {
     required List<Map<String, dynamic>> points,
   }) async {
     _requireAuth();
-    await _postJson(
-      '/v1/sync/location/points',
-      {
-        'install_id': installId,
-        'points': points,
-      },
-      timeout: _locationTimeout,
-    );
+    await _postJson('/v1/sync/location/points', {
+      'install_id': installId,
+      'points': points,
+    }, timeout: _locationTimeout);
   }
 
   /// Download encrypted history points for [installId] in [since, until)
@@ -805,7 +912,8 @@ class ProxyClient {
     int limit = 500,
   }) async {
     _requireAuth();
-    final q = 'install_id=${Uri.encodeComponent(installId)}'
+    final q =
+        'install_id=${Uri.encodeComponent(installId)}'
         '&since=$since&until=$until&limit=$limit';
     return await _getJson('/v1/sync/location/points?$q');
   }
@@ -825,21 +933,17 @@ class ProxyClient {
     Map<String, String>? envelope,
   }) async {
     _requireAuth();
-    await _postJson(
-      '/v1/alerts',
-      {
-        'install_id': installId,
-        'kind': kind,
-        'ciphertext': ciphertext,
-        'nonce': nonce,
-        'ts': ts ?? DateTime.now().millisecondsSinceEpoch,
-        // Optional opaque routing IDs (safe-zone fanout): the worker
-        // validates their shape and passes them to push routing only —
-        // never names or coordinates.
-        'envelope': ?envelope,
-      },
-      timeout: _locationTimeout,
-    );
+    await _postJson('/v1/alerts', {
+      'install_id': installId,
+      'kind': kind,
+      'ciphertext': ciphertext,
+      'nonce': nonce,
+      'ts': ts ?? DateTime.now().millisecondsSinceEpoch,
+      // Optional opaque routing IDs (safe-zone fanout): the worker
+      // validates their shape and passes them to push routing only —
+      // never names or coordinates.
+      'envelope': ?envelope,
+    }, timeout: _locationTimeout);
   }
 
   /// List alert events since [sinceMs] (unix ms), newest last. Each item
@@ -874,6 +978,8 @@ class ProxyAuthStore {
   static const _profilesKey = 'vidavoice.proxy.profileIds';
   static const _installKey = 'vidavoice.proxy.installId';
   static const _syncKeyKey = 'vidavoice.proxy.syncKey';
+  static const _homeFamilyKey = 'vidavoice.proxy.homeFamilyId';
+  static const _knownFamiliesKey = 'vidavoice.proxy.knownFamilyIds';
 
   final SecureValueStore _store;
 
@@ -922,8 +1028,84 @@ class ProxyAuthStore {
     await _store.delete(_familyKey);
     await _store.delete(_profilesKey);
     await _store.delete(_syncKeyKey);
+    await _store.delete(_homeFamilyKey);
+    // Per-family member slots (tokens + unwrapped sync keys) are bearer
+    // material too: they die with the sign-out.
+    for (final familyId in await _knownFamilyIds()) {
+      await _store.delete(_familyTokenKey(familyId));
+      await _store.delete(_familySyncKeyKey(familyId));
+    }
+    await _store.delete(_knownFamiliesKey);
     // The install id is per-install, not per-account: keep it so a
     // re-sign-in re-registers the same device instead of burning a slot.
+  }
+
+  // ---- team access: home family + per-family credential slots ----
+
+  /// The account's OWN family (from its signup/login). The current
+  /// session family may differ after switching into a joined family.
+  Future<String?> readHomeFamilyId() async {
+    try {
+      final v = await _store.read(_homeFamilyKey);
+      return (v == null || v.isEmpty) ? null : v;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> writeHomeFamilyId(String familyId) async {
+    await _store.write(_homeFamilyKey, familyId);
+  }
+
+  static String _familyTokenKey(String familyId) =>
+      'vidavoice.proxy.familyToken.$familyId';
+  static String _familySyncKeyKey(String familyId) =>
+      'vidavoice.proxy.familySyncKey.$familyId';
+
+  Future<List<String>> _knownFamilyIds() async {
+    try {
+      final raw = await _store.read(_knownFamiliesKey);
+      if (raw == null || raw.isEmpty) return const [];
+      final decoded = json.decode(raw);
+      if (decoded is! List) return const [];
+      return decoded.whereType<String>().toList();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  Future<void> _rememberFamily(String familyId) async {
+    final ids = await _knownFamilyIds();
+    if (ids.contains(familyId)) return;
+    await _store.write(_knownFamiliesKey, json.encode([...ids, familyId]));
+  }
+
+  Future<void> writeFamilyToken(String familyId, String token) async {
+    await _store.write(_familyTokenKey(familyId), token);
+    await _rememberFamily(familyId);
+  }
+
+  Future<String?> readFamilyToken(String familyId) async {
+    try {
+      final v = await _store.read(_familyTokenKey(familyId));
+      return (v == null || v.isEmpty) ? null : v;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> writeFamilySyncKey(String familyId, String base64Key) async {
+    await _store.write(_familySyncKeyKey(familyId), base64Key);
+    await _rememberFamily(familyId);
+  }
+
+  Future<String?> readFamilySyncKey(String familyId) async {
+    try {
+      final v = await _store.read(_familySyncKeyKey(familyId));
+      return (v == null || v.isEmpty) ? null : v;
+    } catch (_) {
+      return null;
+    }
   }
 
   /// The raw dashboard-sync key bytes, base64-encoded. A billing-adjacent

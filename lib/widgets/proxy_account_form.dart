@@ -59,10 +59,7 @@ bool isValidProxyPassword(String v) => v.length >= 10 && v.length <= 128;
 /// When the session is already signed in, shows a compact "signed in"
 /// state instead of the form.
 class ProxyAccountForm extends StatefulWidget {
-  const ProxyAccountForm({
-    super.key,
-    this.onSignedIn,
-  });
+  const ProxyAccountForm({super.key, this.onSignedIn});
 
   /// Called after a successful sign-up or sign-in.
   final VoidCallback? onSignedIn;
@@ -158,6 +155,13 @@ class _ProxyAccountFormState extends State<ProxyAccountForm> {
     }
     if (!mounted) return;
     setState(() => _busy = false);
+    // An opened invite link parks a token on the session: accept it now
+    // that the invitee is signed in, and tell them what happened.
+    final inviteOutcome = await session.acceptPendingInvite();
+    if (inviteOutcome != null && mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(inviteOutcome)));
+    }
     widget.onSignedIn?.call();
   }
 
@@ -211,6 +215,22 @@ class _ProxyAccountFormState extends State<ProxyAccountForm> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (session.pendingInviteToken != null) ...[
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: scheme.primaryContainer,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              'You\u2019ve been invited to join a care team. Create your '
+              'free account — or log in — with the email address the '
+              'invite was sent to, and you\u2019ll join automatically.',
+              style: TextStyle(fontSize: 13, color: scheme.onPrimaryContainer),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
         SegmentedButton<bool>(
           segments: const [
             ButtonSegment(value: false, label: Text('Sign up')),

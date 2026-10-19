@@ -66,7 +66,7 @@ class _PortalDevicesTabState extends State<PortalDevicesTab> {
         _loading = false;
         _error = e.code == 'unreachable'
             ? 'Couldn\u2019t reach the OneVoz service. Check your '
-                'connection and try again.'
+                  'connection and try again.'
             : e.message;
       });
     } catch (_) {
@@ -92,10 +92,10 @@ class _PortalDevicesTabState extends State<PortalDevicesTab> {
         content: Text(
           isSelf
               ? 'This device will be signed out of the family account, '
-                  'and its sync and push access cut off.'
+                    'and its sync and push access cut off.'
               : 'This device will be signed out of the family account, '
-                  'and its sync and push access cut off. Use this for '
-                  'lost or stolen devices.',
+                    'and its sync and push access cut off. Use this for '
+                    'lost or stolen devices.',
         ),
         actions: [
           TextButton(
@@ -231,10 +231,7 @@ class _PortalDevicesTabState extends State<PortalDevicesTab> {
                 list.devicesUsed == 1
                     ? '1 device registered.'
                     : '${list.devicesUsed} devices registered.',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: scheme.onSurfaceVariant,
-                ),
+                style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
               ),
             ),
           if (_error != null)
@@ -274,17 +271,14 @@ class _PortalDevicesTabState extends State<PortalDevicesTab> {
     required List<UserProfile> profiles,
   }) {
     final scheme = Theme.of(context).colorScheme;
+    final session = context.read<SessionState>();
     // Assignments carry the profile's stable syncKey so they resolve on
     // every device; fall back to a local-id match for values a legacy
     // blob wrote before the sync identity landed.
     final assigned = assignedProfileKey == null
         ? null
-        : (profiles
-                  .where((p) => p.syncKey == assignedProfileKey)
-                  .firstOrNull ??
-              profiles
-                  .where((p) => p.id == assignedProfileKey)
-                  .firstOrNull);
+        : (profiles.where((p) => p.syncKey == assignedProfileKey).firstOrNull ??
+              profiles.where((p) => p.id == assignedProfileKey).firstOrNull);
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: Padding(
@@ -325,22 +319,18 @@ class _PortalDevicesTabState extends State<PortalDevicesTab> {
             const SizedBox(height: 4),
             Text(
               [
-                if (device.platform != null &&
-                    device.platform!.isNotEmpty)
+                if (device.platform != null && device.platform!.isNotEmpty)
                   device.platform!,
                 _lastSeen(device),
               ].join(' \u00b7 '),
-              style: TextStyle(
-                fontSize: 13,
-                color: scheme.onSurfaceVariant,
-              ),
+              style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
             ),
             const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: _busy
+                    onPressed: _busy || !session.canEditProfiles
                         ? null
                         : () => _pickAssignment(device, profiles),
                     icon: const Icon(Icons.person_outline, size: 18),
@@ -353,13 +343,12 @@ class _PortalDevicesTabState extends State<PortalDevicesTab> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                TextButton(
-                  onPressed: _busy ? null : () => _revoke(device),
-                  style: TextButton.styleFrom(
-                    foregroundColor: scheme.error,
+                if (session.isFamilyOwner)
+                  TextButton(
+                    onPressed: _busy ? null : () => _revoke(device),
+                    style: TextButton.styleFrom(foregroundColor: scheme.error),
+                    child: const Text('Revoke'),
                   ),
-                  child: const Text('Revoke'),
-                ),
               ],
             ),
           ],
@@ -391,10 +380,7 @@ class _PortalDevicesTabState extends State<PortalDevicesTab> {
             onPressed: () => Navigator.of(ctx).pop(''),
             child: const Padding(
               padding: EdgeInsets.symmetric(vertical: 8),
-              child: Text(
-                'No assignment',
-                style: TextStyle(fontSize: 16),
-              ),
+              child: Text('No assignment', style: TextStyle(fontSize: 16)),
             ),
           ),
         ],

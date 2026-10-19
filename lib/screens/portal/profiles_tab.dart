@@ -5,6 +5,7 @@ import '../../state/session_state.dart';
 import '../../widgets/communication_mode_widgets.dart';
 import '../../widgets/mode_nudge_card.dart';
 import 'portal_section.dart';
+import 'team_section.dart';
 
 /// Portal "Profiles" tab: full communicator-profile management —
 /// list, create, switch active, remove, and per-profile communication
@@ -29,9 +30,18 @@ class _PortalProfilesTabState extends State<PortalProfilesTab> {
   Widget build(BuildContext context) {
     final session = context.watch<SessionState>();
     final profiles = session.profiles;
+    final canEditProfiles = session.canEditProfiles;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        if (session.inJoinedFamily && !canEditProfiles)
+          const Padding(
+            padding: EdgeInsets.only(bottom: 12),
+            child: Text(
+              'Your team access in this family doesn\u2019t include '
+              'managing profiles — they\u2019re shown read-only.',
+            ),
+          ),
         PortalSection(
           title: 'Communicator profiles',
           icon: Icons.people_outline,
@@ -59,7 +69,7 @@ class _PortalProfilesTabState extends State<PortalProfilesTab> {
                                 },
                                 child: const Text('Switch'),
                               ),
-                            if (profiles.profiles.length > 1)
+                            if (profiles.profiles.length > 1 && canEditProfiles)
                               IconButton(
                                 tooltip: 'Remove profile',
                                 icon: const Icon(Icons.delete_outline),
@@ -102,45 +112,57 @@ class _PortalProfilesTabState extends State<PortalProfilesTab> {
                         ),
                       ),
                       const Divider(height: 1),
-                      // Per-profile communication-mode picker. Keyed on
-                      // the saved mode so an external change resets the
-                      // local selection to what is actually stored.
-                      ProfileModeEditor(
-                        key: ValueKey(
-                          'mode-editor-${p.id}-${p.communicationMode.name}',
+                      if (!canEditProfiles)
+                        Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Text(
+                            'Mode: ${p.communicationMode.name} · '
+                            'Build length: ${p.buildMaxSymbols} · '
+                            'Predictions: '
+                            '${p.predictionEnabled ? 'on' : 'off'}',
+                          ),
+                        )
+                      else ...[
+                        // Per-profile communication-mode picker. Keyed on
+                        // the saved mode so an external change resets the
+                        // local selection to what is actually stored.
+                        ProfileModeEditor(
+                          key: ValueKey(
+                            'mode-editor-${p.id}-${p.communicationMode.name}',
+                          ),
+                          profileId: p.id,
                         ),
-                        profileId: p.id,
-                      ),
-                      // Per-profile Build length limit. Keyed on the
-                      // saved value for the same reason.
-                      BuildLengthEditor(
-                        key: ValueKey(
-                          'build-length-${p.id}-${p.buildMaxSymbols}',
+                        // Per-profile Build length limit. Keyed on the
+                        // saved value for the same reason.
+                        BuildLengthEditor(
+                          key: ValueKey(
+                            'build-length-${p.id}-${p.buildMaxSymbols}',
+                          ),
+                          profileId: p.id,
                         ),
-                        profileId: p.id,
-                      ),
-                      // Per-profile Type prediction privacy controls.
-                      // Keyed on the saved toggle for the same reason.
-                      PredictionPrivacyEditor(
-                        key: ValueKey(
-                          'prediction-${p.id}-${p.predictionEnabled}',
+                        // Per-profile Type prediction privacy controls.
+                        // Keyed on the saved toggle for the same reason.
+                        PredictionPrivacyEditor(
+                          key: ValueKey(
+                            'prediction-${p.id}-${p.predictionEnabled}',
+                          ),
+                          profileId: p.id,
                         ),
-                        profileId: p.id,
-                      ),
-                      // The ONE caregiver-facing mode-progression
-                      // suggestion. Renders only when eligible; never on
-                      // the communicator's board, never interrupts, never
-                      // changes the saved mode.
-                      ModeNudgeCard(profileId: p.id, onChanged: _refresh),
-                      // Durable progression-suggestion preference
-                      // (On / Paused / Off). Explicit save; keyed on the
-                      // saved value.
-                      NudgePreferenceEditor(
-                        key: ValueKey(
-                          'nudge-pref-${p.id}-${p.modeNudgePreference.name}',
+                        // The ONE caregiver-facing mode-progression
+                        // suggestion. Renders only when eligible; never on
+                        // the communicator's board, never interrupts, never
+                        // changes the saved mode.
+                        ModeNudgeCard(profileId: p.id, onChanged: _refresh),
+                        // Durable progression-suggestion preference
+                        // (On / Paused / Off). Explicit save; keyed on the
+                        // saved value.
+                        NudgePreferenceEditor(
+                          key: ValueKey(
+                            'nudge-pref-${p.id}-${p.modeNudgePreference.name}',
+                          ),
+                          profileId: p.id,
                         ),
-                        profileId: p.id,
-                      ),
+                      ],
                     ],
                   ),
                 ),
@@ -149,21 +171,23 @@ class _PortalProfilesTabState extends State<PortalProfilesTab> {
                   padding: EdgeInsets.symmetric(vertical: 8),
                   child: Text('No communicator profiles yet.'),
                 ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: OutlinedButton.icon(
-                    icon: const Icon(Icons.add),
-                    label: const Text('Add profile'),
-                    onPressed: () =>
-                        _addProfileDialog(context, session, _refresh),
+              if (canEditProfiles)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.add),
+                      label: const Text('Add profile'),
+                      onPressed: () =>
+                          _addProfileDialog(context, session, _refresh),
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         ),
+        const TeamSection(),
       ],
     );
   }

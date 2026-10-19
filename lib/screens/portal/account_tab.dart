@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../services/device_role_service.dart';
 import '../../state/session_state.dart';
 import '../../widgets/mode_switch_gate.dart';
+import 'team_section.dart';
 
 /// Portal "Account" tab: family account info, support/donate, mode switch,
 /// sign out.
@@ -28,9 +29,7 @@ class PortalAccountTab extends StatelessWidget {
           Navigator.of(context).pop();
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text(
-                'Switched to communicator mode — boards only.',
-              ),
+              content: Text('Switched to communicator mode — boards only.'),
               duration: Duration(seconds: 3),
             ),
           );
@@ -107,10 +106,7 @@ class PortalAccountTab extends StatelessWidget {
               children: [
                 const Text(
                   'Family account',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -130,10 +126,20 @@ class PortalAccountTab extends StatelessWidget {
                     ),
                   ),
                 ],
+                if (session.inJoinedFamily) ...[
+                  const SizedBox(height: 4),
+                  const Text(
+                    'You are currently in a family you joined as a team '
+                    'member. Switch back to your own family below.',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ],
               ],
             ),
           ),
         ),
+        const SizedBox(height: 12),
+        const FamiliesCard(),
         const SizedBox(height: 12),
         Card(
           margin: EdgeInsets.zero,
@@ -151,10 +157,7 @@ class PortalAccountTab extends StatelessWidget {
               const Divider(height: 1),
               ListTile(
                 leading: Icon(Icons.logout, color: scheme.error),
-                title: Text(
-                  'Sign out',
-                  style: TextStyle(color: scheme.error),
-                ),
+                title: Text('Sign out', style: TextStyle(color: scheme.error)),
                 onTap: () => _signOut(context),
               ),
             ],

@@ -5,9 +5,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
+
+import 'package:crypto/crypto.dart' as crypto;
 
 import '../app_config.dart';
 import '../models/dashboard.dart';
+import '../models/team.dart';
 import '../models/word.dart';
 import '../services/dashboard_service.dart';
 import '../services/dashboard_sync_service.dart';
@@ -220,6 +224,7 @@ class SessionState extends ChangeNotifier {
   }
 
   late LanguagePack pack;
+  bool _packReady = false;
 
   final List<String> _sentenceIds = [];
   List<String> get sentenceIds => List.unmodifiable(_sentenceIds);
@@ -289,6 +294,17 @@ class SessionState extends ChangeNotifier {
   Future<void> boot() async {
     status = BootStatus.loading;
     notifyListeners();
+    // An opened invite link (https://onevoz.me/join#invite=…) parks its
+    // token here; the sign-in flow offers to accept it once the invitee
+    // is signed in with the invited email. Web-only in practice: on
+    // native, Uri.base has no invite fragment.
+    try {
+      final fragment = Uri.base.fragment;
+      if (fragment.contains('invite=')) {
+        final token = parseInviteToken(fragment);
+        if (token.isNotEmpty) pendingInviteToken = token;
+      }
+    } catch (_) {}
     try {
       _prefs = await _prefsFactory();
       final savedLocale = _prefs!.getString('vidavoice.locale');
@@ -310,6 +326,10 @@ class SessionState extends ChangeNotifier {
           proxySignedIn = true;
           proxyFamilyId = await proxyAuth.readFamilyId();
           _serverProfileIds = await proxyAuth.readProfileIds();
+          // The account's home family (team switching baseline). Legacy
+          // sessions predate the record: their current family IS home.
+          accountHomeFamilyId =
+              await proxyAuth.readHomeFamilyId() ?? proxyFamilyId;
         }
       } catch (_) {}
       // A restored session for a family that already has profiles means
@@ -337,6 +357,7 @@ class SessionState extends ChangeNotifier {
       pack = await LanguagePackService.loadPack(currentLocale);
       // Throws PackValidationError on any violation — boot must fail fast.
       pack.validate();
+      _packReady = true;
       await symbols.load();
       await profiles.load();
       await dashboards.load();
@@ -478,7 +499,7 @@ class SessionState extends ChangeNotifier {
       username: username,
       password: password,
     );
-    await _afterProxyAuth(result);
+    await _afterProxyAuth(result, accountAuth: true);
     await _setupSyncKey(result, password);
   }
 
@@ -500,7 +521,7 @@ class SessionState extends ChangeNotifier {
       identifier: identifier,
       password: password,
     );
-    await _afterProxyAuth(result);
+    await _afterProxyAuth(result, accountAuth: true);
     await _setupSyncKey(result, password);
     if (result.profileIds.isNotEmpty && !onboardingComplete) {
       await setOnboardingComplete(true);
@@ -516,6 +537,18 @@ class SessionState extends ChangeNotifier {
       final key = await DashboardSyncService.deriveSyncKey(password, salt);
       await proxyAuth.writeSyncKey(base64.encode(key));
       dashboardSync.setKey(key);
+      await _convergeSync();
+    } catch (_) {
+      // The account works without sync; the caregiver can retry from the
+      // Device sync section.
+      dashboardSync.autoPushEnabled = true;
+    }
+  }
+
+  /// Pull the family's encrypted blob with whatever sync key is set and
+  /// merge it into local state. Best-effort; always re-enables auto-push.
+  Future<void> _convergeSync() async {
+    try {
       await dashboardSync.loadPersisted();
       final syncResult = await dashboardSync.syncNow();
       if (syncResult.changed) {
@@ -524,29 +557,45 @@ class SessionState extends ChangeNotifier {
         notifyListeners();
       }
     } catch (_) {
-      // The account works without sync; the caregiver can retry from the
-      // Device sync section.
+      // Local state stays as-is; sync retries on the next change.
     } finally {
-      // A failed first sync must not disable auto-push forever: local
-      // edits should still converge once connectivity returns.
       dashboardSync.autoPushEnabled = true;
     }
   }
 
   /// Common post-auth: persist the token, register this install as a
   /// family device (best-effort), and clear any earlier account deferral.
-  Future<void> _afterProxyAuth(ProxyAuthResult result) async {
+  ///
+  /// [accountAuth] marks a signup/login to the account's OWN family
+  /// (records the home-family baseline for team switching).
+  /// [deviceServices] is false when entering a JOINED family: this
+  /// device must not register itself into that family's device list or
+  /// start receiving its location/push traffic.
+  Future<void> _afterProxyAuth(
+    ProxyAuthResult result, {
+    bool accountAuth = false,
+    bool deviceServices = true,
+  }) async {
     proxy.setToken(result.token);
     proxySignedIn = true;
     proxyFamilyId = result.familyId;
     _serverProfileIds = List<String>.of(result.profileIds);
+    if (accountAuth) {
+      accountHomeFamilyId = result.familyId;
+      try {
+        await proxyAuth.writeHomeFamilyId(result.familyId);
+        await proxyAuth.writeFamilyToken(result.familyId, result.token);
+      } catch (_) {}
+    }
     try {
       await proxyAuth.save(result);
     } catch (_) {}
-    await _registerDevice();
-    locationShare.beginPolling();
-    unawaited(geofence.start());
-    unawaited(pushTokens.start());
+    if (deviceServices) {
+      await _registerDevice();
+      locationShare.beginPolling();
+      unawaited(geofence.start());
+      unawaited(pushTokens.start());
+    }
     notifyListeners();
   }
 
@@ -628,6 +677,12 @@ class SessionState extends ChangeNotifier {
     proxy.setToken(null);
     proxySignedIn = false;
     proxyFamilyId = null;
+    accountHomeFamilyId = null;
+    teamRoster = null;
+    myFamilies = const [];
+    teamLoadFailed = false;
+    teamLoadAttempted = false;
+    pendingInviteToken = null;
     _serverProfileIds = const [];
     _entitlementVoices = null;
     _entitlementFetched = null;
@@ -654,6 +709,274 @@ class SessionState extends ChangeNotifier {
       await clearVoice();
     }
     notifyListeners();
+  }
+
+  // ------------------------------------------------------------ team access
+
+  /// The account's OWN family id (set at signup/login). The current
+  /// session family ([proxyFamilyId]) may be a JOINED family after a
+  /// switch; null on legacy sessions, where current == home by definition.
+  String? accountHomeFamilyId;
+
+  /// Roster + own standing for the CURRENT family (loaded on demand).
+  TeamRoster? teamRoster;
+
+  /// Every family this account can enter (Account-tab switcher).
+  List<TeamFamily> myFamilies = const [];
+
+  /// Invite token captured from an opened invite link (URL fragment),
+  /// waiting for the invitee to sign in with the invited email. Set in
+  /// [boot]; consumed by [acceptPendingInvite] after sign-in/sign-up.
+  String? pendingInviteToken;
+
+  bool get inJoinedFamily =>
+      proxySignedIn &&
+      accountHomeFamilyId != null &&
+      proxyFamilyId != null &&
+      proxyFamilyId != accountHomeFamilyId;
+
+  /// Owning the current family grants everything; in a joined family,
+  /// the membership's permissions rule.
+  bool get isFamilyOwner => !inJoinedFamily;
+
+  TeamPermissions get myPermissions => isFamilyOwner
+      ? TeamPermissions.all
+      : (teamRoster?.youPermissions ?? TeamPermissions.none);
+
+  bool get canEditDashboard => myPermissions.dashboard;
+  bool get canEditContent => myPermissions.content;
+  bool get canEditProfiles => myPermissions.profiles;
+  bool get canManageSafety => myPermissions.safety;
+  bool get canManageTeam => myPermissions.team;
+
+  /// Whether dashboard sync has a key for the current family. A joined
+  /// family whose invite didn't carry a wrapped key has membership but
+  /// no board sync until the owner re-invites.
+  bool get syncKeyShared => dashboardSync.hasKey;
+
+  /// True after a roster/families load failed with nothing to show —
+  /// the team UI renders an error + Retry instead of spinning forever
+  /// (offline families must not stare at an eternal spinner).
+  bool teamLoadFailed = false;
+
+  /// Set once a roster/families load has completed (success or failure)
+  /// for the current family. Widgets auto-load only when this is false —
+  /// keying on the roster alone would retry forever after a failure,
+  /// because every notify re-fires their didChangeDependencies.
+  bool teamLoadAttempted = false;
+  Future<void>? _teamLoadInFlight;
+
+  /// Loads the roster + family list. Concurrent callers share the
+  /// in-flight load rather than piling on duplicate requests, and a
+  /// caller that awaits always waits for a real load — never a no-op.
+  Future<void> loadTeam() {
+    if (!proxySignedIn) return Future<void>.value();
+    return _teamLoadInFlight ??= _loadTeam().whenComplete(() {
+      _teamLoadInFlight = null;
+    });
+  }
+
+  Future<void> _loadTeam() async {
+    var failed = false;
+    try {
+      teamRoster = await _authed(() => proxy.getTeam());
+    } catch (_) {
+      // Roster is informational; keep the last known state.
+      failed = teamRoster == null;
+    }
+    try {
+      myFamilies = await _authed(() => proxy.listTeamFamilies());
+    } catch (_) {
+      failed = failed || myFamilies.isEmpty;
+    }
+    teamLoadFailed = failed;
+    teamLoadAttempted = true;
+    notifyListeners();
+  }
+
+  /// Extracts the invite token from a pasted link or a bare token.
+  static String parseInviteToken(String input) {
+    var s = input.trim();
+    final marker = s.indexOf('invite=');
+    if (marker >= 0) {
+      s = s.substring(marker + 'invite='.length);
+    } else if (s.contains('#')) {
+      s = s.substring(s.lastIndexOf('#') + 1);
+    }
+    final amp = s.indexOf('&');
+    if (amp >= 0) s = s.substring(0, amp);
+    final space = s.indexOf(RegExp(r'\s'));
+    if (space >= 0) s = s.substring(0, space);
+    return s.trim();
+  }
+
+  /// The key that wraps a family's sync key inside an invite: derived
+  /// from the invite token itself, so only someone holding the link can
+  /// unwrap it. The server stores hash + wrapped blob, never either key.
+  static List<int> _inviteWrapKey(String inviteToken) {
+    return crypto.sha256
+        .convert(utf8.encode('onevoz-invite-wrap:v1:$inviteToken'))
+        .bytes;
+  }
+
+  /// Creates an invite for the CURRENT family and returns the shareable
+  /// link. The raw token is generated here and never sent to the server
+  /// (only its hash), because the token doubles as the wrapping key for
+  /// the family's sync key.
+  Future<({InviteCreated created, String link})> createTeamInvite({
+    required String email,
+    required String role,
+    required TeamPermissions permissions,
+  }) async {
+    final random = Random.secure();
+    final tokenBytes = List<int>.generate(32, (_) => random.nextInt(256));
+    final token = base64Url.encode(tokenBytes).replaceAll('=', '');
+    final tokenHash = crypto.sha256.convert(utf8.encode(token)).toString();
+    String? wrappedKey;
+    String? wrapSalt;
+    final familyKeyB64 = await proxyAuth.readSyncKey();
+    if (familyKeyB64 != null && familyKeyB64.isNotEmpty) {
+      final blob = await DashboardSyncService.encrypt(
+        _inviteWrapKey(token),
+        familyKeyB64,
+      );
+      wrappedKey = blob.ciphertext;
+      wrapSalt = blob.nonce;
+    }
+    final created = await _authed(
+      () => proxy.createTeamInvite(
+        email: email,
+        role: role,
+        permissions: permissions,
+        tokenHash: tokenHash,
+        wrappedKey: wrappedKey,
+        wrapSalt: wrapSalt,
+      ),
+    );
+    unawaited(loadTeam());
+    return (created: created, link: 'https://onevoz.me/join#invite=$token');
+  }
+
+  Future<void> revokeTeamInvite(String inviteId) async {
+    await _authed(() => proxy.revokeTeamInvite(inviteId));
+    await loadTeam();
+  }
+
+  Future<void> updateTeamMember(
+    String caregiverId, {
+    String? role,
+    TeamPermissions? permissions,
+  }) async {
+    await _authed(
+      () => proxy.updateTeamMember(
+        caregiverId,
+        role: role,
+        permissions: permissions,
+      ),
+    );
+    await loadTeam();
+  }
+
+  Future<void> removeTeamMember(String caregiverId) async {
+    await _authed(() => proxy.removeTeamMember(caregiverId));
+    await loadTeam();
+  }
+
+  /// Accepts the invite captured from an opened link, if any. Returns a
+  /// plain-language outcome for the caller to show, or null when there
+  /// is no pending invite. The token is consumed only on success, so a
+  /// wrong-email attempt can be retried after signing in correctly.
+  Future<String?> acceptPendingInvite() async {
+    final token = pendingInviteToken;
+    if (token == null || token.isEmpty || !proxySignedIn) return null;
+    try {
+      await acceptInvite(token);
+      pendingInviteToken = null;
+      notifyListeners();
+      return 'Welcome — you joined the family\u2019s care team.';
+    } on ProxyException catch (e) {
+      return e.message;
+    } catch (_) {
+      return 'Could not accept your invite. You can paste the link '
+          'again from Portal \u2192 Account.';
+    }
+  }
+
+  /// Accepts an invite (link or bare token) with the signed-in account,
+  /// stores the membership's credentials, and switches into the family.
+  Future<TeamEntry> acceptInvite(String input) async {
+    final token = parseInviteToken(input);
+    if (token.isEmpty) {
+      throw ProxyException(
+        'That invite link does not look right.',
+        code: 'invalid_invite',
+      );
+    }
+    final entry = await _authed(() => proxy.acceptTeamInvite(token));
+    await proxyAuth.writeFamilyToken(entry.familyId, entry.token);
+    if (entry.wrappedKey != null && entry.wrapSalt != null) {
+      try {
+        final familyKeyB64 = await DashboardSyncService.decrypt(
+          _inviteWrapKey(token),
+          entry.wrappedKey!,
+          entry.wrapSalt!,
+        );
+        if (familyKeyB64.isNotEmpty) {
+          await proxyAuth.writeFamilySyncKey(entry.familyId, familyKeyB64);
+        }
+      } catch (_) {
+        // The membership stands; only board sync stays off for this
+        // family until the owner shares a fresh invite.
+      }
+    }
+    await switchToFamily(entry.familyId, entry: entry);
+    return entry;
+  }
+
+  /// Switches the session into another family this account owns or has
+  /// joined: swaps the session token + sync key, converges that family's
+  /// synced state, and reloads profiles. The outgoing family's
+  /// credentials are stashed per-family for a fast switch back.
+  Future<void> switchToFamily(String familyId, {TeamEntry? entry}) async {
+    if (!proxySignedIn || familyId == proxyFamilyId) return;
+    final outgoing = proxyFamilyId;
+    if (outgoing != null) {
+      final outToken = await proxyAuth.readToken();
+      if (outToken != null) {
+        await proxyAuth.writeFamilyToken(outgoing, outToken);
+      }
+      final outKey = await proxyAuth.readSyncKey();
+      if (outKey != null && outKey.isNotEmpty) {
+        await proxyAuth.writeFamilySyncKey(outgoing, outKey);
+      }
+    }
+    final TeamEntry e =
+        entry ?? await _authed(() => proxy.enterTeamFamily(familyId));
+    await proxyAuth.writeFamilyToken(e.familyId, e.token);
+    teamRoster = null;
+    teamLoadFailed = false;
+    teamLoadAttempted = false;
+    await _afterProxyAuth(
+      ProxyAuthResult(
+        token: e.token,
+        familyId: e.familyId,
+        profileIds: e.profileIds,
+      ),
+      deviceServices: e.familyId == accountHomeFamilyId,
+    );
+    final keyB64 = await proxyAuth.readFamilySyncKey(e.familyId);
+    if (keyB64 != null && keyB64.isNotEmpty) {
+      await proxyAuth.writeSyncKey(keyB64);
+      dashboardSync.setKey(base64.decode(keyB64));
+      await _convergeSync();
+    } else {
+      await proxyAuth.deleteSyncKey();
+      dashboardSync.clearKey();
+    }
+    await reloadProfileData();
+    prewarmSpeechCache();
+    notifyListeners();
+    unawaited(loadTeam());
   }
 
   /// Run a proxy call, degrading cloud features when the token is
@@ -908,6 +1231,7 @@ class SessionState extends ChangeNotifier {
     buildNotice = null;
     _dashboardBypassed = false;
     pack = await LanguagePackService.loadPack(locale);
+    _packReady = true;
     await tts.setLanguage(pack.ttsLocale);
     // A voice choice is per-language: apply the saved one for the new
     // language, or drop back to the engine default (the old language's
@@ -1068,7 +1392,7 @@ class SessionState extends ChangeNotifier {
     _sentenceIds.add(item.id);
     // The sentence this tap is building may be spoken whole next —
     // warm its audio in the background (debounced inside).
-    _scheduleSpeechPrefetch(sentence.map((w) => w.label).join(' '));
+    _scheduleSpeechPrefetch(_composedSentenceText);
     // Fire-and-forget: usage counts must never block a tap.
     unawaited(usage.recordTap(item.id));
     // Phase 5: count intentional Tap-mode speaks for nudge eligibility.
@@ -1153,9 +1477,20 @@ class SessionState extends ChangeNotifier {
   /// cloud. No-ops inside TtsService for on-device voices and cache
   /// hits; the server-side audio cache is shared across families, so a
   /// warmed sentence is usually a one-time cost for everyone.
+  /// The composed sentence as text, for prefetch scheduling. Resolving
+  /// labels needs the language pack; before it loads there is no board
+  /// to tap, so callers get an empty string (prefetch no-ops) instead
+  /// of a late-init crash.
+  String get _composedSentenceText =>
+      _packReady ? sentence.map((w) => w.label).join(' ') : '';
+
   void _scheduleSpeechPrefetch(String text) {
     _speechPrefetchTimer?.cancel();
     if (text.trim().isEmpty) return;
+    // On-device voices synthesize locally — there is nothing to warm,
+    // so don't arm the debounce timer at all (TtsService.prefetch would
+    // no-op anyway when it fired).
+    if (!tts.usesCloudVoice) return;
     _speechPrefetchTimer = Timer(const Duration(milliseconds: 500), () {
       unawaited(tts.prefetch(text));
     });
@@ -1172,6 +1507,9 @@ class SessionState extends ChangeNotifier {
   /// sequential, capped, fire-and-forget, and a no-op for on-device
   /// voices (TtsService.prefetch self-gates).
   void prewarmSpeechCache() {
+    // Best-effort only: warming before the language pack has loaded
+    // (early boot, family switch from a cold session) is a no-op.
+    if (!_packReady) return;
     final texts = <String>{};
     final id = profiles.active?.id;
     final dashboard = id == null ? null : dashboards.forProfile(id);
@@ -1279,7 +1617,7 @@ class SessionState extends ChangeNotifier {
       if (_sentenceIds.isEmpty) {
         _cancelSpeechPrefetch();
       } else {
-        _scheduleSpeechPrefetch(sentence.map((w) => w.label).join(' '));
+        _scheduleSpeechPrefetch(_composedSentenceText);
       }
       notifyListeners();
     }

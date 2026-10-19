@@ -43,9 +43,7 @@ class PortalSettingsTab extends StatelessWidget {
                 label: const Text('Open voice & speech settings'),
                 onPressed: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const SettingsScreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const SettingsScreen()),
                   );
                 },
               ),
@@ -77,10 +75,7 @@ class PortalSettingsTab extends StatelessWidget {
               const SizedBox(height: 8),
               const Text(
                 'Most used words',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
               ),
               _MostUsedWords(session: session),
             ],
@@ -309,20 +304,12 @@ class _SetupAndNext extends StatelessWidget {
             // features. The chip makes "what's coming" unmistakable
             // so nothing looks like a dead button.
             trailing: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 4,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: Theme.of(context)
-                    .colorScheme
-                    .surfaceContainerHighest,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(99),
               ),
-              child: const Text(
-                'Coming soon',
-                style: TextStyle(fontSize: 11),
-              ),
+              child: const Text('Coming soon', style: TextStyle(fontSize: 11)),
             ),
           ),
         const Padding(

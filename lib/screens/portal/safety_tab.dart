@@ -74,6 +74,15 @@ class PortalSafetyTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        if (session.inJoinedFamily && !session.canManageSafety)
+          const Padding(
+            padding: EdgeInsets.only(bottom: 12),
+            child: Text(
+              'Your team access in this family doesn\u2019t include safety '
+              'settings — contacts and safe zones are shown read-only '
+              'where possible.',
+            ),
+          ),
         PortalSection(
           title: 'Calling & Safety',
           icon: Icons.call_outlined,
@@ -123,20 +132,36 @@ class PortalSafetyTab extends StatelessWidget {
         PortalSection(
           title: 'Safe zones',
           icon: Icons.place_outlined,
-          child: SafeZonesCard(
-            zones: session.dashboardSync.safeZones,
-            onAdd: () => _openZoneEditor(context, session),
-            onEdit: (zone) =>
-                _openZoneEditor(context, session, existing: zone),
-            onToggle: (zone, enabled) async {
-              await session.dashboardSync.upsertSafeZone(
-                zone.copyWith(enabled: enabled),
-              );
-              try {
-                await session.dashboardSync.pushNow();
-              } catch (_) {}
-            },
-          ),
+          child: session.canManageSafety
+              ? SafeZonesCard(
+                  zones: session.dashboardSync.safeZones,
+                  onAdd: () => _openZoneEditor(context, session),
+                  onEdit: (zone) =>
+                      _openZoneEditor(context, session, existing: zone),
+                  onToggle: (zone, enabled) async {
+                    await session.dashboardSync.upsertSafeZone(
+                      zone.copyWith(enabled: enabled),
+                    );
+                    try {
+                      await session.dashboardSync.pushNow();
+                    } catch (_) {}
+                  },
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${session.dashboardSync.safeZones.length} safe '
+                      'zone(s) are set for this family.',
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Your team access is view-only for safety settings. '
+                      'Ask the family owner if you need to change safe '
+                      'zones.',
+                    ),
+                  ],
+                ),
         ),
       ],
     );

@@ -319,6 +319,13 @@ class TtsService {
   /// The explicitly chosen voice, if any. Null means the engine default.
   TtsVoice? currentVoice;
 
+  /// True when the current voice synthesizes in the cloud (proxy or
+  /// direct ElevenLabs) — the only case where prefetching can help.
+  bool get usesCloudVoice {
+    final v = currentVoice;
+    return v != null && (v.isProxy || v.isElevenLabs);
+  }
+
   /// Last language passed to init/setLanguage — used to re-bind the engine
   /// default voice when a choice is cleared.
   String _lastLanguage = 'en-US';

@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:onevoz/models/team.dart';
+import 'package:onevoz/screens/portal/team_section.dart';
 import 'package:onevoz/services/elevenlabs_key_store.dart';
 import 'package:onevoz/services/proxy_client.dart';
 import 'package:onevoz/services/tts_service.dart';
@@ -315,6 +316,25 @@ void main() {
         TeamRoles.presets[TeamRoles.speechTherapist],
         const TeamPermissions(dashboard: true, content: true),
       );
+    });
+
+    test('invite email draft reads grammatically for both access kinds', () {
+      final editor = inviteEmailDraft(
+        roleLabel: 'Speech therapist',
+        permissions: const TeamPermissions(dashboard: true, content: true),
+      );
+      expect(
+        editor.body,
+        contains(
+          'you will be able to edit the communication board, '
+          'add and edit words and phrases.',
+        ),
+      );
+      final viewer = inviteEmailDraft(
+        roleLabel: 'Doctor',
+        permissions: TeamPermissions.none,
+      );
+      expect(viewer.body, contains('you will have view-only access.'));
     });
 
     test('invite token parsing accepts links and bare tokens', () {

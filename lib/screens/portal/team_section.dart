@@ -18,7 +18,7 @@ import 'portal_section.dart';
 }) {
   final access = permissions.describe();
   final accessSentence = permissions.canEditAnything
-      ? 'you will have $access.'
+      ? 'you will be able to ${access.replaceFirst('can ', '')}.'
       : 'you will have view-only access.';
   return (
     subject: "You've been invited to join a care team on OneVoz",

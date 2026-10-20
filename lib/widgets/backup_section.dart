@@ -107,6 +107,18 @@ class _BackupSectionState extends State<BackupSection> {
 
   Future<void> _import() async {
     final session = context.read<SessionState>();
+    // A restore rewrites a profile wholesale — in a shared family that
+    // is the largest change there is, so under the change-approval
+    // rules it belongs to admins (Adam, 2026-10-20). Converting a
+    // whole-file restore into a reviewable request is not meaningful;
+    // non-admin members are refused with an explanation instead.
+    if (session.requiresChangeApproval) {
+      _snack(
+        'In a shared family, restoring a backup needs an admin — '
+        'ask the family owner or an admin to do it.',
+      );
+      return;
+    }
     final path = await (widget.pickFile ?? _defaultPickFile)();
     if (path == null) return; // user cancelled
     late final String raw;
@@ -246,11 +258,20 @@ class _BackupSectionState extends State<BackupSection> {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: OutlinedButton.icon(
-                      icon: const Icon(Icons.download_outlined),
-                      label: const Text('Import backup'),
-                      onPressed: _import,
-                    ),
+                    child: session.requiresChangeApproval
+                        ? const Text(
+                            'Backup restore is admin-only in a shared '
+                            'family.',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          )
+                        : OutlinedButton.icon(
+                            icon: const Icon(Icons.download_outlined),
+                            label: const Text('Import backup'),
+                            onPressed: _import,
+                          ),
                   ),
                 ],
               ),

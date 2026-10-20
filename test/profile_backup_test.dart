@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:onevoz/models/team.dart';
 import 'package:onevoz/services/profile_backup_service.dart';
 import 'package:onevoz/services/profile_service.dart';
 import 'package:onevoz/state/session_state.dart';
@@ -317,6 +318,68 @@ void main() {
       file.writeAsStringSync(contents);
       return file.path;
     }
+
+    testWidgets('joined non-admin member: restore is admin-only', (
+      tester,
+    ) async {
+      final session = await makeSession();
+      // Join a family as a non-admin member (edit permissions, but no
+      // manage-team) — restoring a backup must be refused (Adam,
+      // 2026-10-20: restores are the biggest change there is, so they
+      // belong to admins under the approval rules).
+      session.proxySignedIn = true;
+      session.accountHomeFamilyId = 'fam-home';
+      session.proxyFamilyId = 'fam-joined';
+      session.teamRoster = TeamRoster(
+        familyId: 'fam-joined',
+        youCaregiverId: 'cg-sam',
+        youIsOwner: false,
+        youRole: TeamRoles.family,
+        youPermissions: const TeamPermissions(
+          dashboard: true,
+          content: true,
+          profiles: true,
+          safety: true,
+        ),
+        owner: TeamMember(
+          caregiverId: 'cg-owner',
+          email: 'mom@example.org',
+          username: 'mom',
+          role: 'owner',
+          permissions: TeamPermissions.all,
+          isOwner: true,
+          createdAt: 1,
+        ),
+        members: const [],
+        invites: const [],
+      );
+      expect(session.requiresChangeApproval, isTrue);
+
+      var picked = false;
+      await tester.pumpWidget(
+        ChangeNotifierProvider.value(
+          value: session,
+          child: MaterialApp(
+            home: Scaffold(
+              body: BackupSection(
+                pickFile: () async {
+                  picked = true;
+                  return null;
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+      expect(find.text('Import backup'), findsNothing);
+      expect(
+        find.text('Backup restore is admin-only in a shared family.'),
+        findsOneWidget,
+      );
+      // Export stays open to everyone.
+      expect(find.text('Export backup'), findsOneWidget);
+      expect(picked, isFalse);
+    });
 
     testWidgets('import with merge restores data and shows confirmation', (
       tester,

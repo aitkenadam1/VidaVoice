@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../state/session_state.dart';
 import '../../widgets/communication_mode_widgets.dart';
 import '../../widgets/mode_nudge_card.dart';
+import 'change_requests_section.dart';
 import 'goals_section.dart';
 import 'portal_section.dart';
 import 'team_section.dart';
@@ -226,6 +227,7 @@ class _PortalProfilesTabState extends State<PortalProfilesTab> {
           ),
         ),
         const GoalsSection(),
+        const ChangeRequestsSection(),
         const TeamSection(),
       ],
     );
@@ -264,7 +266,7 @@ class _PortalProfilesTabState extends State<PortalProfilesTab> {
       ),
     );
     if (name != null && name.trim().isNotEmpty) {
-      await session.profiles.addProfile(name.trim());
+      await session.addProfile(name.trim());
       refresh();
     }
   }

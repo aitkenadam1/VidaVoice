@@ -52,6 +52,32 @@ class _CaregiverPortalScreenState extends State<CaregiverPortalScreen> {
   /// changes never silently re-point the selection at another tab.
   int _tab = 0;
 
+  SessionState? _session;
+  int _lastApprovalNoticeCount = 0;
+
+  /// A gated team member's edit just became a change request: tell
+  /// them plainly, once per proposal (the counter distinguishes them).
+  void _onSessionChanged() {
+    final session = _session;
+    if (session == null || !mounted) return;
+    if (session.approvalNoticeCount == _lastApprovalNoticeCount) return;
+    _lastApprovalNoticeCount = session.approvalNoticeCount;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Sent for approval — an admin will review it. '
+          '${session.lastApprovalNotice}',
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _session?.removeListener(_onSessionChanged);
+    super.dispose();
+  }
+
   static const _tabs = <_TabSpec>[
     _TabSpec(
       Icons.dashboard_outlined,
@@ -105,6 +131,9 @@ class _CaregiverPortalScreenState extends State<CaregiverPortalScreen> {
     // the no-contacts sheet). Consumed here so later rebuilds don't
     // yank the caregiver back.
     final session = context.read<SessionState>();
+    _session = session;
+    _lastApprovalNoticeCount = session.approvalNoticeCount;
+    session.addListener(_onSessionChanged);
     final requested = session.pendingPortalTab;
     if (requested != null) {
       session.pendingPortalTab = null;

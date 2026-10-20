@@ -10,8 +10,11 @@ import 'dart:math';
 import 'package:crypto/crypto.dart' as crypto;
 
 import '../app_config.dart';
+import '../models/calling_safety.dart';
+import '../models/change_request.dart';
 import '../models/dashboard.dart';
 import '../models/goal.dart';
+import '../models/safe_zone.dart';
 import '../models/team.dart';
 import '../models/word.dart';
 import '../services/blocked_words.dart';
@@ -776,6 +779,18 @@ class SessionState extends ChangeNotifier {
   bool get canManageSafety => myPermissions.safety;
   bool get canManageTeam => myPermissions.team;
 
+  /// Admins enact family changes directly and decide other members'
+  /// change requests: the family owner, or a member holding the
+  /// manage-team permission (the other parent, typically).
+  bool get isTeamAdmin => isFamilyOwner || canManageTeam;
+
+  /// True when this session's changes to family data must be proposed
+  /// as change requests for an admin to approve, instead of applying
+  /// directly: a joined family where this member is not an admin.
+  /// Solo families and owner/admin sessions are never gated — their
+  /// behavior is exactly what it has always been.
+  bool get requiresChangeApproval => inJoinedFamily && !isTeamAdmin;
+
   /// Whether dashboard sync has a key for the current family. A joined
   /// family whose invite didn't carry a wrapped key has membership but
   /// no board sync until the owner re-invites.
@@ -859,6 +874,16 @@ class SessionState extends ChangeNotifier {
       createdAt: now,
       updatedAt: now,
     );
+    if (requiresChangeApproval) {
+      await _proposeChange(
+        kind: 'goal',
+        summary: "Add the goal '$clean' for ${profile.name}",
+        payload: {
+          'goals': [goal.toJson()],
+        },
+      );
+      return null;
+    }
     await dashboardSync.upsertGoal(goal);
     dashboardSync.schedulePush();
     notifyListeners();
@@ -875,15 +900,24 @@ class SessionState extends ChangeNotifier {
     if (!canEditGoals) return;
     final clean = title?.trim();
     if (clean != null && clean.isEmpty) return;
-    await dashboardSync.upsertGoal(
-      goal.copyWith(
-        title: clean,
-        notes: notes?.trim(),
-        targetDate: targetDate,
-        clearTargetDate: clearTargetDate,
-        updatedAt: DateTime.now(),
-      ),
+    final updated = goal.copyWith(
+      title: clean,
+      notes: notes?.trim(),
+      targetDate: targetDate,
+      clearTargetDate: clearTargetDate,
+      updatedAt: DateTime.now(),
     );
+    if (requiresChangeApproval) {
+      await _proposeChange(
+        kind: 'goal',
+        summary: "Edit the goal '${goal.title}'",
+        payload: {
+          'goals': [updated.toJson()],
+        },
+      );
+      return;
+    }
+    await dashboardSync.upsertGoal(updated);
     dashboardSync.schedulePush();
     notifyListeners();
   }
@@ -892,20 +926,43 @@ class SessionState extends ChangeNotifier {
   Future<void> setGoalAchieved(ProfileGoal goal, bool achieved) async {
     if (!canEditGoals || goal.achieved == achieved) return;
     final now = DateTime.now();
-    await dashboardSync.upsertGoal(
-      goal.copyWith(
-        achieved: achieved,
-        achievedAt: achieved ? now : null,
-        clearAchievedAt: !achieved,
-        updatedAt: now,
-      ),
+    final updated = goal.copyWith(
+      achieved: achieved,
+      achievedAt: achieved ? now : null,
+      clearAchievedAt: !achieved,
+      updatedAt: now,
     );
+    if (requiresChangeApproval) {
+      await _proposeChange(
+        kind: 'goal',
+        summary: achieved
+            ? "Mark the goal '${goal.title}' as achieved"
+            : "Reopen the goal '${goal.title}'",
+        payload: {
+          'goals': [updated.toJson()],
+        },
+      );
+      return;
+    }
+    await dashboardSync.upsertGoal(updated);
     dashboardSync.schedulePush();
     notifyListeners();
   }
 
   Future<void> deleteGoal(ProfileGoal goal) async {
     if (!canEditGoals) return;
+    if (requiresChangeApproval) {
+      await _proposeChange(
+        kind: 'goal',
+        summary: "Delete the goal '${goal.title}'",
+        payload: {
+          'goal_tombstones': [
+            {'id': goal.id, 'deleted_ts': DateTime.now().millisecondsSinceEpoch},
+          ],
+        },
+      );
+      return;
+    }
     await dashboardSync.removeGoal(goal.id);
     dashboardSync.schedulePush();
     notifyListeners();
@@ -915,35 +972,56 @@ class SessionState extends ChangeNotifier {
     final clean = text.trim();
     if (!canEditGoals || clean.isEmpty) return;
     final now = DateTime.now();
-    await dashboardSync.upsertGoal(
-      goal.copyWith(
-        comments: [
-          ...goal.comments,
-          GoalComment(
-            id: _newGoalId('comment'),
-            author: goalCommentAuthor,
-            text: clean,
-            createdAt: now,
-          ),
-        ],
-        updatedAt: now,
-      ),
+    final updated = goal.copyWith(
+      comments: [
+        ...goal.comments,
+        GoalComment(
+          id: _newGoalId('comment'),
+          author: goalCommentAuthor,
+          text: clean,
+          createdAt: now,
+        ),
+      ],
+      updatedAt: now,
     );
+    if (requiresChangeApproval) {
+      final preview = clean.length > 40
+          ? '${clean.substring(0, 40)}…'
+          : clean;
+      await _proposeChange(
+        kind: 'goal_comment',
+        summary: "Comment on the goal '${goal.title}': '$preview'",
+        payload: {
+          'goals': [updated.toJson()],
+        },
+      );
+      return;
+    }
+    await dashboardSync.upsertGoal(updated);
     dashboardSync.schedulePush();
     notifyListeners();
   }
 
   Future<void> deleteGoalComment(ProfileGoal goal, String commentId) async {
     if (!canEditGoals) return;
-    await dashboardSync.upsertGoal(
-      goal.copyWith(
-        comments: [
-          for (final c in goal.comments)
-            if (c.id != commentId) c,
-        ],
-        updatedAt: DateTime.now(),
-      ),
+    final updated = goal.copyWith(
+      comments: [
+        for (final c in goal.comments)
+          if (c.id != commentId) c,
+      ],
+      updatedAt: DateTime.now(),
     );
+    if (requiresChangeApproval) {
+      await _proposeChange(
+        kind: 'goal_comment',
+        summary: "Remove a comment from the goal '${goal.title}'",
+        payload: {
+          'goals': [updated.toJson()],
+        },
+      );
+      return;
+    }
+    await dashboardSync.upsertGoal(updated);
     dashboardSync.schedulePush();
     notifyListeners();
   }
@@ -959,6 +1037,43 @@ class SessionState extends ChangeNotifier {
     if (!canEditGoals) return null;
     final profile = profiles.bySyncKey(goal.profileSyncKey);
     if (profile == null) return null;
+    if (requiresChangeApproval) {
+      // Composite proposal: the new board cell AND the goal link land
+      // in ONE request, so approval can never apply half of it.
+      final current = dashboards.forProfile(profile.id);
+      final draft = current != null
+          ? _dashboardClone(current)
+          : PersonalDashboard(
+              id: 'dash-${profile.id}',
+              profileId: profile.id,
+              name: 'My board',
+            );
+      final cell = DashboardCell(
+        id: dashboards.newCellId(draft),
+        wordId: wordId,
+        label: label,
+      );
+      draft.cells.add(cell);
+      draft.updatedAt = DateTime.now();
+      final updatedGoal = goal.copyWith(
+        links: [
+          ...goal.links,
+          GoalLink(kind: 'word', cellId: cell.id, label: label),
+        ],
+        updatedAt: DateTime.now(),
+      );
+      await _proposeChange(
+        kind: 'goal',
+        summary:
+            "Add the word '$label' to ${profile.name}'s board for the "
+            "goal '${goal.title}'",
+        payload: {
+          'dashboards': {profile.syncKey: draft.toJson()},
+          'goals': [updatedGoal.toJson()],
+        },
+      );
+      return null;
+    }
     final dashboard = dashboards.ensureFor(profile.id);
     final cell = DashboardCell(
       id: dashboards.newCellId(dashboard),
@@ -991,6 +1106,42 @@ class SessionState extends ChangeNotifier {
     if (!canEditGoals || clean.isEmpty) return null;
     final profile = profiles.bySyncKey(goal.profileSyncKey);
     if (profile == null) return null;
+    if (requiresChangeApproval) {
+      final current = dashboards.forProfile(profile.id);
+      final draft = current != null
+          ? _dashboardClone(current)
+          : PersonalDashboard(
+              id: 'dash-${profile.id}',
+              profileId: profile.id,
+              name: 'My board',
+            );
+      final cell = DashboardCell(
+        id: dashboards.newCellId(draft),
+        label: clean,
+        speakText: clean,
+        emoji: '💬',
+      );
+      draft.cells.add(cell);
+      draft.updatedAt = DateTime.now();
+      final updatedGoal = goal.copyWith(
+        links: [
+          ...goal.links,
+          GoalLink(kind: 'phrase', cellId: cell.id, label: clean),
+        ],
+        updatedAt: DateTime.now(),
+      );
+      await _proposeChange(
+        kind: 'goal',
+        summary:
+            "Add the phrase '$clean' to ${profile.name}'s board for "
+            "the goal '${goal.title}'",
+        payload: {
+          'dashboards': {profile.syncKey: draft.toJson()},
+          'goals': [updatedGoal.toJson()],
+        },
+      );
+      return null;
+    }
     final dashboard = dashboards.ensureFor(profile.id);
     final cell = DashboardCell(
       id: dashboards.newCellId(dashboard),
@@ -1018,16 +1169,623 @@ class SessionState extends ChangeNotifier {
   /// dashboard — unlinking only drops the bookkeeping.
   Future<void> unlinkGoalItem(ProfileGoal goal, String cellId) async {
     if (!canEditGoals) return;
-    await dashboardSync.upsertGoal(
-      goal.copyWith(
-        links: [
-          for (final l in goal.links)
-            if (l.cellId != cellId) l,
-        ],
-        updatedAt: DateTime.now(),
+    final updated = goal.copyWith(
+      links: [
+        for (final l in goal.links)
+          if (l.cellId != cellId) l,
+      ],
+      updatedAt: DateTime.now(),
+    );
+    if (requiresChangeApproval) {
+      await _proposeChange(
+        kind: 'goal',
+        summary: "Unlink a board item from the goal '${goal.title}'",
+        payload: {
+          'goals': [updated.toJson()],
+        },
+      );
+      return;
+    }
+    await dashboardSync.upsertGoal(updated);
+    dashboardSync.schedulePush();
+    notifyListeners();
+  }
+
+  // ------------------------------------------------- change requests ---
+
+  /// Monotonic counter bumped every time a change is sent for
+  /// approval; the Caregiver Portal watches it to pop a "Sent for
+  /// approval" SnackBar showing [lastApprovalNotice]. Local UI state
+  /// only — never synced.
+  int approvalNoticeCount = 0;
+  String lastApprovalNotice = '';
+
+  /// Every change request in the family, display order (pending
+  /// first, then decided history).
+  List<ChangeRequest> get changeRequests => dashboardSync.changeRequests;
+
+  /// Requests still waiting for an admin decision (admins' inbox).
+  List<ChangeRequest> get pendingChangeRequests =>
+      dashboardSync.changeRequests.where((r) => r.isPending).toList();
+
+  /// Requests an admin has already approved or rejected (history).
+  List<ChangeRequest> get decidedChangeRequests =>
+      dashboardSync.changeRequests.where((r) => r.isDecided).toList();
+
+  /// Requests THIS member filed, matched by roster caregiver id.
+  /// Owners/admins never file any, so theirs is empty.
+  List<ChangeRequest> get myChangeRequests {
+    final myId = teamRoster?.youCaregiverId;
+    if (myId == null || myId.isEmpty) return const [];
+    return dashboardSync.changeRequests
+        .where((r) => r.authorMemberId == myId)
+        .toList();
+  }
+
+  int _changeSeq = 0;
+  String _newChangeId() =>
+      'chg-${DateTime.now().microsecondsSinceEpoch}-${_changeSeq++}';
+
+  UserProfile? _profileById(String id) {
+    for (final p in profiles.profiles) {
+      if (p.id == id) return p;
+    }
+    return null;
+  }
+
+  /// Deep copy of a profile for building a change-request payload:
+  /// the proposed mutation is applied to the copy, so live family
+  /// state stays byte-identical until an admin approves.
+  UserProfile _profileClone(UserProfile profile) =>
+      UserProfile.fromJson(profile.toJson());
+
+  /// Deep copy of a dashboard, same purpose as [_profileClone].
+  PersonalDashboard _dashboardClone(PersonalDashboard dashboard) =>
+      PersonalDashboard.fromJson(dashboard.toJson());
+
+  /// Proposes a change to one profile's settings: [mutate] is applied
+  /// to a clone and the resulting synced entry becomes the payload, so
+  /// approval replays exactly the state the member asked for.
+  Future<void> _proposeProfileChange(
+    UserProfile profile, {
+    required String kind,
+    required String summary,
+    required void Function(UserProfile draft) mutate,
+  }) async {
+    final draft = _profileClone(profile);
+    mutate(draft);
+    draft.updatedAt = DateTime.now();
+    await _proposeChange(
+      kind: kind,
+      summary: summary,
+      payload: {
+        'profiles': [profileSyncEntry(draft)],
+      },
+    );
+  }
+
+  /// Proposes a change to one profile's personal dashboard: [resulting]
+  /// is the full post-change dashboard (built on a clone by the caller).
+  Future<void> _proposeDashboardChange(
+    UserProfile profile,
+    PersonalDashboard resulting, {
+    required String kind,
+    required String summary,
+  }) async {
+    await _proposeChange(
+      kind: kind,
+      summary: summary,
+      payload: {
+        'dashboards': {profile.syncKey: resulting.toJson()},
+      },
+    );
+  }
+
+  static String _modeLabel(CommunicationMode mode) => switch (mode) {
+    CommunicationMode.tap => 'Tap',
+    CommunicationMode.build => 'Build',
+    CommunicationMode.type => 'Type',
+  };
+
+  /// The label a board cell shows/speaks, for change summaries: the
+  /// live pack label for vocabulary cells, the stored text otherwise.
+  String _cellSummaryLabel(DashboardCell cell) {
+    final wordId = cell.wordId;
+    if (wordId != null) {
+      try {
+        return pack.wordById(wordId).label;
+      } catch (_) {
+        // Word left the pack (or pack not loaded in a test) — the
+        // stored fallback label is what the dashboard would show.
+      }
+    }
+    return cell.label.isNotEmpty ? cell.label : cell.speakText;
+  }
+
+  /// Captures a gated mutation as a change request instead of applying
+  /// it: family state is left untouched, the request is stored in the
+  /// encrypted sync store (so it reaches the family's admins on the
+  /// next push), and the UI gets its "Sent for approval" signal.
+  Future<void> _proposeChange({
+    required String kind,
+    required String summary,
+    required Map<String, dynamic> payload,
+  }) async {
+    final request = ChangeRequest(
+      id: _newChangeId(),
+      authorMemberId: teamRoster?.youCaregiverId ?? '',
+      authorName: goalCommentAuthor,
+      createdAt: DateTime.now(),
+      kind: kind,
+      summary: summary,
+      payload: payload,
+    );
+    await dashboardSync.upsertChangeRequest(request);
+    dashboardSync.schedulePush();
+    approvalNoticeCount++;
+    lastApprovalNotice = summary;
+    notifyListeners();
+  }
+
+  /// Admin decision: approve [requestId]. The payload replays through
+  /// the sync merge (so upserts and tombstoned deletes behave exactly
+  /// like a synced change); the admin-local extras the merge never
+  /// carries — profile deletes, dashboard deletes, the vocabulary
+  /// level — are applied directly here. The decision itself is stored
+  /// on the request and syncs to every device, the requester's
+  /// included.
+  Future<void> approveChangeRequest(String requestId) async {
+    if (!isTeamAdmin) return;
+    final request = dashboardSync.changeRequestById(requestId);
+    if (request == null || request.isDecided) return;
+    final payload = request.payload;
+    await dashboardSync.applyChangePayload(payload);
+    final profileDeletes = payload['profileDeletes'];
+    if (profileDeletes is List) {
+      for (final key in profileDeletes.whereType<String>()) {
+        final profile = profiles.bySyncKey(key);
+        if (profile != null) await removeProfile(profile.id);
+      }
+    }
+    final dashboardDeletes = payload['dashboardDeletes'];
+    if (dashboardDeletes is List) {
+      for (final key in dashboardDeletes.whereType<String>()) {
+        final profile = profiles.bySyncKey(key);
+        if (profile != null) await dashboards.delete(profile.id);
+      }
+    }
+    final vocabLevel = payload['vocabLevel'];
+    if (vocabLevel is int) await setUnlockedLevel(vocabLevel);
+    await dashboardSync.upsertChangeRequest(
+      request.copyWith(
+        status: ChangeRequest.statusApproved,
+        decidedByName: goalCommentAuthor,
+        decidedAt: DateTime.now(),
+      ),
+    );
+    await reloadProfileData();
+    dashboardSync.schedulePush();
+    notifyListeners();
+  }
+
+  /// Admin decision: reject [requestId], with an optional note the
+  /// requester sees (so they know why). Family state is untouched.
+  Future<void> rejectChangeRequest(String requestId, {String? note}) async {
+    if (!isTeamAdmin) return;
+    final request = dashboardSync.changeRequestById(requestId);
+    if (request == null || request.isDecided) return;
+    final clean = note?.trim();
+    await dashboardSync.upsertChangeRequest(
+      request.copyWith(
+        status: ChangeRequest.statusRejected,
+        decidedByName: goalCommentAuthor,
+        decidedAt: DateTime.now(),
+        reviewerNote: (clean == null || clean.isEmpty) ? null : clean,
       ),
     );
     dashboardSync.schedulePush();
+    notifyListeners();
+  }
+
+  // ------------------------------------- gated mutation entry points ---
+  //
+  // Every Portal mutation of family data funnels through one of the
+  // methods below (or the goal methods above). Ungated sessions apply
+  // exactly as they always have; a gated session (joined family,
+  // non-admin member) turns the call into a change request instead and
+  // family state is left untouched.
+
+  /// Adds a communicator profile. Gated: proposes a brand-new profile
+  /// (fresh syncKey, default call phrases) for an admin to approve.
+  Future<void> addProfile(String name) async {
+    final clean = name.trim();
+    if (clean.isEmpty) return;
+    if (requiresChangeApproval) {
+      if (!canEditProfiles) return;
+      final draft = UserProfile(id: 'pending', name: clean)
+        ..callPhrases = defaultCallPhrases()
+        ..updatedAt = DateTime.now();
+      await _proposeChange(
+        kind: 'profile_add',
+        summary: "Add a new profile named '$clean'",
+        payload: {
+          'profiles': [profileSyncEntry(draft)],
+        },
+      );
+      return;
+    }
+    await profiles.addProfile(clean);
+    notifyListeners();
+  }
+
+  /// Caregiver save for a profile's mode-progression nudge preference.
+  Future<void> setNudgePreference(String id, ModeNudgePreference pref) async {
+    if (requiresChangeApproval) {
+      final p = _profileById(id);
+      if (p == null) return;
+      await _proposeProfileChange(
+        p,
+        kind: 'profile',
+        summary: "Change mode suggestions for ${p.name}",
+        mutate: (d) => d.modeNudgePreference = pref,
+      );
+      return;
+    }
+    await profiles.setNudgePreference(id, pref);
+    notifyListeners();
+  }
+
+  /// Caregiver save for a profile's safety contacts (Calling & Safety).
+  Future<void> setProfileContacts(
+    String id,
+    List<SafetyContact> contacts,
+  ) async {
+    if (requiresChangeApproval) {
+      final p = _profileById(id);
+      if (p == null) return;
+      await _proposeProfileChange(
+        p,
+        kind: 'profile',
+        summary: "Update the safety contacts for ${p.name}",
+        mutate: (d) => d.contacts = List<SafetyContact>.of(contacts),
+      );
+      return;
+    }
+    await profiles.setContacts(id, contacts);
+    notifyListeners();
+  }
+
+  /// Caregiver save for a profile's call phrases (Calling & Safety).
+  Future<void> setProfileCallPhrases(String id, List<CallPhrase> phrases) async {
+    if (requiresChangeApproval) {
+      final p = _profileById(id);
+      if (p == null) return;
+      await _proposeProfileChange(
+        p,
+        kind: 'profile',
+        summary: "Update the call phrases for ${p.name}",
+        mutate: (d) => d.callPhrases = List<CallPhrase>.of(phrases),
+      );
+      return;
+    }
+    await profiles.setCallPhrases(id, phrases);
+    notifyListeners();
+  }
+
+  /// Caregiver save for a profile's emergency details.
+  Future<void> setProfileEmergency(
+    String id,
+    EmergencyProfileData emergency,
+  ) async {
+    if (requiresChangeApproval) {
+      final p = _profileById(id);
+      if (p == null) return;
+      await _proposeProfileChange(
+        p,
+        kind: 'profile',
+        summary: "Update the emergency details for ${p.name}",
+        mutate: (d) => d.emergency = emergency,
+      );
+      return;
+    }
+    await profiles.setEmergency(id, emergency);
+    notifyListeners();
+  }
+
+  /// Caregiver save for a profile's calling & safety settings.
+  Future<void> setProfileSafety(String id, SafetySettings safety) async {
+    if (requiresChangeApproval) {
+      final p = _profileById(id);
+      if (p == null) return;
+      await _proposeProfileChange(
+        p,
+        kind: 'profile',
+        summary: "Update the calling & safety settings for ${p.name}",
+        mutate: (d) => d.safety = safety,
+      );
+      return;
+    }
+    await profiles.setSafety(id, safety);
+    notifyListeners();
+  }
+
+  /// Caregiver save for a profile's location-sharing opt-in. Gated
+  /// like every safety change (Adam's call: safety waits for approval).
+  Future<void> setLocationSharingEnabled(String id, bool enabled) async {
+    if (requiresChangeApproval) {
+      final p = _profileById(id);
+      if (p == null) return;
+      await _proposeProfileChange(
+        p,
+        kind: 'profile',
+        summary: enabled
+            ? "Turn location sharing on for ${p.name}"
+            : "Turn location sharing off for ${p.name}",
+        mutate: (d) {
+          d.locationSharingEnabled = enabled;
+          if (enabled) d.locationSharingConsentAt = DateTime.now();
+        },
+      );
+      return;
+    }
+    await profiles.setLocationSharingEnabled(id, enabled);
+    notifyListeners();
+  }
+
+  /// Caregiver save for a profile's location auto-share preference.
+  Future<void> setLocationAutoShare(String id, bool allowed) async {
+    if (requiresChangeApproval) {
+      final p = _profileById(id);
+      if (p == null) return;
+      await _proposeProfileChange(
+        p,
+        kind: 'profile',
+        summary: allowed
+            ? "Let location requests auto-start sharing for ${p.name}"
+            : "Stop location requests auto-starting sharing for ${p.name}",
+        mutate: (d) => d.locationAutoShare = allowed,
+      );
+      return;
+    }
+    await profiles.setLocationAutoShare(id, allowed);
+    notifyListeners();
+  }
+
+  /// Enables/disables a profile's personal dashboard as the home board.
+  Future<void> setDashboardEnabled(String profileId, bool enabled) async {
+    final profile = _profileById(profileId);
+    if (profile == null) return;
+    if (requiresChangeApproval) {
+      final current = dashboards.forProfile(profileId);
+      final draft = current != null
+          ? _dashboardClone(current)
+          : PersonalDashboard(
+              id: 'dash-$profileId',
+              profileId: profileId,
+              name: profile.name,
+            );
+      draft.enabled = enabled;
+      draft.updatedAt = DateTime.now();
+      await _proposeDashboardChange(
+        profile,
+        draft,
+        kind: 'dashboard',
+        summary: enabled
+            ? "Make ${profile.name}'s personal board the home board"
+            : "Stop using ${profile.name}'s personal board as the home "
+                  'board',
+      );
+      return;
+    }
+    final dashboard = dashboards.ensureFor(profileId, name: profile.name);
+    dashboard.enabled = enabled;
+    await dashboards.save(dashboard);
+    notifyListeners();
+  }
+
+  /// Adds one cell to a profile's personal dashboard.
+  Future<void> addDashboardCell(String profileId, DashboardCell cell) async {
+    final profile = _profileById(profileId);
+    if (profile == null) return;
+    if (requiresChangeApproval) {
+      final current = dashboards.forProfile(profileId);
+      final draft = current != null
+          ? _dashboardClone(current)
+          : PersonalDashboard(
+              id: 'dash-$profileId',
+              profileId: profileId,
+              name: profile.name,
+            );
+      draft.cells.add(cell);
+      draft.updatedAt = DateTime.now();
+      final label = _cellSummaryLabel(cell);
+      await _proposeDashboardChange(
+        profile,
+        draft,
+        kind: 'dashboard_cell',
+        summary: cell.wordId != null
+            ? "Add the word '$label' to ${profile.name}'s board"
+            : "Add the button '$label' to ${profile.name}'s board",
+      );
+      return;
+    }
+    final dashboard = dashboards.ensureFor(profileId);
+    dashboard.cells.add(cell);
+    await dashboards.save(dashboard);
+    notifyListeners();
+  }
+
+  /// Replaces one cell (edit a custom button) on a profile's dashboard.
+  Future<void> updateDashboardCell(
+    String profileId,
+    DashboardCell cell,
+  ) async {
+    final profile = _profileById(profileId);
+    if (profile == null) return;
+    final current = dashboards.forProfile(profileId);
+    if (current == null) return;
+    if (requiresChangeApproval) {
+      final draft = _dashboardClone(current);
+      final index = draft.cells.indexWhere((c) => c.id == cell.id);
+      if (index < 0) return;
+      draft.cells[index] = cell;
+      draft.updatedAt = DateTime.now();
+      await _proposeDashboardChange(
+        profile,
+        draft,
+        kind: 'dashboard_cell',
+        summary:
+            "Edit the button '${_cellSummaryLabel(cell)}' on "
+            "${profile.name}'s board",
+      );
+      return;
+    }
+    final index = current.cells.indexWhere((c) => c.id == cell.id);
+    if (index < 0) return;
+    current.cells[index] = cell;
+    await dashboards.save(current);
+    notifyListeners();
+  }
+
+  /// Removes one cell from a profile's personal dashboard.
+  Future<void> removeDashboardCell(String profileId, String cellId) async {
+    final profile = _profileById(profileId);
+    if (profile == null) return;
+    final current = dashboards.forProfile(profileId);
+    if (current == null) return;
+    final cell = current.cells.where((c) => c.id == cellId).firstOrNull;
+    if (cell == null) return;
+    if (requiresChangeApproval) {
+      final draft = _dashboardClone(current);
+      draft.cells.removeWhere((c) => c.id == cellId);
+      draft.updatedAt = DateTime.now();
+      await _proposeDashboardChange(
+        profile,
+        draft,
+        kind: 'dashboard_cell',
+        summary:
+            "Remove '${_cellSummaryLabel(cell)}' from ${profile.name}'s "
+            'board',
+      );
+      return;
+    }
+    current.cells.removeWhere((c) => c.id == cellId);
+    await dashboards.save(current);
+    notifyListeners();
+  }
+
+  /// Reorders a profile's dashboard cells (drag in the editor).
+  Future<void> reorderDashboardCells(
+    String profileId,
+    List<DashboardCell> ordered,
+  ) async {
+    final profile = _profileById(profileId);
+    if (profile == null) return;
+    final current = dashboards.forProfile(profileId);
+    if (current == null) return;
+    if (requiresChangeApproval) {
+      final draft = _dashboardClone(current);
+      draft.cells
+        ..clear()
+        ..addAll(ordered);
+      draft.updatedAt = DateTime.now();
+      await _proposeDashboardChange(
+        profile,
+        draft,
+        kind: 'dashboard',
+        summary: "Rearrange ${profile.name}'s board",
+      );
+      return;
+    }
+    current.cells
+      ..clear()
+      ..addAll(ordered);
+    await dashboards.save(current);
+    notifyListeners();
+  }
+
+  /// Replaces a profile's whole dashboard (board-file import).
+  Future<void> replaceDashboard(
+    String profileId,
+    PersonalDashboard resulting,
+  ) async {
+    final profile = _profileById(profileId);
+    if (profile == null) return;
+    if (requiresChangeApproval) {
+      final draft = _dashboardClone(resulting)..updatedAt = DateTime.now();
+      await _proposeDashboardChange(
+        profile,
+        draft,
+        kind: 'dashboard',
+        summary:
+            "Import a board file for ${profile.name} "
+            '(${resulting.cells.length} buttons)',
+      );
+      return;
+    }
+    await dashboards.save(resulting);
+    notifyListeners();
+  }
+
+  /// Deletes a profile's personal dashboard. Gated: approval deletes
+  /// it on the admin's device (dashboards have no sync tombstones —
+  /// a delete has always been a local removal in this app).
+  Future<void> deleteDashboard(String profileId) async {
+    final profile = _profileById(profileId);
+    if (profile == null) return;
+    if (requiresChangeApproval) {
+      await _proposeChange(
+        kind: 'dashboard',
+        summary: "Delete ${profile.name}'s personal board",
+        payload: {
+          'dashboardDeletes': [profile.syncKey],
+        },
+      );
+      return;
+    }
+    await dashboards.delete(profileId);
+    notifyListeners();
+  }
+
+  /// Saves a safe zone (create, edit, or enable/disable toggle).
+  Future<void> saveSafeZone(SafeZone zone, {required bool isNew}) async {
+    if (requiresChangeApproval) {
+      if (!canManageSafety) return;
+      await _proposeChange(
+        kind: 'safe_zone',
+        summary: isNew
+            ? "Add the safe zone '${zone.name}'"
+            : "Change the safe zone '${zone.name}'",
+        payload: {
+          'safe_zones': [zone.toJson()],
+        },
+      );
+      return;
+    }
+    await dashboardSync.upsertSafeZone(zone);
+    notifyListeners();
+  }
+
+  /// Removes a safe zone. Approval replays the tombstone through the
+  /// sync merge, so the zone stays deleted on every device.
+  Future<void> deleteSafeZone(SafeZone zone) async {
+    if (requiresChangeApproval) {
+      if (!canManageSafety) return;
+      await _proposeChange(
+        kind: 'safe_zone',
+        summary: "Remove the safe zone '${zone.name}'",
+        payload: {
+          'safe_zone_tombstones': [
+            {
+              'id': zone.id,
+              'deleted_ts': DateTime.now().millisecondsSinceEpoch,
+            },
+          ],
+        },
+      );
+      return;
+    }
+    await dashboardSync.removeSafeZone(zone.id);
     notifyListeners();
   }
 
@@ -1532,9 +2290,23 @@ class SessionState extends ChangeNotifier {
 
   /// Reveal vocabulary up to [level]. Words above it keep their cells — the
   /// cells are simply drawn empty — so unlocking never reshuffles the board.
+  ///
+  /// Gated sessions propose the level instead: the vocabulary level is
+  /// per-device state (it is not part of the encrypted family blob), so
+  /// approval applies it on the ADMIN's device — the request tells the
+  /// admins what the member wants revealed, and their decision is the
+  /// family's policy. See the build report note.
   Future<void> setUnlockedLevel(int level) async {
     final next = _clampLevel(level);
     if (next == unlockedLevel) return;
+    if (requiresChangeApproval) {
+      await _proposeChange(
+        kind: 'vocab_level',
+        summary: 'Set the vocabulary level to $next',
+        payload: {'vocabLevel': next},
+      );
+      return;
+    }
     unlockedLevel = next;
     await _prefs?.setInt('vidavoice.unlockedLevel', next);
     notifyListeners();
@@ -1613,6 +2385,17 @@ class SessionState extends ChangeNotifier {
   /// [ProfileService] call persists but does not rebuild the MaterialApp
   /// home; UI code must call this instead.
   Future<void> setCommunicationMode(String id, CommunicationMode mode) async {
+    if (requiresChangeApproval) {
+      final p = _profileById(id);
+      if (p == null) return;
+      await _proposeProfileChange(
+        p,
+        kind: 'profile',
+        summary: "Change ${p.name}'s mode to ${_modeLabel(mode)}",
+        mutate: (d) => d.communicationMode = mode,
+      );
+      return;
+    }
     await profiles.setCommunicationMode(id, mode);
     notifyListeners();
   }
@@ -1622,6 +2405,21 @@ class SessionState extends ChangeNotifier {
   /// [ProfileService] and notifies so the phrase strip re-reads the
   /// limit immediately.
   Future<void> setBuildMaxSymbols(String id, int max) async {
+    if (requiresChangeApproval) {
+      final p = _profileById(id);
+      if (p == null) return;
+      final clamped = max.clamp(
+        ProfileService.minBuildMaxSymbols,
+        ProfileService.maxBuildMaxSymbols,
+      );
+      await _proposeProfileChange(
+        p,
+        kind: 'profile',
+        summary: "Set ${p.name}'s build length to $clamped",
+        mutate: (d) => d.buildMaxSymbols = clamped,
+      );
+      return;
+    }
     await profiles.setBuildMaxSymbols(id, max);
     notifyListeners();
   }
@@ -1635,6 +2433,20 @@ class SessionState extends ChangeNotifier {
     required bool enabled,
     required List<String> customWords,
   }) async {
+    if (requiresChangeApproval) {
+      final p = _profileById(id);
+      if (p == null) return;
+      await _proposeProfileChange(
+        p,
+        kind: 'profile',
+        summary: "Update word limits for ${p.name}",
+        mutate: (d) {
+          d.wordLimitsEnabled = enabled;
+          d.customBlockedWords = normalizeBlockedWords(customWords);
+        },
+      );
+      return;
+    }
     await profiles.setWordLimits(
       id,
       enabled: enabled,
@@ -1662,6 +2474,18 @@ class SessionState extends ChangeNotifier {
   /// and learned prediction ranks — then reload per-profile data for
   /// whoever is now active.
   Future<void> removeProfile(String id) async {
+    if (requiresChangeApproval) {
+      final p = _profileById(id);
+      if (p == null) return;
+      await _proposeChange(
+        kind: 'profile_remove',
+        summary: "Remove the profile '${p.name}'",
+        payload: {
+          'profileDeletes': [p.syncKey],
+        },
+      );
+      return;
+    }
     await profiles.removeProfile(id);
     await symbolOverrides.removeProfile(id);
     await elevenLabsVoices.clearProfile(id);
@@ -2025,6 +2849,19 @@ class SessionState extends ChangeNotifier {
   /// disabled profile must not keep (or keep growing) a personal language
   /// model. History is untouched.
   Future<void> setPredictionEnabled(String id, bool enabled) async {
+    if (requiresChangeApproval) {
+      final p = _profileById(id);
+      if (p == null) return;
+      await _proposeProfileChange(
+        p,
+        kind: 'profile',
+        summary: enabled
+            ? "Turn predictions on for ${p.name}"
+            : "Turn predictions off for ${p.name}",
+        mutate: (d) => d.predictionEnabled = enabled,
+      );
+      return;
+    }
     await profiles.setPredictionEnabled(id, enabled);
     if (!enabled) {
       await prediction.reset(id);

@@ -192,6 +192,37 @@ class UserProfile {
   }
 }
 
+/// The synced-payload entry for one profile — the exact shape the
+/// encrypted family blob carries per profile (see
+/// DashboardSyncService.buildPayload) and that [UserProfile] merges
+/// match by syncKey. Change requests carry this same shape, so an
+/// approved proposal replays through the sync merge untouched.
+Map<String, dynamic> profileSyncEntry(UserProfile p) => {
+  'syncKey': p.syncKey,
+  'name': p.name,
+  'mode': p.communicationMode.name,
+  'buildMaxSymbols': p.buildMaxSymbols,
+  'predictionEnabled': p.predictionEnabled,
+  // Caregiver word limits ride the encrypted blob with the rest of the
+  // per-profile settings.
+  'wordLimitsEnabled': p.wordLimitsEnabled,
+  'customBlockedWords': p.customBlockedWords,
+  'nudgePreference': p.modeNudgePreference.name,
+  // Phase 1 calling & safety rides the encrypted blob with the rest of
+  // the per-profile content — never plaintext.
+  'contacts': p.contacts.map((c) => c.toJson()).toList(),
+  'callPhrases': p.callPhrases.map((cp) => cp.toJson()).toList(),
+  'emergency': p.emergency.toJson(),
+  'safety': p.safety.toJson(),
+  // Phase 2A location opt-in + consent record ride the encrypted blob
+  // with the rest of the per-profile content — never plaintext. All
+  // devices agree on whether sharing is allowed.
+  'locationSharingEnabled': p.locationSharingEnabled,
+  'locationSharingConsentAt': p.locationSharingConsentAt?.toIso8601String(),
+  'locationAutoShare': p.locationAutoShare,
+  'updatedAt': p.updatedAt.toIso8601String(),
+};
+
 /// Generates a v4-style UUID without pulling in the proxy client.
 String _newSyncKey() {
   final r = _secureRandom();

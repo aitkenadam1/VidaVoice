@@ -34,7 +34,7 @@ class _PhraseBankEditorState extends State<PhraseBankEditor> {
   Future<void> _save(SessionState session, List<CallPhrase> phrases) async {
     setState(() => _saving = true);
     try {
-      await session.profiles.setCallPhrases(widget.profileId, phrases);
+      await session.setProfileCallPhrases(widget.profileId, phrases);
     } finally {
       if (mounted) setState(() => _saving = false);
     }

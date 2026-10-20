@@ -71,7 +71,7 @@ class _EmergencyDetailsEditorState extends State<EmergencyDetailsEditor> {
   Future<void> _save(SessionState session) async {
     setState(() => _saving = true);
     try {
-      await session.profiles.setEmergency(
+      await session.setProfileEmergency(
         widget.profileId,
         EmergencyProfileData(
           childName: _childName.text.trim(),
@@ -236,7 +236,7 @@ class _SafetyTogglesCardState extends State<SafetyTogglesCard> {
   Future<void> _set(SessionState session, SafetySettings next) async {
     setState(() => _saving = true);
     try {
-      await session.profiles.setSafety(widget.profileId, next);
+      await session.setProfileSafety(widget.profileId, next);
     } finally {
       if (mounted) setState(() => _saving = false);
     }

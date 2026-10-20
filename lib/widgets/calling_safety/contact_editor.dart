@@ -40,7 +40,7 @@ class _ContactListEditorState extends State<ContactListEditor> {
   Future<void> _save(SessionState session, List<SafetyContact> contacts) async {
     setState(() => _saving = true);
     try {
-      await session.profiles.setContacts(widget.profileId, contacts);
+      await session.setProfileContacts(widget.profileId, contacts);
     } finally {
       if (mounted) setState(() => _saving = false);
     }

@@ -47,7 +47,7 @@ class PortalSafetyTab extends StatelessWidget {
           existing: existing,
           getCurrentLocation: () => _currentLocation(session),
           onSave: (zone) async {
-            await session.dashboardSync.upsertSafeZone(zone);
+            await session.saveSafeZone(zone, isNew: existing == null);
             // Best-effort publish: the zone is saved locally either way.
             // pushNow throws ProxyException on transport failure — the
             // editor keeps the zone and reports the sync failure itself.
@@ -56,7 +56,7 @@ class PortalSafetyTab extends StatelessWidget {
           onDelete: existing == null
               ? null
               : (zone) async {
-                  await session.dashboardSync.removeSafeZone(zone.id);
+                  await session.deleteSafeZone(zone);
                   try {
                     await session.dashboardSync.pushNow();
                   } catch (_) {}
@@ -141,8 +141,9 @@ class PortalSafetyTab extends StatelessWidget {
                   onEdit: (zone) =>
                       _openZoneEditor(context, session, existing: zone),
                   onToggle: (zone, enabled) async {
-                    await session.dashboardSync.upsertSafeZone(
+                    await session.saveSafeZone(
                       zone.copyWith(enabled: enabled),
+                      isNew: false,
                     );
                     try {
                       await session.dashboardSync.pushNow();

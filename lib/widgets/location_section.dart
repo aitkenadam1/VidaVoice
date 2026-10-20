@@ -398,7 +398,7 @@ class _LocationSectionState extends State<LocationSection> {
                   Switch(
                     value: p.locationAutoShare,
                     onChanged: (v) async {
-                      await session.profiles.setLocationAutoShare(p.id, v);
+                      await session.setLocationAutoShare(p.id, v);
                       session.dashboardSync.schedulePush();
                       setState(() {});
                     },
@@ -440,7 +440,7 @@ class _LocationSectionState extends State<LocationSection> {
     bool enable,
   ) async {
     if (!enable) {
-      await session.profiles.setLocationSharingEnabled(p.id, false);
+      await session.setLocationSharingEnabled(p.id, false);
       if (session.locationShare.session?.profileId == p.id) {
         await session.locationShare.stopSession();
       }
@@ -475,7 +475,7 @@ class _LocationSectionState extends State<LocationSection> {
       ),
     );
     if (ok == true) {
-      await session.profiles.setLocationSharingEnabled(p.id, true);
+      await session.setLocationSharingEnabled(p.id, true);
       session.dashboardSync.schedulePush();
       setState(() {});
     }

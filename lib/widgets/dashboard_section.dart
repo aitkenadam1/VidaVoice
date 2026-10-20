@@ -56,12 +56,7 @@ class _DashboardSectionState extends State<DashboardSection> {
           ),
           value: dashboard?.enabled ?? false,
           onChanged: (v) async {
-            final d = session.dashboards.ensureFor(
-              profile.id,
-              name: profile.name,
-            );
-            d.enabled = v;
-            await session.dashboards.save(d);
+            await session.setDashboardEnabled(profile.id, v);
             widget.refresh();
           },
         ),
@@ -138,7 +133,8 @@ class _DashboardSectionState extends State<DashboardSection> {
                   avatar: const Icon(Icons.add, size: 16),
                   label: Text('${s.item.label} ${s.location}'),
                   onPressed: () async {
-                    dashboard.cells.add(
+                    await session.addDashboardCell(
+                      dashboard.profileId,
                       DashboardCell(
                         id: session.dashboards.newCellId(dashboard),
                         wordId: s.item.id,
@@ -147,7 +143,6 @@ class _DashboardSectionState extends State<DashboardSection> {
                         label: s.item.label,
                       ),
                     );
-                    await session.dashboards.save(dashboard);
                     widget.refresh();
                   },
                 ),
@@ -180,9 +175,10 @@ class _DashboardSectionState extends State<DashboardSection> {
       // onReorderItem (not the deprecated onReorder) already adjusts
       // newIndex for the removed item — no manual correction needed.
       onReorderItem: (oldIndex, newIndex) async {
-        final cell = dashboard.cells.removeAt(oldIndex);
-        dashboard.cells.insert(newIndex, cell);
-        await session.dashboards.save(dashboard);
+        final ordered = List<DashboardCell>.of(dashboard.cells);
+        final cell = ordered.removeAt(oldIndex);
+        ordered.insert(newIndex, cell);
+        await session.reorderDashboardCells(dashboard.profileId, ordered);
         widget.refresh();
       },
       itemBuilder: (context, index) {
@@ -206,8 +202,10 @@ class _DashboardSectionState extends State<DashboardSection> {
                 tooltip: 'Remove',
                 icon: const Icon(Icons.remove_circle_outline),
                 onPressed: () async {
-                  dashboard.cells.removeAt(index);
-                  await session.dashboards.save(dashboard);
+                  await session.removeDashboardCell(
+                    dashboard.profileId,
+                    cell.id,
+                  );
                   widget.refresh();
                 },
               ),
@@ -332,7 +330,8 @@ class _DashboardSectionState extends State<DashboardSection> {
                                 : () async {
                                     final dashboard = session.dashboards
                                         .ensureFor(profileId);
-                                    dashboard.cells.add(
+                                    await session.addDashboardCell(
+                                      profileId,
                                       DashboardCell(
                                         id: session.dashboards.newCellId(
                                           dashboard,
@@ -344,7 +343,6 @@ class _DashboardSectionState extends State<DashboardSection> {
                                         label: hit.item.label,
                                       ),
                                     );
-                                    await session.dashboards.save(dashboard);
                                     added.add(hit.item.id);
                                     setDialogState(() {});
                                     widget.refresh();
@@ -508,7 +506,8 @@ class _DashboardSectionState extends State<DashboardSection> {
     );
     if (ok == true) {
       final dashboard = session.dashboards.ensureFor(profileId);
-      dashboard.cells.add(
+      await session.addDashboardCell(
+        profileId,
         DashboardCell(
           id: session.dashboards.newCellId(dashboard),
           label: label.text.trim(),
@@ -517,7 +516,6 @@ class _DashboardSectionState extends State<DashboardSection> {
           imageData: imageData,
         ),
       );
-      await session.dashboards.save(dashboard);
       widget.refresh();
     }
   }
@@ -593,15 +591,17 @@ class _DashboardSectionState extends State<DashboardSection> {
       ),
     );
     if (ok == true) {
-      dashboard.cells[index] = DashboardCell(
-        id: cell.id,
-        label: label.text.trim(),
-        speakText: speak.text.trim(),
-        emoji: cell.emoji,
-        imageData: imageData,
-        color: cell.color,
+      await session.updateDashboardCell(
+        dashboard.profileId,
+        DashboardCell(
+          id: cell.id,
+          label: label.text.trim(),
+          speakText: speak.text.trim(),
+          emoji: cell.emoji,
+          imageData: imageData,
+          color: cell.color,
+        ),
       );
-      await session.dashboards.save(dashboard);
       widget.refresh();
     }
   }
@@ -630,7 +630,7 @@ class _DashboardSectionState extends State<DashboardSection> {
       ),
     );
     if (confirm == true) {
-      await session.dashboards.delete(profileId);
+      await session.deleteDashboard(profileId);
       widget.refresh();
     }
   }

@@ -1010,7 +1010,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
       ),
     );
     if (name != null && name.trim().isNotEmpty) {
-      await session.profiles.addProfile(name.trim());
+      await session.addProfile(name.trim());
       refresh();
     }
   }

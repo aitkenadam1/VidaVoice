@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/dashboard.dart';
 import '../models/calling_safety.dart';
+import '../models/change_request.dart';
 import '../models/goal.dart';
 import '../models/safe_zone.dart';
 import 'blocked_words.dart';
@@ -90,6 +91,12 @@ class DashboardSyncService {
   /// data about a child — same at-rest treatment as safe zones.
   static const _kGoals = 'vidavoice.sync.goals';
   static const _kGoalTombstones = 'vidavoice.sync.goalTombstones';
+
+  /// Care-team change requests: proposals from non-admin members and
+  /// the admins' decisions on them. A request's payload describes
+  /// family content (words, zones, contacts) — same at-rest treatment
+  /// as goals and safe zones.
+  static const _kChangeRequests = 'vidavoice.sync.changeRequests';
   static const _kAssignmentMeta = 'vidavoice.sync.deviceAssignmentMeta';
   static const _kAssignmentTombstones =
       'vidavoice.sync.deviceAssignmentTombstones';
@@ -119,6 +126,13 @@ class DashboardSyncService {
   /// exactly like safe zones.
   final List<ProfileGoal> _goals = [];
   final Map<String, DateTime> _goalTombstones = {};
+
+  /// Care-team change requests for the family. Kept in memory,
+  /// persisted locally, and published inside the encrypted payload;
+  /// merges are a union by request id (see ChangeRequest.merge), so a
+  /// proposal made on any device survives every merge and a decision
+  /// is never un-made by a stale copy.
+  final List<ChangeRequest> _changeRequests = [];
 
   /// install_id → profile syncKey assignments. Kept in memory,
   /// persisted to local prefs, and published inside the encrypted
@@ -267,7 +281,11 @@ class DashboardSyncService {
   /// deletion (a genuine later edit — never a stale copy).
   bool _goalSurvives(ProfileGoal g, Map<String, DateTime> tombstones) {
     final t = tombstones[g.id];
-    return t == null || g.updatedAt.isAfter(t);
+    // Millisecond granularity, as in [_zoneSurvives]: tombstones are
+    // stored/transmitted as ms ints, so a same-millisecond edit must
+    // not survive on sub-millisecond noise in the in-memory copy.
+    return t == null ||
+        g.updatedAt.millisecondsSinceEpoch > t.millisecondsSinceEpoch;
   }
 
   List<ProfileGoal> _parseGoals(Object? raw) {
@@ -289,6 +307,140 @@ class DashboardSyncService {
     String enc(List<ProfileGoal> l) =>
         json.encode([for (final g in l) g.toJson()]);
     return enc(a) == enc(b);
+  }
+
+  /// The family's care-team change requests, in display order (pending
+  /// first, then decided history). Unmodifiable; mutate through
+  /// [upsertChangeRequest] so persistence, sync, and listeners stay
+  /// consistent.
+  List<ChangeRequest> get changeRequests =>
+      List.unmodifiable(_changeRequests);
+
+  ChangeRequest? changeRequestById(String id) {
+    for (final r in _changeRequests) {
+      if (r.id == id) return r;
+    }
+    return null;
+  }
+
+  /// Adds a new request, or replaces the copy with the same id (a
+  /// decision landing on a pending request). Persists locally and
+  /// notifies listeners; the caller schedules the sync push.
+  Future<void> upsertChangeRequest(ChangeRequest request) async {
+    _changeRequests
+      ..removeWhere((r) => r.id == request.id)
+      ..add(request);
+    _resortChangeRequests();
+    await _persistChangeRequests();
+    _notify();
+  }
+
+  void _resortChangeRequests() {
+    final sorted = ChangeRequest.sortForDisplay(_changeRequests);
+    _changeRequests
+      ..clear()
+      ..addAll(sorted);
+  }
+
+  Future<void> _persistChangeRequests() async {
+    try {
+      await _secureSet(
+        _kChangeRequests,
+        json.encode([for (final r in _changeRequests) r.toJson()]),
+      );
+    } catch (_) {}
+  }
+
+  List<ChangeRequest> _parseChangeRequests(Object? raw) {
+    final out = <ChangeRequest>[];
+    if (raw is! List) return out;
+    for (final entry in raw) {
+      if (entry is! Map) continue;
+      try {
+        out.add(ChangeRequest.fromJson(Map<String, dynamic>.from(entry)));
+      } catch (_) {
+        // One bad request must not abort the whole merge.
+      }
+    }
+    return out;
+  }
+
+  bool _sameChangeRequests(List<ChangeRequest> a, List<ChangeRequest> b) {
+    if (a.length != b.length) return false;
+    String enc(List<ChangeRequest> l) =>
+        json.encode([for (final r in l) r.toJson()]);
+    return enc(a) == enc(b);
+  }
+
+  /// Replays an approved change request's [payload] into local family
+  /// state through the SAME merge a remote sync payload goes through,
+  /// so profile/dashboard/goal/zone upserts and tombstoned deletes
+  /// behave identically to a synced change — including delete
+  /// tombstones, which keep stale blobs from resurrecting the deleted
+  /// entity. Temporal fields are re-stamped to now first: approval
+  /// means "enact this at review time", so the replayed entities must
+  /// win last-write-wins against whatever the family state holds today
+  /// (including edits made after the request was filed). Keys that are
+  /// not sync-mergeable (profile deletes, vocabulary level) are NOT
+  /// handled here — the session applies those directly.
+  Future<DashboardSyncResult> applyChangePayload(
+    Map<String, dynamic> payload,
+  ) async {
+    // Deep copy so re-stamping never mutates the stored request.
+    final copy = Map<String, dynamic>.from(
+      json.decode(json.encode(payload)) as Map,
+    );
+    final now = DateTime.now();
+    final nowIso = now.toIso8601String();
+    final nowMs = now.millisecondsSinceEpoch;
+
+    final profiles = copy['profiles'];
+    if (profiles is List) {
+      for (final entry in profiles) {
+        if (entry is Map) entry['updatedAt'] = nowIso;
+      }
+    }
+    final dashboards = copy['dashboards'];
+    if (dashboards is Map) {
+      for (final entry in dashboards.values) {
+        if (entry is Map) entry['updatedAt'] = nowIso;
+      }
+    }
+    final zones = copy['safe_zones'];
+    if (zones is List) {
+      for (final entry in zones) {
+        if (entry is Map) entry['updated_ts'] = nowMs;
+      }
+    }
+    for (final key in ['safe_zone_tombstones', 'goal_tombstones']) {
+      final tombs = copy[key];
+      if (tombs is List) {
+        for (final entry in tombs) {
+          if (entry is Map) entry['deleted_ts'] = nowMs;
+        }
+      }
+    }
+    final goals = copy['goals'];
+    if (goals is List) {
+      for (final entry in goals) {
+        if (entry is Map) entry['updatedAt'] = nowIso;
+      }
+    }
+
+    final replay = <String, dynamic>{
+      for (final key in [
+        'profiles',
+        'dashboards',
+        'safe_zones',
+        'safe_zone_tombstones',
+        'goals',
+        'goal_tombstones',
+      ])
+        if (copy.containsKey(key)) key: copy[key],
+    };
+    final result = DashboardSyncResult();
+    await _merge(replay, result);
+    return result;
   }
 
   /// Reads a sensitive key from the secure store when wired. A value
@@ -393,7 +545,14 @@ class DashboardSyncService {
   /// deletion (a genuine later edit — never a stale copy).
   bool _zoneSurvives(SafeZone z, Map<String, DateTime> tombstones) {
     final t = tombstones[z.id];
-    return t == null || z.updatedTs.isAfter(t);
+    // Compared at millisecond granularity — the wire/storage precision
+    // for both fields. A full-precision compare lets a zone whose
+    // in-memory updatedTs carries sub-millisecond noise survive a
+    // tombstone stamped in the same millisecond, only to vanish after
+    // the next reload truncates it; ties go to the tombstone, matching
+    // goal-tombstone semantics.
+    return t == null ||
+        z.updatedTs.millisecondsSinceEpoch > t.millisecondsSinceEpoch;
   }
 
   List<SafeZone> _parseZones(Object? raw) {
@@ -567,6 +726,14 @@ class DashboardSyncService {
           ).where((g) => _goalSurvives(g, _goalTombstones)),
         );
       _resortGoals();
+      _changeRequests
+        ..clear()
+        ..addAll(
+          _parseChangeRequests(
+            _tryDecodeZones(await _secureGet(_kChangeRequests)),
+          ),
+        );
+      _resortChangeRequests();
       _assignmentUpdatedMs
         ..clear()
         ..addAll(
@@ -695,33 +862,7 @@ class DashboardSyncService {
       'activeProfileSyncKey': active?.syncKey,
       'activeProfileName': active?.name,
       'profiles': [
-        for (final p in _profiles.profiles)
-          {
-            'syncKey': p.syncKey,
-            'name': p.name,
-            'mode': p.communicationMode.name,
-            'buildMaxSymbols': p.buildMaxSymbols,
-            'predictionEnabled': p.predictionEnabled,
-            // Caregiver word limits ride the encrypted blob with the
-            // rest of the per-profile settings.
-            'wordLimitsEnabled': p.wordLimitsEnabled,
-            'customBlockedWords': p.customBlockedWords,
-            'nudgePreference': p.modeNudgePreference.name,
-            // Phase 1 calling & safety rides the encrypted blob with the
-            // rest of the per-profile content — never plaintext.
-            'contacts': p.contacts.map((c) => c.toJson()).toList(),
-            'callPhrases': p.callPhrases.map((cp) => cp.toJson()).toList(),
-            'emergency': p.emergency.toJson(),
-            'safety': p.safety.toJson(),
-            // Phase 2A location opt-in + consent record ride the encrypted
-            // blob with the rest of the per-profile content — never
-            // plaintext. All devices agree on whether sharing is allowed.
-            'locationSharingEnabled': p.locationSharingEnabled,
-            'locationSharingConsentAt':
-                p.locationSharingConsentAt?.toIso8601String(),
-            'locationAutoShare': p.locationAutoShare,
-            'updatedAt': p.updatedAt.toIso8601String(),
-          },
+        for (final p in _profiles.profiles) profileSyncEntry(p),
       ],
       'dashboards': dashboards,
       // Phase 2B safe zones: family-wide zone definitions. Coordinates
@@ -742,6 +883,12 @@ class DashboardSyncService {
         for (final e in _goalTombstones.entries)
           {'id': e.key, 'deleted_ts': e.value.millisecondsSinceEpoch},
       ],
+      // Care-team change requests: proposals from non-admin members
+      // plus the admins' decisions. The whole list rides the blob so
+      // every device converges on the same queue and history; merges
+      // are a union by id (see ChangeRequest.merge) — the server sees
+      // none of it (whole payload is ciphertext).
+      'change_requests': [for (final r in _changeRequests) r.toJson()],
       // Device → communicator-profile assignments (install id →
       // profile syncKey). Meaningless outside the family — encrypted
       // like everything else in this payload.
@@ -1006,6 +1153,26 @@ class DashboardSyncService {
         await _persistGoals();
         await _persistGoalTombstones();
         result.goalsChanged = true;
+      }
+    }
+
+    // Care-team change requests: union by id — a merge must never
+    // drop a proposal another device filed, a decided copy beats a
+    // pending one, and between two decided copies the later decision
+    // wins. Blobs without the key (older builds) leave local requests
+    // untouched.
+    if (payload.containsKey('change_requests')) {
+      final remoteRequests = _parseChangeRequests(payload['change_requests']);
+      final mergedRequests = ChangeRequest.merge(
+        _changeRequests,
+        remoteRequests,
+      );
+      if (!_sameChangeRequests(_changeRequests, mergedRequests)) {
+        _changeRequests
+          ..clear()
+          ..addAll(mergedRequests);
+        await _persistChangeRequests();
+        result.changeRequestsChanged = true;
       }
     }
 
@@ -1302,6 +1469,9 @@ class DashboardSyncResult {
   /// A pull added, updated, or removed communication goals.
   bool goalsChanged = false;
 
+  /// A pull added a care-team change request or landed a decision.
+  bool changeRequestsChanged = false;
+
   /// A pull changed device → profile assignments.
   bool assignmentsChanged = false;
 
@@ -1311,6 +1481,7 @@ class DashboardSyncResult {
       activeChanged ||
       safeZonesChanged ||
       goalsChanged ||
+      changeRequestsChanged ||
       assignmentsChanged;
 }
 

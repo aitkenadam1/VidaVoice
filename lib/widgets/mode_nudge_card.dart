@@ -132,7 +132,7 @@ class ModeNudgeCard extends StatelessWidget {
                   TextButton(
                     child: const Text('Don\u2019t suggest again'),
                     onPressed: () async {
-                      await session.profiles.setNudgePreference(
+                      await session.setNudgePreference(
                         profileId,
                         ModeNudgePreference.off,
                       );

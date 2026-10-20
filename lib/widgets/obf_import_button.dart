@@ -2,6 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../models/dashboard.dart';
 import '../services/obf_import_service.dart';
 import '../state/session_state.dart';
 
@@ -85,14 +86,20 @@ class _ObfImportButtonState extends State<ObfImportButton> {
         profileId,
         name: profileName,
       );
-      final wasEnabled = dashboard.enabled;
-      dashboard.name = report.dashboard.name;
-      dashboard.source = report.dashboard.source;
-      dashboard.cells
-        ..clear()
-        ..addAll(report.dashboard.cells);
-      dashboard.enabled = wasEnabled;
-      await session.dashboards.save(dashboard);
+      // The import replaces the board wholesale but keeps the
+      // caregiver's home-board choice. Built as a fresh object so a
+      // gated (change-approval) session can capture it as a proposal
+      // without touching the live dashboard.
+      final resulting = PersonalDashboard(
+        id: dashboard.id,
+        profileId: profileId,
+        name: report.dashboard.name,
+        cells: List<DashboardCell>.of(report.dashboard.cells),
+        enabled: dashboard.enabled,
+        source: report.dashboard.source,
+        updatedAt: DateTime.now(),
+      );
+      await session.replaceDashboard(profileId, resulting);
       widget.onChanged();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

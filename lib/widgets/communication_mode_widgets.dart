@@ -1321,7 +1321,7 @@ class _NudgePreferenceEditorState extends State<NudgePreferenceEditor> {
                   : () async {
                       setState(() => _busy = true);
                       try {
-                        await session.profiles.setNudgePreference(
+                        await session.setNudgePreference(
                           widget.profileId,
                           _draft,
                         );

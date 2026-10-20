@@ -464,6 +464,33 @@ void main() {
       );
       expect(session.canEditGoals, isTrue);
       await session.addGoalComment(goal, 'Great session today.');
+      // Change approval (Adam, 2026-10-20): a non-admin member's
+      // comment no longer lands directly — it becomes a change request
+      // carrying the same roster attribution, and the comment appears
+      // on the goal only when an admin approves the request.
+      expect(session.goalsForProfile(profile).single.comments, isEmpty);
+      final request = session.pendingChangeRequests.single;
+      expect(request.authorName, 'speech.sam');
+      session.accountHomeFamilyId = 'fam-joined';
+      session.teamRoster = const TeamRoster(
+        familyId: 'fam-joined',
+        youCaregiverId: 'cg-mom',
+        youIsOwner: true,
+        youRole: null,
+        youPermissions: TeamPermissions.all,
+        owner: TeamMember(
+          caregiverId: 'cg-mom',
+          email: 'mom@example.org',
+          username: 'mom',
+          role: 'owner',
+          permissions: TeamPermissions.all,
+          isOwner: true,
+          createdAt: 1,
+        ),
+        members: [],
+        invites: [],
+      );
+      await session.approveChangeRequest(request.id);
       final current = session.goalsForProfile(profile).single;
       expect(current.comments.single.author, 'speech.sam');
     });

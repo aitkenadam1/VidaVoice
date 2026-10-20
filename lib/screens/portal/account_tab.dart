@@ -187,9 +187,9 @@ class PortalAccountTab extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   'OneVoz is free for every family, from VidaCare, a '
-                  'nonprofit. If it helps your family, give what you can '
-                  '(\$5 minimum if you\u2019re able, more if you can). '
-                  'Every gift keeps it free for the next family.',
+                  'nonprofit. Every dollar helps advance our mission. '
+                  'Give what you can — every gift keeps it free for the '
+                  'next family.',
                   style: TextStyle(
                     fontSize: 14,
                     color: scheme.onSurfaceVariant,

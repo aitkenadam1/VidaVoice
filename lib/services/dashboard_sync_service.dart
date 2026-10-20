@@ -10,6 +10,7 @@ import '../models/dashboard.dart';
 import '../models/calling_safety.dart';
 import '../models/goal.dart';
 import '../models/safe_zone.dart';
+import 'blocked_words.dart';
 import 'dashboard_service.dart';
 import 'elevenlabs_key_store.dart';
 import 'profile_service.dart';
@@ -701,6 +702,10 @@ class DashboardSyncService {
             'mode': p.communicationMode.name,
             'buildMaxSymbols': p.buildMaxSymbols,
             'predictionEnabled': p.predictionEnabled,
+            // Caregiver word limits ride the encrypted blob with the
+            // rest of the per-profile settings.
+            'wordLimitsEnabled': p.wordLimitsEnabled,
+            'customBlockedWords': p.customBlockedWords,
             'nudgePreference': p.modeNudgePreference.name,
             // Phase 1 calling & safety rides the encrypted blob with the
             // rest of the per-profile content — never plaintext.
@@ -1122,6 +1127,8 @@ class DashboardSyncService {
         mode: _parseMode(entry['mode']),
         buildMaxSymbols: _parseInt(entry['buildMaxSymbols'], 4),
         predictionEnabled: _parseBool(entry['predictionEnabled'], true),
+        wordLimitsEnabled: _parseBool(entry['wordLimitsEnabled'], false),
+        customBlockedWords: _parseBlockedWords(entry['customBlockedWords']),
         nudgePreference: _parseNudge(entry['nudgePreference']),
         contacts: _parseContacts(entry['contacts']),
         callPhrases: _parseCallPhrases(entry['callPhrases']),
@@ -1142,6 +1149,8 @@ class DashboardSyncService {
         mode: _parseMode(entry['mode']),
         buildMaxSymbols: _parseInt(entry['buildMaxSymbols'], 4),
         predictionEnabled: _parseBool(entry['predictionEnabled'], true),
+        wordLimitsEnabled: _parseBool(entry['wordLimitsEnabled'], false),
+        customBlockedWords: _parseBlockedWords(entry['customBlockedWords']),
         nudgePreference: _parseNudge(entry['nudgePreference']),
         contacts: _parseContacts(entry['contacts']),
         callPhrases: _parseCallPhrases(entry['callPhrases']),
@@ -1215,6 +1224,14 @@ class DashboardSyncService {
       v is int ? v : (v is num ? v.toInt() : fallback);
 
   bool _parseBool(Object? v, bool fallback) => v is bool ? v : fallback;
+
+  /// Word-limit custom words: migration-safe (missing key -> empty) and
+  /// normalized exactly like the local store, so a merged list compares
+  /// equal to what the sending device stored.
+  List<String> _parseBlockedWords(Object? v) {
+    if (v is! List) return [];
+    return normalizeBlockedWords(v.whereType<String>());
+  }
 
   /// Phase 1 calling & safety parsers: migration-safe (missing key ->
   /// empty list / defaults) and non-throwing (malformed entries skipped).

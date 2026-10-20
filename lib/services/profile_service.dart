@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/calling_safety.dart';
+import 'blocked_words.dart';
 
 /// How this communicator composes messages.
 ///
@@ -48,6 +49,17 @@ class UserProfile {
   /// Whether Type-mode prediction learns from this profile's spoken
   /// history (on-device only). Default true.
   bool predictionEnabled = true;
+
+  /// Caregiver word limits for Type mode. Default OFF — with limits off,
+  /// everything typed is sayable. When ON, built-in swear words plus
+  /// [customBlockedWords] are hidden from predictions and masked out of
+  /// spoken typed messages. Board buttons are never filtered.
+  bool wordLimitsEnabled = false;
+
+  /// The caregiver's own blocked words for this profile, on top of the
+  /// built-in list in blocked_words.dart. Stored normalized (trimmed,
+  /// lowercased, deduped) via [normalizeBlockedWords].
+  List<String> customBlockedWords = [];
 
   /// Caregiver's nudge preference for this profile. Default [allowed].
   ModeNudgePreference modeNudgePreference = ModeNudgePreference.allowed;
@@ -93,6 +105,8 @@ class UserProfile {
     'mode': communicationMode.name,
     'buildMaxSymbols': buildMaxSymbols,
     'predictionEnabled': predictionEnabled,
+    'wordLimitsEnabled': wordLimitsEnabled,
+    'customBlockedWords': customBlockedWords,
     'nudgePreference': modeNudgePreference.name,
     'contacts': contacts.map((c) => c.toJson()).toList(),
     'callPhrases': callPhrases.map((p) => p.toJson()).toList(),
@@ -129,6 +143,16 @@ class UserProfile {
         : ProfileService.defaultBuildMaxSymbols;
     final prediction = json['predictionEnabled'];
     profile.predictionEnabled = prediction is bool ? prediction : true;
+    // Word limits: migration-safe — a pre-feature profile has limits
+    // OFF and no custom words. Malformed entries are dropped.
+    final limits = json['wordLimitsEnabled'];
+    profile.wordLimitsEnabled = limits is bool ? limits : false;
+    final customWords = json['customBlockedWords'];
+    profile.customBlockedWords = customWords is List
+        ? normalizeBlockedWords(
+            customWords.whereType<String>(),
+          )
+        : [];
     profile.modeNudgePreference = switch (json['nudgePreference']) {
       'paused' => ModeNudgePreference.paused,
       'off' => ModeNudgePreference.off,
@@ -371,6 +395,23 @@ class ProfileService {
     _notifyChanged();
   }
 
+  /// Caregiver word limits for [id]'s Type mode: the on/off toggle plus
+  /// the custom blocked-word list (normalized on save, so what is stored
+  /// is exactly what the filter compares against).
+  Future<void> setWordLimits(
+    String id, {
+    required bool enabled,
+    required List<String> customWords,
+  }) async {
+    final p = _byId(id);
+    if (p == null) return;
+    p.wordLimitsEnabled = enabled;
+    p.customBlockedWords = normalizeBlockedWords(customWords);
+    p.touch();
+    await _persist(await SharedPreferences.getInstance());
+    _notifyChanged();
+  }
+
   /// The caregiver's mode-nudge preference for [id].
   Future<void> setNudgePreference(String id, ModeNudgePreference pref) async {
     final p = _byId(id);
@@ -495,6 +536,8 @@ class ProfileService {
     required CommunicationMode mode,
     required int buildMaxSymbols,
     required bool predictionEnabled,
+    required bool wordLimitsEnabled,
+    required List<String> customBlockedWords,
     required ModeNudgePreference nudgePreference,
     required DateTime updatedAt,
     required List<SafetyContact> contacts,
@@ -512,6 +555,8 @@ class ProfileService {
       maxBuildMaxSymbols,
     );
     profile.predictionEnabled = predictionEnabled;
+    profile.wordLimitsEnabled = wordLimitsEnabled;
+    profile.customBlockedWords = normalizeBlockedWords(customBlockedWords);
     profile.modeNudgePreference = nudgePreference;
     profile.contacts = List<SafetyContact>.of(contacts);
     profile.callPhrases = List<CallPhrase>.of(callPhrases);

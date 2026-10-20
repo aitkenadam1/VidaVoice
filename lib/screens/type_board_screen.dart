@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../widgets/mode_switch_gate.dart';
 
 import '../app_config.dart';
+import '../services/blocked_words.dart';
 import '../services/history_service.dart';
 import '../services/prediction_service.dart';
 import '../state/session_state.dart';
@@ -36,6 +37,11 @@ import '../widgets/tts_banner.dart';
 ///   profile, fully on-device. Drafts and keystrokes never leave the
 ///   device and never feed the model; only the final text passed to Speak
 ///   may reach cloud synthesis.
+/// * Caregiver word limits (per profile, OFF by default): while on,
+///   blocked words are never offered as predictions, the speculative
+///   prefetch only ever synthesizes the masked text, and Speak masks
+///   blocked words to ••• — in the field and in the audio — while the
+///   rest of the message speaks normally.
 /// * Access settings are honored through [SessionState.buttonScale], the
 ///   same hook [HomeBoardScreen] uses: type size and minimum touch
 ///   targets scale together. (The codebase has no separate high-contrast
@@ -91,19 +97,34 @@ class _TypeBoardScreenState extends State<TypeBoardScreen> {
     if (text.trim().length < 2) return;
     _prefetchTimer = Timer(const Duration(milliseconds: 700), () {
       if (!mounted) return;
-      unawaited(context.read<SessionState>().tts.prefetch(text));
+      // Prefetch only what Speak would actually say: with the active
+      // profile's word limits on, blocked words are masked out first,
+      // so a blocked word is never synthesized or cached.
+      final session = context.read<SessionState>();
+      final speakable = session.sanitizeTypedText(text);
+      unawaited(session.tts.prefetch(speakable));
     });
   }
 
   void _refreshSuggestions() {
     final session = context.read<SessionState>();
     final profileId = session.profiles.active?.id ?? '';
-    final suggestions = session.prediction.suggest(
+    var suggestions = session.prediction.suggest(
       profileId: profileId,
       text: _controller.text,
       locale: session.currentLocale,
       vocab: _vocab,
     );
+    // Word limits: a blocked word is never OFFERED as a prediction
+    // while the active profile has limits on (learned ranks included —
+    // a word learned before limits were enabled stays hidden too).
+    final active = session.profiles.active;
+    if (active != null && active.wordLimitsEnabled) {
+      suggestions = filterBlockedSuggestions(
+        suggestions,
+        custom: active.customBlockedWords,
+      );
+    }
     if (!mounted) return;
     setState(() {
       _suggestions = suggestions;
@@ -136,7 +157,22 @@ class _TypeBoardScreenState extends State<TypeBoardScreen> {
   Future<void> _speak() async {
     final text = _controller.text;
     if (text.trim().isEmpty) return;
-    await context.read<SessionState>().typeSpeak(text);
+    final spoken = await context.read<SessionState>().typeSpeak(text);
+    if (!mounted) return;
+    if (spoken != text.trim()) {
+      // A blocked word was masked by the profile's word limits: the
+      // field (Type mode's sentence strip) shows ••• where the word
+      // was, with one gentle, non-punitive note.
+      _controller.value = TextEditingValue(
+        text: spoken,
+        selection: TextSelection.collapsed(offset: spoken.length),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('A word was hidden by caregiver word limits'),
+        ),
+      );
+    }
     // typeSpeak notifies; refresh suggestions in case the spoken message
     // changed the learned ranking.
     _refreshSuggestions();

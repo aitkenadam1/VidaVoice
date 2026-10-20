@@ -10,7 +10,8 @@ import 'team_section.dart';
 
 /// Portal "Profiles" tab: full communicator-profile management —
 /// list, create, switch active, remove, and per-profile communication
-/// mode, Build length, prediction privacy, and mode-nudge settings.
+/// mode, Build length, prediction privacy, word limits, and mode-nudge
+/// settings.
 ///
 /// Migrated from the old caregiver hub's profiles section; the editors
 /// are the same tested widgets, keyed the same way so external changes
@@ -120,7 +121,9 @@ class _PortalProfilesTabState extends State<PortalProfilesTab> {
                             'Mode: ${p.communicationMode.name} · '
                             'Build length: ${p.buildMaxSymbols} · '
                             'Predictions: '
-                            '${p.predictionEnabled ? 'on' : 'off'}',
+                            '${p.predictionEnabled ? 'on' : 'off'} · '
+                            'Word limits: '
+                            '${p.wordLimitsEnabled ? 'on' : 'off'}',
                           ),
                         )
                       else ...[
@@ -134,7 +137,9 @@ class _PortalProfilesTabState extends State<PortalProfilesTab> {
                               'Mode: ${p.communicationMode.name} · '
                               'Build length: ${p.buildMaxSymbols} · '
                               'Predictions: '
-                              '${p.predictionEnabled ? 'on' : 'off'}',
+                              '${p.predictionEnabled ? 'on' : 'off'} · '
+                              'Word limits: '
+                              '${p.wordLimitsEnabled ? 'on' : 'off'}',
                             ),
                           ),
                         // Per-profile communication-mode picker. Keyed on
@@ -164,6 +169,18 @@ class _PortalProfilesTabState extends State<PortalProfilesTab> {
                           PredictionPrivacyEditor(
                             key: ValueKey(
                               'prediction-${p.id}-${p.predictionEnabled}',
+                            ),
+                            profileId: p.id,
+                          ),
+                        // Advanced view: Type-mode word limits (swear
+                        // list + caregiver's own words). Keyed on the
+                        // saved settings so an external change (sync,
+                        // backup import) resets the editor.
+                        if (session.showTier(PortalTier.advanced))
+                          WordLimitsEditor(
+                            key: ValueKey(
+                              'word-limits-${p.id}-${p.wordLimitsEnabled}'
+                              '-${p.customBlockedWords.length}',
                             ),
                             profileId: p.id,
                           ),

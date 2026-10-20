@@ -14,6 +14,7 @@ import '../models/dashboard.dart';
 import '../models/goal.dart';
 import '../models/team.dart';
 import '../models/word.dart';
+import '../services/blocked_words.dart';
 import '../services/dashboard_service.dart';
 import '../services/dashboard_sync_service.dart';
 import '../services/geofence_service.dart';
@@ -1625,6 +1626,37 @@ class SessionState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Explicit caregiver save for a profile's Type-mode word limits.
+  /// Same contract as [setBuildMaxSymbols]: persists through
+  /// [ProfileService] (which schedules the encrypted sync push) and
+  /// notifies so the Type board re-reads the limits immediately.
+  Future<void> setWordLimits(
+    String id, {
+    required bool enabled,
+    required List<String> customWords,
+  }) async {
+    await profiles.setWordLimits(
+      id,
+      enabled: enabled,
+      customWords: customWords,
+    );
+    notifyListeners();
+  }
+
+  /// Free-typed [text] as it may actually be spoken and displayed under
+  /// the ACTIVE profile's caregiver word limits: every blocked word
+  /// (built-in list + the profile's custom words) is replaced with •••.
+  /// Returns [text] unchanged when the profile has limits off. This is
+  /// the single sanitizer for the whole Type path — Speak, the speech
+  /// prefetch, and typed-history replay all go through it, so a blocked
+  /// word is never synthesized, cached, or spoken. Board buttons are
+  /// caregiver-curated and never pass through here.
+  String sanitizeTypedText(String text) {
+    final p = profiles.active;
+    if (p == null || !p.wordLimitsEnabled) return text;
+    return maskBlockedWords(text, custom: p.customBlockedWords);
+  }
+
   /// Delete a communicator profile and everything stored for it — including
   /// its custom button images, saved cloud voices, spoken-history records,
   /// and learned prediction ranks — then reload per-profile data for
@@ -1892,11 +1924,15 @@ class SessionState extends ChangeNotifier {
   void replayHistory(HistoryEntry entry) {
     if (entry.text.trim().isEmpty) return;
     if (entry.ids.isEmpty) {
-      tts.speak(entry.text);
+      // Free-typed entry: the active profile's word limits apply to
+      // typed text however it is re-spoken (entries recorded before
+      // limits existed may still hold a now-blocked word).
+      final spoken = sanitizeTypedText(entry.text);
+      tts.speak(spoken);
       _logSpoken(
         profiles.active?.id ?? '',
         const [],
-        entry.text,
+        spoken,
         currentLocale,
       );
       return;
@@ -1915,14 +1951,19 @@ class SessionState extends ChangeNotifier {
   }
 
   /// Type-mode Speak — the ONLY Type-path method that may touch the TTS
-  /// layer. Speaks [text] exactly as typed, records it in the active
-  /// profile's spoken history (typed entries carry no board ids), and
-  /// feeds the on-device prediction ranks when learning is enabled for
-  /// the profile. Returns a Future so tests can await the recording;
-  /// the UI treats it as fire-and-forget like every other speak path.
-  Future<void> typeSpeak(String text) async {
-    final message = text.trim();
-    if (message.isEmpty) return;
+  /// layer. Speaks [text] as typed — except that the active profile's
+  /// caregiver word limits are applied first ([sanitizeTypedText]), so
+  /// what is spoken, recorded in history, and learned from is the
+  /// masked message. Records it in the active profile's spoken history
+  /// (typed entries carry no board ids), and feeds the on-device
+  /// prediction ranks when learning is enabled for the profile.
+  /// Returns the text that was actually spoken (post-masking), so the
+  /// UI can show the masked message and note that a word was hidden;
+  /// empty when nothing was spoken.
+  Future<String> typeSpeak(String text) async {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return '';
+    final message = sanitizeTypedText(trimmed);
     final id = profiles.active?.id ?? '';
     await tts.speak(message);
     await history.record(id, const [], message, currentLocale);
@@ -1931,6 +1972,7 @@ class SessionState extends ChangeNotifier {
       await prediction.learn(id, message, currentLocale);
     }
     notifyListeners();
+    return message;
   }
 
   void clearSentence() {

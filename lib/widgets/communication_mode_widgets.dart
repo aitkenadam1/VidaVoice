@@ -746,6 +746,191 @@ class _PredictionPrivacyEditorState extends State<PredictionPrivacyEditor> {
   }
 }
 
+/// Per-profile caregiver word limits for Type mode.
+///
+/// One toggle plus the caregiver's own word list:
+/// * OFF (the default) — everything typed is sayable, exactly as before.
+/// * ON — the built-in swear list (blocked_words.dart) plus the words
+///   listed here are hidden in Type mode: never offered as predictions,
+///   and masked to ••• when a typed message is spoken.
+///
+/// Board buttons are NEVER filtered — they are caregiver-curated by
+/// definition. Every change saves immediately through
+/// [SessionState.setWordLimits], like the prediction toggle above.
+class WordLimitsEditor extends StatefulWidget {
+  const WordLimitsEditor({super.key, required this.profileId});
+
+  final String profileId;
+
+  @override
+  State<WordLimitsEditor> createState() => _WordLimitsEditorState();
+}
+
+class _WordLimitsEditorState extends State<WordLimitsEditor> {
+  final TextEditingController _wordController = TextEditingController();
+  bool _busy = false;
+
+  @override
+  void dispose() {
+    _wordController.dispose();
+    super.dispose();
+  }
+
+  UserProfile? _profile(SessionState session) {
+    for (final p in session.profiles.profiles) {
+      if (p.id == widget.profileId) return p;
+    }
+    return null;
+  }
+
+  Future<void> _save({
+    required bool enabled,
+    required List<String> customWords,
+    String? snack,
+  }) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      await context.read<SessionState>().setWordLimits(
+        widget.profileId,
+        enabled: enabled,
+        customWords: customWords,
+      );
+      if (mounted && snack != null) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(snack)));
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _toggle(UserProfile profile, bool enabled) => _save(
+    enabled: enabled,
+    customWords: profile.customBlockedWords,
+    snack: enabled
+        ? 'Word limits on — swear words and your listed words are '
+              'hidden in Type mode.'
+        : 'Word limits off — everything typed is sayable.',
+  );
+
+  Future<void> _addWord(UserProfile profile) async {
+    final word = _wordController.text;
+    if (word.trim().isEmpty) return;
+    _wordController.clear();
+    await _save(
+      enabled: profile.wordLimitsEnabled,
+      customWords: [...profile.customBlockedWords, word],
+    );
+  }
+
+  Future<void> _removeWord(UserProfile profile, String word) => _save(
+    enabled: profile.wordLimitsEnabled,
+    customWords: [
+      for (final w in profile.customBlockedWords)
+        if (w != word) w,
+    ],
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final session = context.watch<SessionState>();
+    final profile = _profile(session);
+    if (profile == null) return const SizedBox.shrink();
+    final scheme = Theme.of(context).colorScheme;
+    final enabled = profile.wordLimitsEnabled;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'Word limits',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'When word limits are on, swear words and the words you add '
+            'here are hidden in Type mode: they are not offered as '
+            'predictions and are not spoken. When off, everything typed '
+            'is sayable. Board buttons are never limited.',
+            style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
+          ),
+          SwitchListTile(
+            key: ValueKey('word-limits-toggle-${widget.profileId}'),
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Word limits for typing'),
+            subtitle: Text(
+              enabled
+                  ? 'On — blocked words are hidden in Type mode'
+                  : 'Off — everything typed is sayable',
+              style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
+            ),
+            value: enabled,
+            onChanged: _busy ? null : (v) => _toggle(profile, v),
+          ),
+          if (enabled) ...[
+            Text(
+              profile.customBlockedWords.isEmpty
+                  ? 'The built-in swear list is blocked. Add your own '
+                        'words below.'
+                  : 'Also blocked, in addition to the built-in swear '
+                        'list:',
+              style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
+            ),
+            if (profile.customBlockedWords.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final word in profile.customBlockedWords)
+                      InputChip(
+                        key: ValueKey('word-limits-chip-$word'),
+                        label: Text(word),
+                        onDeleted: _busy
+                            ? null
+                            : () => _removeWord(profile, word),
+                      ),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: TextField(
+                    key: ValueKey('word-limits-add-field-${widget.profileId}'),
+                    controller: _wordController,
+                    decoration: const InputDecoration(
+                      labelText: 'Add a word',
+                      hintText: 'e.g. a name or word to block',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                    onSubmitted: (_) => _addWord(profile),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: FilledButton(
+                    key: ValueKey('word-limits-add-${widget.profileId}'),
+                    onPressed: _busy ? null : () => _addWord(profile),
+                    child: const Text('Add'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
 /// Opens the safe sandbox preview for [mode]. The preview is a static,
 /// local-state-only mock of the mode's main screen: tiles and chips react
 /// visually, the Speak action is disabled, and the dialog never references

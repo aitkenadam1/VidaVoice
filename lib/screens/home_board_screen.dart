@@ -7,6 +7,7 @@ import '../models/dashboard.dart';
 import '../models/word.dart';
 import '../state/session_state.dart';
 import '../theme/onevoz_theme.dart';
+import '../widgets/board_device_bar.dart';
 import '../widgets/call_shortcut_button.dart';
 
 import '../widgets/dashboard_tile.dart';
@@ -45,18 +46,22 @@ class HomeBoardScreen extends StatelessWidget {
       child: Scaffold(
       appBar: AppBar(
         title: GestureDetector(
-          // Discreet caregiver entry — no visible affordance on the
-          // child board. Long-press the title, verify the account
-          // password, and this device switches to caregiver mode.
+          // Discreet caregiver entry: long-press the title, verify the
+          // account password, and this device switches to caregiver
+          // mode. The visible equivalent — the "Caregiver Portal"
+          // button in the BoardDeviceBar under the board — opens the
+          // same password gate.
           onLongPress: () => showCaregiverEntrySheet(context),
           child: Text(AppConfig.appDisplayName),
         ),
         actions: [
           const CallShortcutButton(),
           const EmergencyShortcutButton(),
-          // No Settings gear here, on purpose: caregiver controls (account,
-          // voices, keys, sign-out) live only in the Caregiver Portal,
-          // reached through the password gate — never from an AAC board.
+          // No Settings gear here, on purpose: caregiver controls
+          // (account, voices, keys) live only in the Caregiver Portal.
+          // The two device actions DO live on the board, as labeled
+          // buttons in the BoardDeviceBar under the message bar:
+          // Caregiver Portal (password gate) and Log out (confirm).
         ],
       ),
       body: Column(
@@ -99,6 +104,7 @@ class HomeBoardScreen extends StatelessWidget {
             ),
           const _CallActionArea(),
           const MessageBar(),
+          const BoardDeviceBar(),
         ],
       ),
     ),

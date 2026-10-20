@@ -5,17 +5,45 @@ import '../services/device_role_service.dart';
 import '../services/proxy_client.dart';
 import '../state/session_state.dart';
 
+/// Opens the visible caregiver-portal gate behind the "Caregiver
+/// Portal" button in the BoardDeviceBar on communicator boards (Adam,
+/// 2026-10-20: the entry is a labeled button now, not only a hidden
+/// gesture). Same gate, same rules as the discreet entry — email/
+/// username + account password, verified live, and the account must
+/// belong to THIS device's family — but verification goes straight to
+/// the Portal: no portal/sign-out choice, because the bar carries its
+/// own "Log out" button.
+Future<void> showCaregiverPortalGate(BuildContext context) async {
+  final session = context.read<SessionState>();
+  // Land on the portal's default tab (no deep link from the boards).
+  session.pendingPortalTab = 0;
+  await showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    builder: (_) => ModeSwitchGate(
+      targetRole: DeviceRole.caregiver,
+      onVerified: () => Navigator.of(context).pop(),
+    ),
+  );
+  // Dismissed without verifying (still a communicator): the staged hint
+  // must not leak into the next portal visit.
+  if (session.deviceRole != DeviceRole.caregiver) {
+    session.pendingPortalTab = null;
+  }
+}
+
 /// Opens the discreet caregiver entry point: a bottom sheet with the
 /// password gate for switching this device to caregiver mode.
 ///
-/// There is deliberately NO visible affordance for this on communicator
-/// boards — no icon, no label. The caregiver long-presses the app title
-/// in the board's top bar. A child tapping around finds nothing; the
-/// device is never stranded because the caregiver knows the gesture and
-/// the account password. The password is verified live (internet
-/// required); on success the caregiver chooses between opening the
-/// Caregiver Portal and signing this device out — both stay behind the
-/// same password gate, so a child can never reach a tappable sign-out.
+/// This entry is deliberately discreet — no icon, no label. The
+/// caregiver long-presses the app title in the board's top bar. (The
+/// BoardDeviceBar under the board carries a VISIBLE "Caregiver Portal"
+/// button into the same gate — see [showCaregiverPortalGate] — but this
+/// sheet additionally offers sign-out behind the password, so a child
+/// who finds the long-press still cannot reach a tappable sign-out
+/// without the account password.) The password is verified live
+/// (internet required); on success the caregiver chooses between
+/// opening the Caregiver Portal and signing this device out.
 Future<void> showCaregiverEntrySheet(
   BuildContext context, {
   int initialPortalTab = 0,

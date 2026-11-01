@@ -64,6 +64,7 @@ class _CallingSafetyHubScreenState extends State<CallingSafetyHubScreen> {
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
+                const _CallingComingSoonBanner(),
                 if (profiles.length > 1)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
@@ -220,6 +221,51 @@ class _CallingSafetyHubScreenState extends State<CallingSafetyHubScreen> {
                   if (!mounted) return;
                   setState(() => _profileId = id);
                 },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Calling isn't live yet — said plainly at the top of the hub, before
+/// any editor. Setup is NOT blocked: contacts, call phrases, and
+/// emergency details saved now are stored on the profile (and synced)
+/// and will be ready when calling launches.
+class _CallingComingSoonBanner extends StatelessWidget {
+  const _CallingComingSoonBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      color: scheme.surfaceContainerLow,
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.upcoming_outlined, size: 24),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Calling is coming soon',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Calling isn\u2019t live yet. Contacts, call phrases, '
+                    'and emergency details you set up now are saved and '
+                    'will be ready when calling launches.',
+                    style: TextStyle(fontSize: 13),
+                  ),
+                ],
               ),
             ),
           ],

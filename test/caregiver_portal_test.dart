@@ -293,6 +293,9 @@ void main() {
       expect(find.text('Location'), findsWidgets);
       expect(find.text('Safe zones'), findsWidgets);
       expect(find.text('Home'), findsOneWidget);
+      // Calling isn't live yet: the Calling & Safety card carries the
+      // coming-soon chip (the hub behind it stays fully set-up-able).
+      expect(find.text('Coming soon'), findsOneWidget);
     });
 
     testWidgets('calling & safety opens the contacts editor', (

@@ -12,6 +12,7 @@ import 'package:onevoz/main.dart';
 import 'package:onevoz/models/calling_safety.dart';
 import 'package:onevoz/models/word.dart';
 import 'package:onevoz/screens/build_board_screen.dart';
+import 'package:onevoz/screens/call_confirm_screen.dart';
 import 'package:onevoz/screens/home_board_screen.dart';
 import 'package:onevoz/screens/portal/profiles_tab.dart';
 import 'package:onevoz/screens/type_board_screen.dart';
@@ -179,14 +180,19 @@ void main() {
     });
   });
 
-  group('m1: the call sheet itself shows the number', () {
-    testWidgets('contact name and phone number both appear', (tester) async {
+  group('m1 retired: board calling shows coming soon', () {
+    // The 2026-10-07 m1 fix put each contact's number on the call
+    // picker sheet. Calling was pulled back to coming-soon on
+    // 2026-10-31, so the picker (and the confirm screen behind it) is
+    // unreachable from the board — this group now pins THAT: the tap
+    // shows the coming-soon sheet instead.
+    testWidgets('two contacts: tap shows coming soon, never the picker', (
+      tester,
+    ) async {
       SharedPreferences.setMockInitialValues({});
       final session = SessionState(tts: _FakeTts());
       await session.profiles.load();
       final p = session.profiles.active!;
-      // Two call contacts: with exactly one, the button dials directly
-      // and the sheet never opens. The sheet is the multi-contact path.
       await session.profiles.setContacts(p.id, const [
         SafetyContact(id: 'mom', name: 'Mom', phone: '555-0100', kind: 'mom'),
         SafetyContact(id: 'dad', name: 'Dad', phone: '555-0102', kind: 'dad'),
@@ -210,13 +216,9 @@ void main() {
       await tester.tap(find.byIcon(Icons.call));
       await tester.pumpAndSettle();
 
-      expect(find.text('Who do you want to call?'), findsOneWidget);
-      expect(find.text('Mom'), findsOneWidget);
-      expect(find.text('Dad'), findsOneWidget);
-      // The numbers are visible on the sheet itself — before any tap on a
-      // contact — not only on the confirm screen one step later.
-      expect(find.text('555-0100'), findsOneWidget);
-      expect(find.text('555-0102'), findsOneWidget);
+      expect(find.text('Coming soon'), findsOneWidget);
+      expect(find.text('Who do you want to call?'), findsNothing);
+      expect(find.byType(CallConfirmScreen), findsNothing);
     });
   });
 

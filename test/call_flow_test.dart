@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -147,6 +148,108 @@ void main() {
       300,
     );
     expect(find.textContaining("never replaces calling 911"), findsOneWidget);
+  });
+
+  group('emergency screen: contacts coming soon, 911 still live', () {
+    const emergency = EmergencyProfileData(
+      childName: 'Alex',
+      homeAddress: '123 Main St',
+      parentName: 'Sam',
+      parentPhone: '555-0101',
+      emergencyEnabled: true,
+    );
+    const contacts = [
+      SafetyContact(id: 'mom', name: 'Mom', phone: '555-0100', kind: 'mom'),
+      SafetyContact(id: 'dad', name: 'Dad', phone: '555-0102', kind: 'dad'),
+    ];
+
+    /// Captures every URL the url_launcher method channel is asked to
+    /// launch (and reports success), so tests can prove exactly which
+    /// rows still dial/text and which never reach the platform.
+    Future<List<String>> captureLaunches() async {
+      final launched = <String>[];
+      const channel = MethodChannel('plugins.flutter.io/url_launcher');
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (call) async {
+            if (call.method == 'launch') {
+              launched.add((call.arguments as Map)['url'] as String);
+              return true;
+            }
+            return null;
+          });
+      addTearDown(() {
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(channel, null);
+      });
+      return launched;
+    }
+
+    testWidgets('contact row speaks the name and shows coming soon', (
+      tester,
+    ) async {
+      final launched = await captureLaunches();
+      final tts = _FakeTts();
+      final session = makeSession(tts);
+      await pumpScreen(
+        tester,
+        session,
+        const EmergencyScreen(emergency: emergency, contacts: contacts),
+      );
+
+      await tester.tap(find.text('Call Mom'));
+      await tester.pumpAndSettle();
+
+      // The name is still spoken (zero-reading confirmation)…
+      expect(tts.lastSpoken, 'Mom');
+      // …but calling a contact is coming soon: the sheet shows, the
+      // confirm screen never opens, and nothing reaches the dialer.
+      expect(find.text('Coming soon'), findsOneWidget);
+      expect(
+        find.textContaining('call your people right from OneVoz'),
+        findsOneWidget,
+      );
+      expect(find.byType(CallConfirmScreen), findsNothing);
+      expect(launched, isEmpty);
+    });
+
+    testWidgets('Call 911 still launches tel:911', (tester) async {
+      final launched = await captureLaunches();
+      final session = makeSession(_FakeTts());
+      await pumpScreen(
+        tester,
+        session,
+        const EmergencyScreen(emergency: emergency, contacts: contacts),
+      );
+
+      await tester.tap(find.text('Call 911'));
+      await tester.pumpAndSettle();
+
+      expect(launched, ['tel:911']);
+    });
+
+    testWidgets('Text 911 still launches the precomposed sms:911', (
+      tester,
+    ) async {
+      final launched = await captureLaunches();
+      final session = makeSession(_FakeTts());
+      await pumpScreen(
+        tester,
+        session,
+        const EmergencyScreen(emergency: emergency, contacts: contacts),
+      );
+
+      await tester.tap(find.text('Text 911'));
+      await tester.pumpAndSettle();
+
+      expect(launched, hasLength(1));
+      expect(launched.single, startsWith('sms:911'));
+      // The precomposed body rides along (URL-encoded): the standard
+      // composeEmergencySms opener with the child's name.
+      expect(
+        Uri.decodeComponent(launched.single),
+        contains('EMERGENCY - Alex is nonverbal'),
+      );
+    });
   });
 
   testWidgets('call screen speaks phrase cards with placeholders resolved', (

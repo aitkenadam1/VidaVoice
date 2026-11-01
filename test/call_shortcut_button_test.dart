@@ -11,17 +11,24 @@ import 'package:onevoz/models/word.dart';
 import 'package:onevoz/screens/call_confirm_screen.dart';
 import 'package:onevoz/widgets/mode_switch_gate.dart';
 import 'package:onevoz/screens/emergency_screen.dart';
+import 'package:onevoz/screens/home_board_screen.dart';
 import 'package:onevoz/services/tts_service.dart';
 import 'package:onevoz/services/caregiver_pin_service.dart';
 import 'package:onevoz/services/elevenlabs_key_store.dart';
 import 'package:onevoz/state/session_state.dart';
 import 'package:onevoz/widgets/call_shortcut_button.dart';
 import 'package:onevoz/widgets/emergency_shortcut_button.dart';
+import 'package:onevoz/widgets/safety_contact_avatar.dart';
 
-/// TTS double: never touches the platform channel.
+/// TTS double: never touches the platform channel; records the last
+/// text it was asked to speak.
 class _FakeTts extends TtsService {
+  String? lastSpoken;
+
   @override
-  Future<void> speak(String text) async {}
+  Future<void> speak(String text) async {
+    lastSpoken = text;
+  }
 
   @override
   Future<void> stop() async {}
@@ -94,33 +101,34 @@ void main() {
   }
 
   group('call shortcut button', () {
-    testWidgets('visible with no contacts; tap routes to contact setup', (
+    testWidgets('visible with no contacts; tap shows calling coming soon', (
       tester,
     ) async {
       final session = await makeSession();
       final p = await session.profiles.addProfile('Kid');
       await session.profiles.setEmergency(p.id, _noEmergency);
-      // CaregiverScreen needs the vocabulary pack, like the real boot path.
       session.pack = loadPackFromFile('en');
 
       await pumpBar(tester, session);
 
       // The calling feature shows on the blue banner even before contacts
-      // exist — it must never hide, only route somewhere useful.
+      // exist — it must never hide.
       expect(find.byIcon(Icons.call), findsOneWidget);
 
       await tester.tap(find.byIcon(Icons.call));
       await tester.pumpAndSettle();
 
-      expect(find.text('No one to call yet'), findsOneWidget);
-      expect(find.text('Continue as caregiver'), findsOneWidget);
-
-      // Caregiver UI never opens without the password gate on a
-      // communicator device: the button opens ModeSwitchGate instead.
-      await tester.tap(find.text('Continue as caregiver'));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(ModeSwitchGate), findsOneWidget);
+      // Calling isn't live yet (2026-10-31): the tap lands on the
+      // coming-soon sheet — no contact-setup sheet, no caregiver gate,
+      // and nothing that could dial.
+      expect(find.text('Coming soon'), findsOneWidget);
+      expect(
+        find.textContaining('call your people right from OneVoz'),
+        findsOneWidget,
+      );
+      expect(find.text('No one to call yet'), findsNothing);
+      expect(find.byType(ModeSwitchGate), findsNothing);
+      expect(find.byType(CallConfirmScreen), findsNothing);
     });
 
     testWidgets('visible with no contacts even when emergency is on', (
@@ -137,7 +145,7 @@ void main() {
       expect(find.byIcon(Icons.emergency), findsOneWidget);
     });
 
-    testWidgets('single contact goes straight to call confirmation', (
+    testWidgets('single contact: tap shows coming soon, never confirmation', (
       tester,
     ) async {
       final session = await makeSession();
@@ -149,11 +157,16 @@ void main() {
       await tester.tap(find.byIcon(Icons.call));
       await tester.pumpAndSettle();
 
-      expect(find.byType(CallConfirmScreen), findsOneWidget);
-      expect(find.text('Call Mom?'), findsOneWidget);
+      // Even with a callable contact, no confirmation screen and no
+      // dialing while calling is coming soon.
+      expect(find.text('Coming soon'), findsOneWidget);
+      expect(find.byType(CallConfirmScreen), findsNothing);
+      expect(find.text('Call Mom?'), findsNothing);
     });
 
-    testWidgets('multiple contacts open a picker sheet', (tester) async {
+    testWidgets('multiple contacts: tap shows coming soon, no picker', (
+      tester,
+    ) async {
       final session = await makeSession();
       final p = await session.profiles.addProfile('Kid');
       await session.profiles.setEmergency(p.id, _noEmergency);
@@ -163,15 +176,41 @@ void main() {
       await tester.tap(find.byIcon(Icons.call));
       await tester.pumpAndSettle();
 
-      // Picker — not call confirmation yet.
-      expect(find.text('Who do you want to call?'), findsOneWidget);
+      expect(find.text('Coming soon'), findsOneWidget);
+      expect(find.text('Who do you want to call?'), findsNothing);
       expect(find.byType(CallConfirmScreen), findsNothing);
+    });
+  });
 
-      await tester.tap(find.text('Dad'));
+  group('home board contact call buttons', () {
+    testWidgets('contact button speaks the name, then shows coming soon', (
+      tester,
+    ) async {
+      final session = await makeSession();
+      final p = await session.profiles.addProfile('Kid');
+      await session.profiles.setEmergency(p.id, _noEmergency);
+      await session.profiles.setContacts(p.id, [_mom]);
+      session.pack = loadPackFromFile('en');
+
+      await tester.pumpWidget(
+        ChangeNotifierProvider<SessionState>.value(
+          value: session,
+          child: const MaterialApp(home: HomeBoardScreen()),
+        ),
+      );
+      await tester.pump();
+
+      // The persistent call-action area under the board shows the Mom
+      // photo button (its avatar is unique on this screen).
+      expect(find.byType(SafetyContactAvatar), findsOneWidget);
+      await tester.tap(find.byType(SafetyContactAvatar));
       await tester.pumpAndSettle();
 
-      expect(find.byType(CallConfirmScreen), findsOneWidget);
-      expect(find.text('Call Dad?'), findsOneWidget);
+      // Speech is kept — the button still says the person's name…
+      expect((session.tts as _FakeTts).lastSpoken, 'Mom');
+      // …but the call itself is coming soon: no confirm screen.
+      expect(find.text('Coming soon'), findsOneWidget);
+      expect(find.byType(CallConfirmScreen), findsNothing);
     });
   });
 

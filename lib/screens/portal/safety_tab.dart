@@ -110,16 +110,43 @@ class PortalSafetyTab extends StatelessWidget {
                     ),
                   ),
                 ),
-              FilledButton.icon(
-                icon: const Icon(Icons.call_outlined),
-                label: const Text('Open Calling & Safety'),
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const CallingSafetyHubScreen(),
+              Wrap(
+                spacing: 12,
+                runSpacing: 8,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  FilledButton.icon(
+                    icon: const Icon(Icons.call_outlined),
+                    label: const Text('Open Calling & Safety'),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const CallingSafetyHubScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  // Calling isn't live yet — the chip says so on the
+                  // card itself (same pill as the Settings tab's
+                  // roadmap chips). Setup inside the hub stays fully
+                  // available so families can get ready.
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
                     ),
-                  );
-                },
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                    child: const Text(
+                      'Coming soon',
+                      style: TextStyle(fontSize: 11),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

@@ -202,6 +202,23 @@ void main() {
     expect(profile.contacts.single.name, 'Grandma');
   });
 
+  testWidgets('hub shows the calling coming-soon banner at the top', (
+    tester,
+  ) async {
+    final session = await makeSession();
+    await tester.pumpWidget(
+      wrap(session, const CallingSafetyHubScreen()),
+    );
+    await tester.pumpAndSettle();
+
+    // The banner is the first thing in the hub (no scrolling needed):
+    // calling is honestly not live yet, and setup done now is kept.
+    expect(find.text('Calling is coming soon'), findsOneWidget);
+    expect(find.textContaining('ready when calling launches'), findsOneWidget);
+    // The editors below the banner stay present and usable.
+    expect(find.text('Contacts'), findsOneWidget);
+  });
+
   testWidgets('hub renders all four sections plus the limits card', (
     tester,
   ) async {

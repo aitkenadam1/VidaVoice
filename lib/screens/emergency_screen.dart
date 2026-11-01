@@ -9,7 +9,7 @@ import '../models/calling_safety.dart';
 import '../services/location_service.dart';
 import '../state/session_state.dart';
 import '../theme/onevoz_theme.dart';
-import 'call_confirm_screen.dart';
+import '../widgets/calling_coming_soon.dart';
 import 'call_screen.dart';
 
 /// The emergency flow, entered only via the 2-second hold on the home board.
@@ -20,7 +20,9 @@ import 'call_screen.dart';
 /// - Call 911 / Text 911 go straight to the OS dialer / SMS composer.
 ///   The Text-911 body is pre-composed by [composeEmergencySms]; the GPS
 ///   line is omitted when no location is available.
-/// - Call Mom / Call Dad reuse the normal 2-tap confirm flow.
+/// - Call Mom / Call Dad speak the name and show the calling
+///   coming-soon sheet — calling isn't live yet, so the contact rows
+///   never dial. The 911 rows above are unaffected and stay live.
 /// - The emergency card is a full-screen, high-contrast info sheet meant
 ///   to be held up to a bystander.
 ///
@@ -110,11 +112,10 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
 
   void _callContact(SafetyContact contact) {
     // Zero-reading confirmation, matching the home board: the child hears
-    // who they picked before the confirm screen appears.
+    // who they picked. Calling isn't live yet, so instead of the
+    // call-confirm flow the tap lands on the calling coming-soon sheet.
     context.read<SessionState>().tts.speak(contact.name);
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => CallConfirmScreen(contact: contact)),
-    );
+    showCallingComingSoon(context);
   }
 
   void _showCard() {

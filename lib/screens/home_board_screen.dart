@@ -9,6 +9,7 @@ import '../state/session_state.dart';
 import '../theme/onevoz_theme.dart';
 import '../widgets/board_device_bar.dart';
 import '../widgets/call_shortcut_button.dart';
+import '../widgets/calling_coming_soon.dart';
 
 import '../widgets/dashboard_tile.dart';
 import '../widgets/emergency_shortcut_button.dart';
@@ -18,7 +19,6 @@ import '../widgets/mode_switch_gate.dart';
 import '../widgets/safety_contact_avatar.dart';
 import '../widgets/tts_banner.dart';
 import '../widgets/word_button.dart';
-import 'call_confirm_screen.dart';
 import 'category_screen.dart';
 
 /// The home board: 282 core words in FIXED positions (see en.json — motor
@@ -249,8 +249,10 @@ class _CallActionArea extends StatelessWidget {
 }
 
 /// Photo button for one trusted contact: tap speaks the contact's name via
-/// TTS (zero-reading confirmation — the child hears who they picked) and
-/// opens the call-confirm screen for tap 2 of the 2-tap calling rule.
+/// TTS (zero-reading confirmation — the child hears who they picked; the
+/// button doubles as how the child says the person's name) and shows the
+/// calling coming-soon sheet. Calling isn't live yet, so the tap never
+/// dials and never opens the call-confirm screen.
 class _CallContactButton extends StatelessWidget {
   const _CallContactButton({required this.contact});
 
@@ -265,11 +267,7 @@ class _CallContactButton extends StatelessWidget {
       child: InkWell(
         onTap: () {
           session.tts.speak(contact.name);
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => CallConfirmScreen(contact: contact),
-            ),
-          );
+          showCallingComingSoon(context);
         },
         borderRadius: BorderRadius.circular(20),
         child: Container(

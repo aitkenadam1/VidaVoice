@@ -19,6 +19,14 @@
 	<string>OneVoz watches caregiver-defined safe zones (like home or school) so your caregiver can be alerted when you arrive or leave, even while the app is closed. This only runs on a communicator device your caregiver set up, and only for the zones they defined.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>OneVoz uses your location to include GPS coordinates in emergency texts and to share your location with your caregiver only while a sharing session you start is active.</string>
+	<!-- Background location: iOS region monitoring for caregiver-defined
+	     safe zones. The system wakes/relaunches the app in the
+	     background to deliver enter/exit transitions while the app is
+	     closed; no continuous tracking is performed. -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -39,6 +47,13 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<!-- Export compliance: the app uses only standard, exempt
+	     encryption (TLS in transit; AES via the platform crypto
+	     stack for locally stored/synced data) — no proprietary or
+	     non-exempt cryptography. Declaration for Adam to confirm at
+	     App Store submission. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

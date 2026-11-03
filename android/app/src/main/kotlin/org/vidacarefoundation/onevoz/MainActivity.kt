@@ -1,4 +1,4 @@
-package org.vidacarefoundation.vidavoice
+package org.vidacarefoundation.onevoz
 
 import android.os.Build
 import androidx.core.app.ActivityCompat

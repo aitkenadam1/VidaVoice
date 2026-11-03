@@ -1,0 +1,131 @@
+# Codemagic CI — OneVoz (Flutter), modelled on the Travel Whisperer
+# mobile setup. Three workflows:
+#   - ios-unsigned-build:   compile check only, no signing assets needed
+#   - ios-signed-build:     App Store distribution IPA + TestFlight upload
+#   - android-release-build: signed AAB for Google Play
+#
+# Phase 2 (Adam, in the Codemagic + Apple/Google consoles) creates the
+# named assets referenced below — until they exist, only the unsigned
+# workflow can run:
+#   - App Store Connect integration:  onevoz_asc
+#   - iOS distribution certificate:   onevoz_ios_dist
+#   - App Store provisioning profile: onevoz_app_store  (org.vidacarefoundation.onevoz)
+#   - Android upload keystore:        onevoz_upload
+workflows:
+  ios-unsigned-build:
+    name: iOS Unsigned Build (compile check)
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+      xcode: 26.4
+    scripts:
+      - name: Install dependencies
+        script: flutter pub get
+      - name: Build iOS release without code signing
+        script: flutter build ios --release --no-codesign
+    artifacts:
+      - build/ios/iphoneos/*.app
+    publishing:
+      email:
+        recipients:
+          - aitkenadam@gmail.com
+        notify:
+          success: true
+          failure: true
+  ios-signed-build:
+    name: iOS Signed Build (App Store distribution)
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: onevoz_asc
+    environment:
+      flutter: stable
+      xcode: 26.4
+      vars:
+        BUNDLE_ID: org.vidacarefoundation.onevoz
+      ios_signing:
+        certificates:
+          - onevoz_ios_dist
+        provisioning_profiles:
+          - onevoz_app_store
+    scripts:
+      - name: Install dependencies
+        script: flutter pub get
+      - name: Update Codemagic CLI tools
+        script: |
+          pip3 install --upgrade codemagic-cli-tools 2>&1 | tail -3
+          app-store-connect --version
+      - name: Inspect Codemagic-injected signing files
+        script: |
+          set -e
+          echo "=== Codemagic-injected signing files ==="
+          echo "Certificates:"
+          ls -lh ~/Library/MobileDevice/Certificates/ 2>&1 || echo "(no Certificates dir)"
+          echo ""
+          echo "Provisioning profiles:"
+          ls -lh ~/Library/MobileDevice/Provisioning\ Profiles/ 2>&1
+          echo ""
+          echo "Keychain identities:"
+          security find-identity -v 2>&1 | head -5
+      - name: Apply provisioning profiles to the Xcode project
+        script: xcode-project use-profiles --verbose 2>&1 | tail -5
+      - name: Build signed IPA for distribution
+        script: |
+          set -e
+          flutter build ipa --release --build-number=$BUILD_NUMBER
+          echo ""
+          echo "IPA built:"
+          ls -lh build/ios/ipa/*.ipa
+      - name: Upload to TestFlight
+        script: |
+          set -e
+          IPA_PATH=$(ls build/ios/ipa/*.ipa | head -1)
+          echo "Uploading: $IPA_PATH"
+          app-store-connect publish --verbose --path "$IPA_PATH"
+          echo "Upload complete"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - build/ios/archive/**/*.dSYM
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+    publishing:
+      email:
+        recipients:
+          - aitkenadam@gmail.com
+        notify:
+          success: true
+          failure: true
+  android-release-build:
+    name: Android Release Build (AAB for Play Store)
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+      java: 21
+      vars:
+        PACKAGE_NAME: org.vidacarefoundation.onevoz
+      android_signing:
+        - onevoz_upload
+    scripts:
+      - name: Install dependencies
+        script: flutter pub get
+      - name: Generate key.properties from Codemagic signing
+        script: |
+          cat > android/key.properties <<EOF
+          storeFile=$CM_KEYSTORE_PATH
+          storePassword=$CM_KEYSTORE_PASSWORD
+          keyAlias=$CM_KEY_ALIAS
+          keyPassword=$CM_KEY_PASSWORD
+          EOF
+          echo "key.properties generated"
+      - name: Build release AAB
+        script: flutter build appbundle --release --build-number=$BUILD_NUMBER
+    artifacts:
+      - build/app/outputs/bundle/release/app-release.aab
+    publishing:
+      email:
+        recipients:
+          - aitkenadam@gmail.com
+        notify:
+          success: true
+          failure: true

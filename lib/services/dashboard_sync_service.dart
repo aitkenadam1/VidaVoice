@@ -681,6 +681,60 @@ class DashboardSyncService {
     autoPushEnabled = false;
   }
 
+  /// Account deletion teardown: forget EVERYTHING this service holds
+  /// for the family — the encryption key, every persisted key (prefs
+  /// AND secure store: zones, goals, change requests, assignments,
+  /// tombstones, mirror state) and all in-memory collections. Called
+  /// after the server has already erased the account, so nothing here
+  /// may be re-adopted by a later sign-in on this device. Best-effort
+  /// throughout: a storage hiccup must never block the sign-out that
+  /// follows.
+  Future<void> clearAccountState() async {
+    clearKey();
+    const keys = [
+      _kLastVersion,
+      _kLastSyncedAt,
+      _kMirror,
+      _kMirrorUpdatedAt,
+      _kSafeZones,
+      _kDeviceAssignments,
+      _kSafeZoneTombstones,
+      _kGoals,
+      _kGoalTombstones,
+      _kChangeRequests,
+      _kAssignmentMeta,
+      _kAssignmentTombstones,
+    ];
+    try {
+      final prefs = await _prefsFactory();
+      for (final key in keys) {
+        await prefs.remove(key);
+      }
+    } catch (_) {}
+    final store = _secureStore;
+    if (store != null) {
+      for (final key in keys) {
+        try {
+          await store.delete(key);
+        } catch (_) {}
+      }
+    }
+    _zones.clear();
+    _zoneTombstones.clear();
+    _goals.clear();
+    _goalTombstones.clear();
+    _changeRequests.clear();
+    _deviceAssignments.clear();
+    _assignmentUpdatedMs.clear();
+    _assignmentTombstones.clear();
+    _mirror = false;
+    _mirrorUpdatedAt = null;
+    lastSyncedAt = null;
+    lastMessage = null;
+    _lastSeenRemoteVersion = 0;
+    _notify();
+  }
+
   /// Loads the persisted mirror flag and last-sync timestamp.
   Future<void> loadPersisted() async {
     try {

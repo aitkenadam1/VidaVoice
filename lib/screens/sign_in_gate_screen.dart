@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../app_config.dart';
+import '../state/session_state.dart';
 import '../widgets/proxy_account_form.dart';
 
 /// Blocking sign-in gate: the app — boards, profiles, settings — is only
@@ -23,6 +25,38 @@ class SignInGateScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  if (context.watch<SessionState>().accountDeletedNotice
+                      case final notice?) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: scheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.check_circle_outline,
+                            color: scheme.onPrimaryContainer,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              notice,
+                              style: TextStyle(
+                                color: scheme.onPrimaryContainer,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
                   Icon(Icons.lock_outline, size: 72, color: scheme.primary),
                   const SizedBox(height: 16),
                   Text(

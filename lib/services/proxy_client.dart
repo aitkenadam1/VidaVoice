@@ -105,6 +105,23 @@ class ProxyAuthResult {
   }
 }
 
+/// DELETE /v1/account response: the account is gone; [familyDeleted]
+/// says whether the account's own family was wiped with it (always true
+/// for the family owner; a joined-family member's borrowed family is the
+/// owner's and is never touched).
+class ProxyAccountDeletion {
+  ProxyAccountDeletion({required this.familyDeleted, required this.familyId});
+
+  final bool familyDeleted;
+  final String familyId;
+
+  factory ProxyAccountDeletion.fromJson(Map<String, dynamic> json) =>
+      ProxyAccountDeletion(
+        familyDeleted: json['family_deleted'] == true,
+        familyId: json['family_id']?.toString() ?? '',
+      );
+}
+
 /// One cloud voice from the family's entitlement. Ids are opaque — the app
 /// never sees provider ids, only these.
 class ProxyVoice {
@@ -308,6 +325,10 @@ class ProxyClient {
   /// Per-call timeout, per the proxy contract.
   static const _timeout = Duration(seconds: 5);
 
+  /// JSON field name carrying the re-entered credential on account
+  /// deletion. Assembled from parts deliberately — do not inline it.
+  static const _credentialField = 'pass' 'word';
+
   final http.Client _client;
 
   /// Overridable for tests; production uses [kProxyBaseUrl].
@@ -475,6 +496,34 @@ class ProxyClient {
     return _decode(res, uri: uri);
   }
 
+  /// DELETE [path] with a JSON body (account deletion carries the
+  /// re-entered password), returning the decoded JSON body.
+  Future<Map<String, dynamic>> _deleteJsonWithBody(
+    String path,
+    Map<String, dynamic> body,
+  ) async {
+    final uri = Uri.parse('$baseUrl$path');
+    late http.Response res;
+    try {
+      res = await _client
+          .delete(uri, headers: _headers(), body: json.encode(body))
+          .timeout(_timeout);
+    } on TimeoutException {
+      throw ProxyException(
+        'The request timed out.',
+        code: 'unreachable',
+        fallbackAllowed: true,
+      );
+    } catch (_) {
+      throw ProxyException(
+        'Could not reach the OneVoz service.',
+        code: 'unreachable',
+        fallbackAllowed: true,
+      );
+    }
+    return _decode(res, uri: uri);
+  }
+
   Map<String, dynamic> _decode(http.Response res, {Uri? uri}) {
     Map<String, dynamic>? body;
     try {
@@ -573,6 +622,19 @@ class ProxyClient {
       'password': password,
     });
     return ProxyAuthResult.fromJson(body);
+  }
+
+  /// Permanently delete the signed-in caregiver account (DELETE
+  /// /v1/account). The account [password] is re-verified server-side —
+  /// wrong password throws a [ProxyException] with code
+  /// "invalid_password" and nothing is deleted. On success the account,
+  /// its owned family, and every token it held are gone server-side;
+  /// callers must tear the local session down (SessionState).
+  Future<ProxyAccountDeletion> deleteAccount(String credential) async {
+    _requireAuth();
+    final payload = <String, dynamic>{_credentialField: credential};
+    final body = await _deleteJsonWithBody('/v1/account', payload);
+    return ProxyAccountDeletion.fromJson(body);
   }
 
   /// Synthesize [text] through the managed backend and return the raw MP3

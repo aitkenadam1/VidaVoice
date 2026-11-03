@@ -57,6 +57,38 @@ class _DeviceRoleScreenState extends State<DeviceRoleScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    if (context.watch<SessionState>().accountDeletedNotice
+                        case final notice?) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: scheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.check_circle_outline,
+                              color: scheme.onPrimaryContainer,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                notice,
+                                style: TextStyle(
+                                  color: scheme.onPrimaryContainer,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
                     const WaveformMotif(
                       barCount: 7,
                       height: 44,

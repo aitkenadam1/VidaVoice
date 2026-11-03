@@ -229,6 +229,11 @@ class SessionState extends ChangeNotifier {
   /// use — a 401 signs out silently.
   bool proxySignedIn = false;
 
+  /// One-shot banner for the role question / sign-in gate after an
+  /// account deletion ("Your account has been deleted."). Set by
+  /// [finishAccountDeletion]; cleared by the next successful sign-in.
+  String? accountDeletedNotice;
+
   /// The family id from the last successful auth, if known.
   String? proxyFamilyId;
 
@@ -606,6 +611,7 @@ class SessionState extends ChangeNotifier {
     bool accountAuth = false,
     bool deviceServices = true,
   }) async {
+    accountDeletedNotice = null; // a fresh sign-in retires the banner
     proxy.setToken(result.token);
     proxySignedIn = true;
     proxyFamilyId = result.familyId;
@@ -738,6 +744,33 @@ class SessionState extends ChangeNotifier {
     if (tts.currentVoice?.isProxy ?? false) {
       await clearVoice();
     }
+    notifyListeners();
+  }
+
+  /// Permanently delete this account on the server (DELETE
+  /// /v1/account). The [password] is re-verified server-side; a wrong
+  /// password throws a [ProxyException] (code "invalid_password") and
+  /// NOTHING changes — locally or remotely. On success the account is
+  /// already gone: call [finishAccountDeletion] to tear the local
+  /// session down once the UI has shown its confirmation. (Split so
+  /// the confirmation dialog isn't unmounted mid-message by the
+  /// sign-out it triggers.)
+  Future<ProxyAccountDeletion> deleteAccount({
+    required String credential,
+  }) async {
+    return proxy.deleteAccount(credential);
+  }
+
+  /// Local teardown after a successful server-side account deletion:
+  /// the sync service forgets the family's persisted state (zones,
+  /// goals, change requests, assignments — prefs and secure store),
+  /// then the full [signOut] teardown runs (token, auth store, sync
+  /// key, team state, device role), and the role question / sign-in
+  /// gate gets a one-shot "account deleted" banner.
+  Future<void> finishAccountDeletion() async {
+    await dashboardSync.clearAccountState();
+    await signOut();
+    accountDeletedNotice = 'Your account has been deleted.';
     notifyListeners();
   }
 
